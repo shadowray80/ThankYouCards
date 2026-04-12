@@ -155,9 +155,9 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
       {(soloMessage !== undefined || soloPhotoData !== undefined) ? (
         /* Solo card: show the personal message as a clean panel */
         soloPhotoData ? (
-          <div style={{ background: '#fff', padding: '22px 22px 24px' }}>
-            <img src={soloPhotoData} alt="Handwritten message" style={{ width: '100%', maxHeight: 220, objectFit: 'contain', borderRadius: 10, border: '1px solid #E8E2F0' }} />
-            {from && <div style={{ marginTop: 14, fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>— {from}</div>}
+          <div style={{ background: '#fff' }}>
+            <img src={soloPhotoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', display: 'block' }} />
+            {from && <div style={{ padding: '12px 22px 18px', fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>— {from}</div>}
           </div>
         ) : soloMessage ? (
           <div style={{ background: '#fff', padding: '22px 22px 24px' }}>

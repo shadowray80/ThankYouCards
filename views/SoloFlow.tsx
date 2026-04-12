@@ -15,13 +15,16 @@ interface SoloFlowProps {
 }
 
 export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
-  const [themeIdx, setThemeIdx] = useState(0);
+  const [themeIdx, setThemeIdx] = useState(5); // Mum
   const [imgIdx, setImgIdx] = useState(0);
-  const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
+  const [customImgUrl, setCustomImgUrl] = useState<string | null>('/default-flowers.jpg');
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
-  const [cardMsg, setCardMsg] = useState(THEMES[0].frontMsg);
+  const [cardMsg, setCardMsg] = useState(THEMES[5].frontMsg);
 
   // Message
   const [msgMode, setMsgMode] = useState<'typed' | 'handwritten'>('typed');
@@ -59,7 +62,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
   };
 
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
-  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); };
+  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); setMoreOpen(false); setFailedImgs(new Set()); };
 
   if (showDone) {
     return (
@@ -81,6 +84,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
             soloMessage={msgMode === 'typed' ? msg : undefined}
             soloPhotoData={msgMode === 'handwritten' ? (photoData ?? undefined) : undefined}
             messages={[]}
+            landscapeCover
             giftAmount={giftAmount}
           />
 
@@ -144,31 +148,87 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
             soloMessage={msgMode === 'typed' ? msg : undefined}
             soloPhotoData={msgMode === 'handwritten' ? (photoData ?? undefined) : undefined}
             messages={[]}
+            landscapeCover
             giftAmount={giftAmount}
           />
         </div>
 
         {/* ── Theme strip ── */}
-        <div style={{ background: '#EAF4FB', padding: '10px 14px 0' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#3A8FA0', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Theme</div>
-          <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 10, scrollbarWidth: 'none' }}>
-            {THEMES.map((t, i) => (
-              <div
-                key={t.id}
-                onClick={() => selectTheme(i)}
-                style={{
-                  flexShrink: 0, padding: '6px 13px', borderRadius: 20,
-                  background: themeIdx === i ? '#3A8FA0' : '#fff',
-                  color: themeIdx === i ? '#fff' : '#7A7585',
-                  border: themeIdx === i ? '2px solid #3A8FA0' : '2px solid #E8E2F0',
-                  fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', transition: 'all .2s', whiteSpace: 'nowrap',
-                }}
-              >
-                {t.name}
-              </div>
-            ))}
+        <div style={{ background: '#B8DCEA', padding: '10px 14px 12px' }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose your theme</div>
+          <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+            {THEMES.slice(0, 4).map((t, i) => {
+              const isSelected = themeIdx === i;
+              return (
+                <div
+                  key={t.id}
+                  onClick={() => selectTheme(i)}
+                  style={{
+                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                    border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
+                    background: t.color, transition: 'all .2s',
+                  }}
+                >
+                  <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>
+                    {t.name}
+                  </div>
+                  {isSelected && (
+                    <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* More button */}
+            <div
+              onClick={() => setThemeOpen(o => !o)}
+              style={{
+                flexShrink: 0, width: 80, height: 60, borderRadius: 8, cursor: 'pointer',
+                border: themeOpen ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
+                background: themeOpen ? 'rgba(58,143,160,.25)' : 'rgba(58,143,160,.12)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                transition: 'all .2s',
+              }}
+            >
+              <span style={{ fontSize: '1rem', color: '#3A8FA0', fontWeight: 800 }}>{themeOpen ? '✕' : '⊞'}</span>
+              <span style={{ fontSize: '.55rem', color: '#3A8FA0', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{themeOpen ? 'Close' : 'More'}</span>
+            </div>
           </div>
         </div>
+
+        {/* ── Theme More accordion ── */}
+        {themeOpen && (
+          <div style={{ background: '#A3CFDF', padding: '12px 14px 16px' }}>
+            <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#3A8FA0', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>All themes</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {THEMES.map((t, i) => (
+                <div
+                  key={t.id}
+                  onClick={() => selectTheme(i)}
+                  style={{
+                    borderRadius: 12, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                    aspectRatio: '4/3', background: t.color,
+                    border: themeIdx === i ? '3px solid #3A8FA0' : '3px solid transparent',
+                    boxShadow: themeIdx === i ? '0 0 0 2px rgba(58,143,160,.4)' : 'none',
+                    transition: 'all .2s',
+                  }}
+                >
+                  <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,.75))', padding: '20px 10px 8px' }}>
+                    <div style={{ color: '#fff', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase' }}>{t.name}</div>
+                  </div>
+                  <div style={{ position: 'absolute', top: 6, right: 6, fontSize: '1.1rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.5))' }}>{t.emoji}</div>
+                  {themeIdx === i && (
+                    <div style={{ position: 'absolute', top: 6, left: 6, background: '#3A8FA0', color: '#fff', width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 800 }}>✓</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Image strip ── */}
         <div style={{ background: '#2A7E8F', padding: '10px 14px 12px' }}>
@@ -195,7 +255,8 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
             </div>
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
-            {theme.imgs.map((url, j) => {
+            {theme.imgs.slice(0, 3).map((url, j) => {
+              if (failedImgs.has(j)) return null;
               const isSelected = !customImgUrl && imgIdx === j;
               return (
                 <div
@@ -206,29 +267,70 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
                     border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
                     boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
                     transition: 'all .2s', position: 'relative',
-                    background: theme.color,
+                    background: 'rgba(255,255,255,.1)',
                   }}
                 >
                   <img
                     src={url} alt=""
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    onError={() => setFailedImgs(prev => new Set([...prev, j]))}
                   />
-                  {/* Selected checkmark */}
                   {isSelected && (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
                       <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
                     </div>
                   )}
-                  {/* Image number label for when image fails */}
-                  <div style={{ position: 'absolute', bottom: 3, left: 0, right: 0, textAlign: 'center', fontSize: '.55rem', color: 'rgba(255,255,255,.6)', fontWeight: 700 }}>
-                    {j + 1}
-                  </div>
                 </div>
               );
             })}
+
+            {/* More button */}
+            <div
+              onClick={() => setMoreOpen(o => !o)}
+              style={{
+                flexShrink: 0, width: 80, height: 60, borderRadius: 8, cursor: 'pointer',
+                border: moreOpen ? '3px solid #fff' : '3px solid rgba(255,255,255,.35)',
+                background: moreOpen ? 'rgba(255,255,255,.25)' : 'rgba(255,255,255,.12)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                transition: 'all .2s',
+              }}
+            >
+              <span style={{ fontSize: '1rem', color: '#fff', fontWeight: 800 }}>{moreOpen ? '✕' : '⊞'}</span>
+              <span style={{ fontSize: '.55rem', color: 'rgba(255,255,255,.85)', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{moreOpen ? 'Close' : 'More'}</span>
+            </div>
           </div>
         </div>
+
+        {/* ── More images accordion ── */}
+        {moreOpen && (
+          <div style={{ background: '#1F6B7A', padding: '12px 14px 16px' }}>
+            <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.6)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>All images for this theme</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {theme.imgs.map((url, j) => {
+                if (failedImgs.has(j)) return null;
+                const isSelected = !customImgUrl && imgIdx === j;
+                return (
+                  <div
+                    key={j}
+                    onClick={() => selectThemeImg(j)}
+                    style={{
+                      borderRadius: 12, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                      aspectRatio: '4/3', background: 'rgba(255,255,255,.1)',
+                      border: isSelected ? '3px solid #fff' : '3px solid transparent',
+                      boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
+                      transition: 'all .2s',
+                    }}
+                  >
+                    <img src={url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
+                    {isSelected && (
+                      <div style={{ position: 'absolute', top: 8, left: 8, background: '#fff', color: '#2A7E8F', width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 800 }}>✓</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ── Form fields ── */}
         <div style={{ padding: '22px 18px 0' }}>
@@ -241,7 +343,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
             <input
               value={to}
               onChange={e => setTo(e.target.value)}
-              placeholder="e.g. Mum"
+              placeholder="The Absolute Legend"
               style={{
                 width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px',
                 fontFamily: 'var(--font-dancing), cursive', fontSize: '1.3rem', color: '#2A2A2A',

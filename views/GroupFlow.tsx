@@ -22,15 +22,16 @@ const GIFT_TYPES = [
 ];
 
 export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
-  const [themeIdx, setThemeIdx]     = useState(0);
+  const [themeIdx, setThemeIdx]     = useState(11); // Coach
   const [imgIdx, setImgIdx]         = useState(0);
-  const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
+  const [customImgUrl, setCustomImgUrl] = useState<string | null>('/hero-coach.jpg');
   const [themeOpen, setThemeOpen]   = useState(false);
+  const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
 
   const [recip, setRecip]           = useState('');
   const [occasion, setOccasion]     = useState('');
   const [deadline, setDeadline]     = useState('');
-  const [cardMsg, setCardMsg]       = useState(THEMES[0].frontMsg);
+  const [cardMsg, setCardMsg]       = useState(THEMES[11].frontMsg);
 
   const [giftType, setGiftType]     = useState('visa');
   const [giftDesc, setGiftDesc]     = useState('');
@@ -49,6 +50,7 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
     setCustomImgUrl(null);
     setCardMsg(THEMES[i].frontMsg);
     setThemeOpen(false);
+    setFailedImgs(new Set());
   };
 
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
@@ -83,6 +85,7 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
             fromText={occasion}
             message={cardMsg}
             messages={[]}
+            landscapeCover
           />
 
           <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', margin: '20px 0 10px' }}>Your shareable link</div>
@@ -137,6 +140,7 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
             fromText={occasion || undefined}
             message={cardMsg}
             messages={[]}
+            landscapeCover
           />
         </div>
 
@@ -145,13 +149,13 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
           {/* Header row — always visible */}
           <div
             onClick={() => setThemeOpen(o => !o)}
-            style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+            style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
           >
+            <div style={{ fontSize: '1.1rem', color: '#3A8FA0', fontWeight: 800, transition: 'transform .2s', transform: themeOpen ? 'rotate(180deg)' : 'none', lineHeight: 1 }}>▾</div>
             <div>
               <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#3A8FA0', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 2 }}>Theme</div>
               <div style={{ fontWeight: 800, fontSize: '.9rem', color: '#2A2A2A' }}>{theme.emoji} {theme.name}</div>
             </div>
-            <div style={{ fontSize: '.8rem', color: '#3A8FA0', fontWeight: 700, transition: 'transform .2s', transform: themeOpen ? 'rotate(180deg)' : 'none' }}>▾</div>
           </div>
 
           {/* Expandable theme grid */}
@@ -207,6 +211,7 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
             {theme.imgs.map((url, j) => {
+              if (failedImgs.has(j)) return null;
               const isSelected = !customImgUrl && imgIdx === j;
               return (
                 <div
@@ -216,16 +221,15 @@ export function GroupFlow({ onBack, onToDash, onToast }: GroupFlowProps) {
                     flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
                     border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
                     boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
-                    position: 'relative', background: theme.color, transition: 'all .2s',
+                    position: 'relative', background: 'rgba(255,255,255,.1)', transition: 'all .2s',
                   }}
                 >
-                  <img key={url} src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
                   {isSelected && (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
                       <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
                     </div>
                   )}
-                  <div style={{ position: 'absolute', bottom: 3, left: 0, right: 0, textAlign: 'center', fontSize: '.55rem', color: 'rgba(255,255,255,.6)', fontWeight: 700 }}>{j + 1}</div>
                 </div>
               );
             })}

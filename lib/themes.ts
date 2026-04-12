@@ -24,9 +24,11 @@ export const THEMES: Theme[] = [
     color: "linear-gradient(160deg,#1a4a5a,#2d7d8f)",
     frontMsg: "Thank you so much!",
     imgs: [
+      "/default-flowers.jpg",
       "https://images.unsplash.com/photo-1490750967868-88df5691cc89?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1548848221-0c2e497ed557?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1487530811015-780e8e7b7f63?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1455582916367-25f75bfc6710?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1516912481808-3406841bd33c?auto=format&fit=crop&w=800&q=80",
     ],
   },
   {
@@ -84,6 +86,7 @@ export const THEMES: Theme[] = [
     color: "linear-gradient(135deg,#D94E7A,#FECDD3)",
     frontMsg: "Thanks Mum!",
     imgs: [
+      "/default-flowers.jpg",
       "https://images.unsplash.com/photo-1490750967868-88df5691cc89?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1487530811015-780e8e7b7f63?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=800&q=80",
@@ -108,6 +111,7 @@ export const THEMES: Theme[] = [
     color: "linear-gradient(135deg,#C9933A,#F59E0B)",
     frontMsg: "To the best mate!",
     imgs: [
+      "/mates-fishing.jpg",
       "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?auto=format&fit=crop&w=800&q=80",
@@ -156,7 +160,9 @@ export const THEMES: Theme[] = [
     color: "linear-gradient(135deg,#003087,#C8102E)",
     frontMsg: "Thank you Coach!",
     imgs: [
-      "https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=800&q=80",
+      "/hero-coach.jpg",
+      "/afl-ball.jpg",
+      "/afl-mark.jpg",
       "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1560090995-01632a28895b?auto=format&fit=crop&w=800&q=80",
     ],
