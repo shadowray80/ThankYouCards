@@ -12,19 +12,20 @@ import { THEMES } from '@/lib/themes';
 interface SoloFlowProps {
   onBack: () => void;
   onToast: (msg: string) => void;
+  onNav: (view: string) => void;
 }
 
-export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
-  const [themeIdx, setThemeIdx] = useState(5); // Mum
+export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
+  const [themeIdx, setThemeIdx] = useState(7); // Mates
   const [imgIdx, setImgIdx] = useState(0);
-  const [customImgUrl, setCustomImgUrl] = useState<string | null>('/default-flowers.jpg');
+  const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
-  const [cardMsg, setCardMsg] = useState(THEMES[5].frontMsg);
+  const [cardMsg, setCardMsg] = useState(THEMES[7].frontMsg);
 
   // Message
   const [msgMode, setMsgMode] = useState<'typed' | 'handwritten'>('typed');
@@ -67,7 +68,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
   if (showDone) {
     return (
       <div>
-        <Nav onHome={onBack} badge="solo" />
+        <Nav onHome={onBack} onNav={onNav} badge="solo" />
         <div style={{ padding: '22px 18px 60px', maxWidth: 480, margin: '0 auto' }}>
           <BackBtn onClick={() => setShowDone(false)} />
           <div style={{ textAlign: 'center', fontSize: '3.2rem', margin: '16px 0 10px' }}>🎉</div>
@@ -129,7 +130,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
 
   return (
     <div>
-      <Nav onHome={onBack} badge="solo" />
+      <Nav onHome={onBack} onNav={onNav} badge="solo" />
 
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
         <div style={{ padding: '16px 18px 0' }}>
@@ -155,7 +156,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
 
         {/* ── Theme strip ── */}
         <div style={{ background: '#B8DCEA', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose your theme</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>What's the occasion?</div>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             {THEMES.slice(0, 4).map((t, i) => {
               const isSelected = themeIdx === i;
@@ -232,7 +233,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
 
         {/* ── Image strip ── */}
         <div style={{ background: '#2A7E8F', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Select image</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose a vibe</div>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             {/* Upload button */}
             <div
@@ -358,7 +359,7 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
           {/* Card message */}
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
-              Card message
+              Cover message
             </label>
             <input
               value={cardMsg}
@@ -371,7 +372,26 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
               onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
               onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
             />
-            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Shown on the card cover — pre-filled from your theme</div>
+            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Shown on the cover — pre-filled from your theme</div>
+          </div>
+
+          {/* From */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+              From
+            </label>
+            <input
+              value={from}
+              onChange={e => setFrom(e.target.value)}
+              placeholder="e.g. Tim & family"
+              style={{
+                width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px',
+                fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A',
+                background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s',
+              }}
+              onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+            />
           </div>
 
           {/* Message — typed or handwritten */}
@@ -387,25 +407,6 @@ export function SoloFlow({ onBack, onToast }: SoloFlowProps) {
               photoData={photoData}
               onPhoto={handleMsgPhoto}
               onRetake={() => setPhotoData(null)}
-            />
-          </div>
-
-          {/* From */}
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
-              From
-            </label>
-            <input
-              value={from}
-              onChange={e => setFrom(e.target.value)}
-              placeholder="e.g. Tim & family"
-              style={{
-                width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px',
-                fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A',
-                background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s',
-              }}
-              onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
-              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
             />
           </div>
 

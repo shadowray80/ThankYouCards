@@ -35,7 +35,7 @@ export function MessageTabs({ mode, onSwitch, msg, onMsgChange, photoData, onPho
         <>
           <textarea
             value={msg} onChange={e => onMsgChange(e.target.value)}
-            placeholder="Dear Coach, thank you so much for everything this season…"
+            placeholder={`G'day Bazza\nCheers for your help mate,\nLet's blow the froth off a couple soon!`}
             maxLength={400}
             style={{ width: '100%', minHeight: 150, border: '2px solid #E8E2F0', borderRadius: 12, padding: 14, fontFamily: "'Lora',serif", fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', resize: 'vertical', lineHeight: 1.7, outline: 'none' }}
           />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Btn } from '@/components/ui/Button';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { THEMES, DEMO_MSGS } from '@/lib/themes';
@@ -9,19 +10,69 @@ interface HomeViewProps {
   onGroup: () => void;
   onContribDemo: () => void;
   onDashDemo: () => void;
+  onNav: (view: string) => void;
 }
 
-export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo }: HomeViewProps) {
+export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: HomeViewProps) {
+  const [devOpen, setDevOpen] = useState(false);
+  const [code, setCode] = useState('');
   const heroMsgs = DEMO_MSGS.slice(0, 2);
+
+  function goToCard() {
+    let slug = code.trim().toLowerCase();
+    // Accept full URL or just the code
+    const match = slug.match(/\/card\/([^/?#]+)/);
+    if (match) slug = match[1];
+    if (!slug) return;
+    onNav(`contrib:${slug}`);
+  }
 
   return (
     <div>
       {/* Nav */}
-      <div style={{ background: '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 200, borderBottom: '1px solid #E8E2F0' }}>
-        <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0' }}>
-          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
+      <div style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 200, borderBottom: '1px solid #E8E2F0' }}>
+        <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0' }}>
+            thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={() => setDevOpen(o => !o)}
+              style={{ background: 'none', border: '1.5px dashed #B0A8BC', borderRadius: 8, padding: '5px 10px', fontSize: '.72rem', color: '#B0A8BC', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+            >
+              {devOpen ? '✕' : '🛠'}
+            </button>
+            <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
+          </div>
         </div>
-        <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
+
+        {devOpen && (
+          <div style={{ background: '#F7F5FB', borderTop: '1px dashed #D1C8DC', padding: '12px 20px 14px' }}>
+            <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 8 }}>Dev — jump to view</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {[
+                { label: '🏠 Home',             view: 'home' },
+                { label: '📨 Solo Card',         view: 'solo' },
+                { label: '👥 Group Card',        view: 'group' },
+                { label: '✍️ Contributor',       view: 'contrib' },
+                { label: '📊 Dashboard',         view: 'dash' },
+                { label: '🎴 Card View',         view: 'card' },
+              ].map(item => (
+                <button
+                  key={item.view}
+                  onClick={() => { onNav(item.view); setDevOpen(false); }}
+                  style={{
+                    background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 8,
+                    padding: '7px 12px', cursor: 'pointer',
+                    fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.8rem', color: '#2A2A2A',
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Hero ── */}
@@ -58,6 +109,30 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo }: HomeVie
               </div>
             ))}
           </div>
+          {/* Got a code? */}
+          <div style={{ background: '#fff', border: '2.5px solid #E8E2F0', borderRadius: 18, padding: '18px 16px', marginBottom: 14 }}>
+            <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A', marginBottom: 4 }}>📬 Got a card code?</div>
+            <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you — enter the code to add your message.</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && goToCard()}
+                placeholder="e.g. timbo-mpera"
+                style={{ flex: 1, border: '2px solid #E8E2F0', borderRadius: 10, padding: '11px 13px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.95rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', minWidth: 0 }}
+                onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+                onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+              />
+              <button
+                onClick={goToCard}
+                disabled={!code.trim()}
+                style={{ background: code.trim() ? '#3A8FA0' : '#E8E2F0', color: code.trim() ? '#fff' : '#B0A8BC', border: 'none', borderRadius: 10, padding: '11px 16px', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', cursor: code.trim() ? 'pointer' : 'default', transition: 'all .2s', whiteSpace: 'nowrap' }}
+              >
+                Go →
+              </button>
+            </div>
+          </div>
+
           <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '12px 16px', fontSize: '.84rem', color: '#E8724A', fontWeight: 700, textAlign: 'center', marginBottom: 32 }}>
             💡 Group card is <strong>free for the organiser</strong> — covered by contributions
           </div>
@@ -138,6 +213,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo }: HomeVie
             <Btn variant="outline" sm onClick={onDashDemo}>Dashboard demo</Btn>
           </div>
         </div>
+
       </div>
     </div>
   );

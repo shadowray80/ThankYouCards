@@ -4,7 +4,10 @@
       "Bash(npx tsc:*)",
       "Bash(curl -L \"https://images.unsplash.com/photo-1490750967868-88df5691cc89?auto=format&fit=crop&w=800&q=80\" -o \"F:/Thankyoucards/app/public/default-flowers.jpg\")",
       "Bash(curl -L -A \"Mozilla/5.0\" \"https://images.unsplash.com/photo-1490750967868-88df5691cc89?auto=format&fit=crop&w=800&q=80\" -o \"F:/Thankyoucards/app/public/default-flowers.jpg\" --max-time 20)",
-      "Bash(curl -L \"https://picsum.photos/seed/flowers/800/600\" -o \"F:/Thankyoucards/app/public/default-flowers.jpg\" --max-time 20)"
+      "Bash(curl -L \"https://picsum.photos/seed/flowers/800/600\" -o \"F:/Thankyoucards/app/public/default-flowers.jpg\" --max-time 20)",
+      "Bash(node -e \"require\\('stripe'\\); console.log\\('stripe ok'\\)\")",
+      "Bash(node -e \"require\\('@supabase/supabase-js'\\); console.log\\('supabase ok'\\)\")",
+      "Bash(git add *)"
     ]
   }
 }

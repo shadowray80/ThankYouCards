@@ -1,5 +1,6 @@
 'use client';
 
+import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { Pill } from '@/components/ui/Pill';
 import { ShareLink } from '@/components/dashboard/ShareLink';
@@ -10,17 +11,13 @@ interface DashboardViewProps {
   onBack: () => void;
   onToCard: () => void;
   onToast: (msg: string) => void;
+  onNav: (view: string) => void;
 }
 
-export function DashboardView({ onBack, onToCard, onToast }: DashboardViewProps) {
+export function DashboardView({ onBack, onToCard, onToast, onNav }: DashboardViewProps) {
   return (
     <div>
-      <div style={{ background: '#fff', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 200, borderBottom: '1px solid #E8E2F0' }}>
-        <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0', cursor: 'pointer' }} onClick={onBack}>
-          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
-        </div>
-        <Btn variant="coral" sm onClick={onToCard}>📄 View card</Btn>
-      </div>
+      <Nav onHome={onBack} onNav={onNav} badge="group" />
 
       <div style={{ padding: '22px 18px 60px', maxWidth: 480, margin: '0 auto' }}>
         <Pill variant="coral">🏉 AFL Coach</Pill>
