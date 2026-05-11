@@ -153,17 +153,21 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 {copiedLink ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer"
-                style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                style={{ background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 💬 WhatsApp
               </a>
+              <a href={`sms:?body=${encodeURIComponent(shareText)}`}
+                style={{ background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                💬 iMessage
+              </a>
               <a href={`mailto:?subject=A card for you, ${to}&body=${encodeURIComponent(shareText)}`}
-                style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                style={{ background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 ✉️ Email
               </a>
               <a href={`/view/${slug}`} target="_blank"
-                style={{ flex: 1, background: '#fff', color: '#7C5CBF', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', border: '2px solid #D4C8EE', fontFamily: "'Nunito',sans-serif" }}>
+                style={{ background: '#fff', color: '#7C5CBF', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', border: '2px solid #D4C8EE', fontFamily: "'Nunito',sans-serif" }}>
                 👁 Preview
               </a>
             </div>
