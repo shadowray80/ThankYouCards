@@ -97,64 +97,16 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
       {/* ── Hero ── */}
       <div style={{ background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', padding: '36px 20px 0', textAlign: 'center', overflow: 'hidden' }}>
         <div style={{ maxWidth: 440, margin: '0 auto' }}>
+
           {/* Tagline */}
           <h1 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '2.2rem', color: '#2A2A2A', lineHeight: 1.15, marginBottom: 10 }}>
             Say thank you to the{' '}
             <span style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '2.6rem', color: '#3A8FA0', fontWeight: 400 }}>legends</span>
             {' '}in your life
           </h1>
-
-          {/* Subtext */}
-          <p style={{ color: '#7A7585', fontSize: '.94rem', lineHeight: 1.65, marginBottom: 24, fontWeight: 600, maxWidth: 300, marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ color: '#7A7585', fontSize: '.94rem', lineHeight: 1.65, marginBottom: 28, fontWeight: 600, maxWidth: 300, marginLeft: 'auto', marginRight: 'auto' }}>
             Beautiful, personalised thank you cards — sent instantly, anywhere in the world.
           </p>
-
-          {/* CTAs — large card tiles */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-            {[
-              { icon: '📨', title: 'Solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', border: '#3A8FA0' },
-              { icon: '👥', title: 'Group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', border: '#E8724A' },
-            ].map((c, i) => (
-              <div
-                key={i}
-                onClick={c.onClick}
-                style={{ borderRadius: 18, padding: '22px 16px', border: '2.5px solid #E8E2F0', cursor: 'pointer', textAlign: 'center', background: '#fff', transition: 'all .25s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = c.border; (e.currentTarget as HTMLDivElement).style.background = c.bg; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#E8E2F0'; (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
-              >
-                <div style={{ fontSize: '2.4rem', marginBottom: 10 }}>{c.icon}</div>
-                <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 5, color: c.color }}>{c.title}</div>
-                <div style={{ fontSize: '.78rem', color: '#7A7585', lineHeight: 1.4, fontWeight: 600 }}>{c.desc}</div>
-              </div>
-            ))}
-          </div>
-          {/* Got a code? */}
-          <div style={{ background: '#fff', border: '2.5px solid #E8E2F0', borderRadius: 18, padding: '18px 16px', marginBottom: 14 }}>
-            <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A', marginBottom: 4 }}>📬 Got a card code?</div>
-            <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you — enter the code to add your message.</div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && goToCard()}
-                placeholder="e.g. timbo-mpera"
-                style={{ flex: 1, border: '2px solid #E8E2F0', borderRadius: 10, padding: '11px 13px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.95rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', minWidth: 0 }}
-                onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
-                onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-              />
-              <button
-                onClick={goToCard}
-                disabled={!code.trim()}
-                style={{ background: code.trim() ? '#3A8FA0' : '#E8E2F0', color: code.trim() ? '#fff' : '#B0A8BC', border: 'none', borderRadius: 10, padding: '11px 16px', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', cursor: code.trim() ? 'pointer' : 'default', transition: 'all .2s', whiteSpace: 'nowrap' }}
-              >
-                Go →
-              </button>
-            </div>
-          </div>
-
-          <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '12px 16px', fontSize: '.84rem', color: '#E8724A', fontWeight: 700, textAlign: 'center', marginBottom: 32 }}>
-            💡 Group card is <strong>free for the organiser</strong> — covered by contributions
-          </div>
 
           {/* Hero card mockup */}
           <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -24, pointerEvents: 'none' }}>
@@ -168,6 +120,84 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
               giftAmount={50}
               landscapeCover
             />
+          </div>
+        </div>
+      </div>
+
+      {/* ── CTAs ── */}
+      <div style={{ background: '#FFFDF8', padding: '44px 20px 0', maxWidth: 440, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          {[
+            { icon: '📨', title: 'Solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', border: '#3A8FA0' },
+            { icon: '👥', title: 'Group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', border: '#E8724A' },
+          ].map((c, i) => (
+            <div
+              key={i}
+              onClick={c.onClick}
+              style={{ borderRadius: 18, padding: '22px 16px', border: '2.5px solid #E8E2F0', cursor: 'pointer', textAlign: 'center', background: '#fff', transition: 'all .25s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = c.border; (e.currentTarget as HTMLDivElement).style.background = c.bg; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#E8E2F0'; (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
+            >
+              <div style={{ fontSize: '2.4rem', marginBottom: 10 }}>{c.icon}</div>
+              <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 5, color: c.color }}>{c.title}</div>
+              <div style={{ fontSize: '.78rem', color: '#7A7585', lineHeight: 1.4, fontWeight: 600 }}>{c.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Got a code? */}
+        <div style={{ background: '#fff', border: '2.5px solid #E8E2F0', borderRadius: 18, padding: '18px 16px', marginBottom: 14 }}>
+          <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A', marginBottom: 4 }}>📬 Got a card code?</div>
+          <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you — enter the code to add your message.</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              value={code}
+              onChange={e => setCode(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && goToCard()}
+              placeholder="e.g. timbo-mpera"
+              style={{ flex: 1, border: '2px solid #E8E2F0', borderRadius: 10, padding: '11px 13px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.95rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', minWidth: 0 }}
+              onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+            />
+            <button
+              onClick={goToCard}
+              disabled={!code.trim()}
+              style={{ background: code.trim() ? '#3A8FA0' : '#E8E2F0', color: code.trim() ? '#fff' : '#B0A8BC', border: 'none', borderRadius: 10, padding: '11px 16px', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', cursor: code.trim() ? 'pointer' : 'default', transition: 'all .2s', whiteSpace: 'nowrap' }}
+            >
+              Go →
+            </button>
+          </div>
+        </div>
+
+        <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '12px 16px', fontSize: '.84rem', color: '#E8724A', fontWeight: 700, textAlign: 'center', marginBottom: 40 }}>
+          💡 Group card is <strong>free for the organiser</strong> — covered by contributions
+        </div>
+
+        {/* ── Testimonials ── */}
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 6 }}>What people are saying</div>
+          <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>Real people. Real cards.</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and the gift collection handled itself. I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
+              { quote: "When I opened it and saw messages from every single parent and kid in the team, I actually teared up. It meant so much more than a generic card from the newsagent.", name: 'Coach Dave', role: 'Group card recipient', color: '#F0ECFB', nameColor: '#7C5CBF' },
+              { quote: "My nan lives in the UK and I never know what to send her. I made her a card in 3 minutes and she called me crying happy tears. Worth every cent.", name: 'Liam T.', role: 'Solo card sender', color: '#FDF0E8', nameColor: '#E8724A' },
+              { quote: "I've never received anything like it. Seeing my name on a beautiful card with a personal message just for me — it felt so thoughtful. I've saved it on my phone.", name: 'Margaret W.', role: 'Solo card recipient', color: '#E8F5EF', nameColor: '#2E7D5E' },
+            ].map((t, i) => (
+              <div key={i} style={{ background: t.color, borderRadius: 16, padding: '20px 18px' }}>
+                <div style={{ fontSize: '1.4rem', marginBottom: 8, color: t.nameColor }}>"</div>
+                <div style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', marginBottom: 14 }}>{t.quote}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.nameColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
+                    {t.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A' }}>{t.name}</div>
+                    <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600 }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
