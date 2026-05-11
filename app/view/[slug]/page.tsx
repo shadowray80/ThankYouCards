@@ -1,0 +1,127 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { CardScrollView } from '@/components/cards/CardScrollView';
+import { THEMES } from '@/lib/themes';
+
+interface Campaign {
+  id: string;
+  slug: string;
+  recipient_name: string;
+  occasion: string | null;
+  card_theme: string | null;
+  card_message: string | null;
+  card_image_url: string | null;
+  funded_amount: number;
+  target_amount: number | null;
+  status: string;
+}
+
+interface Contribution {
+  contributor_name: string;
+  message: string | null;
+}
+
+export default function ViewPage() {
+  const params = useParams();
+  const slug = typeof params.slug === 'string' ? params.slug : '';
+
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!slug) return;
+    fetch(`/api/campaigns/${slug}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.error) { setError(json.error); return; }
+        setCampaign(json.campaign);
+        setContributions(json.contributions ?? []);
+      })
+      .catch(() => setError('Could not load card'))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  if (loading) return (
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", fontWeight: 700, color: '#7A7585', fontSize: '1rem' }}>
+      Loading your card…
+    </div>
+  );
+
+  if (error || !campaign) return (
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", gap: 12, padding: 24, textAlign: 'center' }}>
+      <div style={{ fontSize: '2.4rem' }}>💌</div>
+      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#E8724A' }}>This card link isn't valid</div>
+      <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600 }}>Check you copied the full link from the organiser.</div>
+    </div>
+  );
+
+  const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
+  const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
+  const messages = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
+  const hasGift = campaign.funded_amount > 0;
+
+  const names = contributions.map(c => c.contributor_name);
+  const fromText =
+    names.length === 0 ? undefined
+    : names.length === 1 ? names[0]
+    : names.length === 2 ? `${names[0]} & ${names[1]}`
+    : `${names[0]}, ${names[1]} & ${names.length - 2} more`;
+
+  return (
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
+
+      {/* Header */}
+      <div style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
+        <div style={{ fontSize: '2.6rem', marginBottom: 10 }}>🎉</div>
+        <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#2A2A2A', lineHeight: 1.2, marginBottom: 8, margin: '0 0 8px' }}>
+          {name}, you&apos;ve got a card!
+        </h1>
+        {fromText && (
+          <div style={{ fontSize: '.95rem', color: '#7A7585', fontWeight: 600, marginBottom: 10 }}>
+            From {fromText}
+          </div>
+        )}
+        {hasGift && (
+          <div style={{ display: 'inline-block', background: 'linear-gradient(135deg,#1a237e,#1565c0)', borderRadius: 20, padding: '6px 18px', color: '#fff', fontWeight: 800, fontSize: '.88rem', marginTop: 4 }}>
+            💳 ${campaign.funded_amount} gift included
+          </div>
+        )}
+      </div>
+
+      {/* Card */}
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 16px 20px' }}>
+        <CardScrollView
+          theme={theme}
+          customImgUrl={campaign.card_image_url ?? undefined}
+          recipientName={name}
+          fromText={fromText}
+          message={campaign.card_message ?? ''}
+          messages={messages}
+          giftAmount={hasGift ? campaign.funded_amount : undefined}
+          landscapeCover
+        />
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', padding: '8px 24px 48px', borderTop: '1px solid #E8E2F0' }}>
+        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#3A8FA0', marginBottom: 4 }}>
+          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.85rem' }}>.au</span>
+        </div>
+        <div style={{ fontSize: '.78rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
+          Beautiful cards for the legends in your life
+        </div>
+        <a
+          href="/"
+          style={{ background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '12px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', display: 'inline-block', fontFamily: "'Nunito',sans-serif" }}
+        >
+          Create your own card →
+        </a>
+      </div>
+
+    </div>
+  );
+}

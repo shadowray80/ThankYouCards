@@ -40,6 +40,7 @@ function ManageContent() {
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
   const [copied, setCopied]               = useState(false);
+  const [copiedRecipient, setCopiedRecipient] = useState(false);
 
   useEffect(() => {
     if (!slug || !token) { setError('Invalid link'); setLoading(false); return; }
@@ -58,6 +59,12 @@ function ManageContent() {
     navigator.clipboard.writeText(`thankyoucards.au/card/${slug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyRecipientLink = () => {
+    navigator.clipboard.writeText(`thankyoucards.au/view/${slug}`);
+    setCopiedRecipient(true);
+    setTimeout(() => setCopiedRecipient(false), 2000);
   };
 
   if (loading) return (
@@ -210,18 +217,27 @@ function ManageContent() {
           )}
         </div>
 
-        {/* Send card CTA */}
-        <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px', textAlign: 'center' }}>
-          <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>Ready to send?</div>
+        {/* Send card */}
+        <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px' }}>
+          <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Ready to send?</div>
           <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
-            When everyone has signed, send the card to {recipientName}.
+            Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
           </div>
-          <button
-            style={{ width: '100%', background: 'linear-gradient(135deg,#7C5CBF,#9B7DD4)', border: 'none', borderRadius: 12, padding: '15px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#fff' }}
-            onClick={() => alert('Coming soon — send card flow!')}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
+              thankyoucards.au/view/{slug}
+            </div>
+            <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
+              {copiedRecipient ? '✓ Copied!' : 'Copy'}
+            </button>
+          </div>
+          <a
+            href={`/view/${slug}`}
+            target="_blank"
+            style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}
           >
-            🎉 Send card to {recipientName}
-          </button>
+            Preview what {recipientName} will see →
+          </a>
         </div>
 
       </div>

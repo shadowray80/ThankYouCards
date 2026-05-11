@@ -9,7 +9,7 @@ export async function GET(
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
-    .select('*')
+    .select('id, slug, recipient_name, occasion, card_theme, card_message, card_image_url, funded_amount, target_amount, status')
     .eq('slug', slug)
     .single();
 
@@ -19,7 +19,7 @@ export async function GET(
 
   const { data: contributions } = await supabaseAdmin
     .from('contributions')
-    .select('id, contributor_name, message, amount, created_at')
+    .select('contributor_name, message')
     .eq('campaign_id', campaign.id)
     .eq('status', 'paid')
     .order('created_at', { ascending: true });
