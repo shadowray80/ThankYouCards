@@ -76,6 +76,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       if (!contribRes.ok) throw new Error(contribData.error ?? `HTTP ${contribRes.status}`);
       setSlug(campaign.slug);
       setShowDone(true);
+      window.scrollTo({ top: 0, behavior: 'instant' });
     } catch (err) {
       onToast(err instanceof Error ? err.message : 'Something went wrong — please try again');
     } finally {
