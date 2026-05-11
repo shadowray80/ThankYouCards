@@ -61,9 +61,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         }),
       });
       const campaignData = await campaignRes.json();
-      if (!campaignRes.ok) throw new Error(campaignData.error ?? 'Failed');
+      if (!campaignRes.ok) throw new Error(campaignData.error ?? `HTTP ${campaignRes.status}`);
       const campaign = campaignData.campaign;
-      await fetch('/api/contributions', {
+      const contribRes = await fetch('/api/contributions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,10 +72,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           message: msgMode === 'typed' && msg.trim() ? msg.trim() : null,
         }),
       });
+      const contribData = await contribRes.json();
+      if (!contribRes.ok) throw new Error(contribData.error ?? `HTTP ${contribRes.status}`);
       setSlug(campaign.slug);
       setShowDone(true);
-    } catch {
-      onToast('Something went wrong — please try again');
+    } catch (err) {
+      onToast(err instanceof Error ? err.message : 'Something went wrong — please try again');
     } finally {
       setSaving(false);
     }
