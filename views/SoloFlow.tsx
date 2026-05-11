@@ -38,8 +38,48 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [giftCustom, setGiftCustom] = useState('');
 
   const [showDone, setShowDone] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [slug, setSlug] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const uploadRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit() {
+    setSaving(true);
+    try {
+      const imageUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
+      const campaignRes = await fetch('/api/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient_name: to.trim(),
+          occasion: theme.name,
+          target_amount: 0,
+          card_theme: theme.id,
+          card_message: cardMsg.trim(),
+          card_image_url: imageUrl,
+        }),
+      });
+      const campaignData = await campaignRes.json();
+      if (!campaignRes.ok) throw new Error(campaignData.error ?? 'Failed');
+      const campaign = campaignData.campaign;
+      await fetch('/api/contributions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaign_id: campaign.id,
+          contributor_name: from.trim() || 'From a friend',
+          message: msgMode === 'typed' && msg.trim() ? msg.trim() : null,
+        }),
+      });
+      setSlug(campaign.slug);
+      setShowDone(true);
+    } catch {
+      onToast('Something went wrong — please try again');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const theme = THEMES[themeIdx];
   const hasMsg = msgMode === 'typed' ? msg.trim().length > 0 : photoData !== null;
@@ -65,15 +105,22 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
   const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); setMoreOpen(false); setFailedImgs(new Set()); };
 
-  if (showDone) {
+  if (showDone && slug) {
+    const recipientUrl = `thankyoucards.au/view/${slug}`;
+    const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au'}/view/${slug}`;
+    const shareText = `I made you a card — open it here: ${fullUrl}`;
     return (
       <div>
         <Nav onHome={onBack} onNav={onNav} badge="solo" />
         <div style={{ padding: '22px 18px 60px', maxWidth: 480, margin: '0 auto' }}>
-          <BackBtn onClick={() => setShowDone(false)} />
-          <div style={{ textAlign: 'center', fontSize: '3.2rem', margin: '16px 0 10px' }}>🎉</div>
-          <div style={{ textAlign: 'center', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.8rem', color: '#2A2A2A', marginBottom: 6 }}>Card ready!</div>
-          <div style={{ textAlign: 'center', color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, marginBottom: 22, fontWeight: 600 }}>Download and share digitally, or print it anywhere in the world.</div>
+
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: '3.2rem', marginBottom: 8 }}>🎉</div>
+            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.8rem', color: '#2A2A2A', marginBottom: 6 }}>Card ready!</div>
+            <div style={{ color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, fontWeight: 600 }}>
+              Share this link with {to} to deliver their card.
+            </div>
+          </div>
 
           <CardScrollView
             theme={theme}
@@ -89,39 +136,36 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             giftAmount={giftAmount}
           />
 
-          {giftAmount > 0 && (
-            <div style={{ background: 'linear-gradient(135deg,#EAF4FB,#E8F5EF)', border: '2px solid rgba(58,143,160,.2)', borderRadius: 14, padding: '16px 18px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ fontSize: '2rem' }}>💳</div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A' }}>Visa gift card included</div>
-                <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600 }}>A ${giftAmount} Visa gift card will be delivered with this card</div>
+          {/* Recipient share link */}
+          <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 14 }}>
+            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with {to}</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
+                {recipientUrl}
               </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(fullUrl); setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000); }}
+                style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}
+              >
+                {copiedLink ? '✓ Copied!' : 'Copy'}
+              </button>
             </div>
-          )}
-
-          <div style={{ background: '#EAF4FB', border: '2px solid rgba(58,143,160,.2)', borderRadius: 14, padding: '18px 20px', margin: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: '.8rem', fontWeight: 700, color: '#7A7585' }}>Solo card{giftAmount > 0 ? ` + $${giftAmount} gift` : ''}</div>
-              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#3A8FA0' }}>${(4.99 + giftAmount).toFixed(2)}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                💬 WhatsApp
+              </a>
+              <a href={`mailto:?subject=A card for you, ${to}&body=${encodeURIComponent(shareText)}`}
+                style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                ✉️ Email
+              </a>
+              <a href={`/view/${slug}`} target="_blank"
+                style={{ flex: 1, background: '#fff', color: '#7C5CBF', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', border: '2px solid #D4C8EE', fontFamily: "'Nunito',sans-serif" }}>
+                👁 Preview
+              </a>
             </div>
-            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, textAlign: 'right' }}>Print anywhere.<br />Keep forever.</div>
           </div>
 
-          {[['📄', 'Download PDF', 'Print-ready A5 — perfect for any printer'], ['🖼️', 'Download Image', 'Share via WhatsApp, email or iMessage']].map(([icon, title, desc], i) => (
-            <div key={i} onClick={() => onToast(`Preparing your ${(title as string).split(' ')[1]}… ${icon}`)} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: 18, display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10, cursor: 'pointer' }}>
-              <div style={{ fontSize: '1.8rem' }}>{icon}</div>
-              <div>
-                <div style={{ fontWeight: 800 }}>{title}</div>
-                <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600 }}>{desc}</div>
-              </div>
-            </div>
-          ))}
-
-          <div style={{ display: 'flex', gap: 10, margin: '16px 0' }}>
-            {['💬 WhatsApp', '✉️ Email', '🔗 Copy'].map((s, i) => (
-              <Btn key={i} variant="ghost" sm onClick={() => onToast(`${s.split(' ')[0]} opening…`)} style={{ flex: 1 }}>{s}</Btn>
-            ))}
-          </div>
           <Btn variant="outline" full onClick={onBack}>Make another card</Btn>
         </div>
       </div>
@@ -457,8 +501,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
         {/* ── Sticky continue button ── */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
-          <Btn variant="teal" full disabled={!canContinue} onClick={() => setShowDone(true)}>
-            {includeGift && giftAmount > 0 ? `Continue → Card + $${giftAmount} gift` : 'Continue → Send this card'}
+          <Btn variant="teal" full disabled={!canContinue || saving} onClick={handleSubmit}>
+            {saving ? 'Saving…' : includeGift && giftAmount > 0 ? `Continue → Card + $${giftAmount} gift` : 'Continue → Send this card'}
           </Btn>
         </div>
       </div>

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { recipient_name, occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_image_url } = body;
 
-  if (!recipient_name || !organiser_email) {
+  if (!recipient_name) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
   }
 

@@ -61,7 +61,6 @@ export default function ViewPage() {
 
   const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
-  const messages = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
   const hasGift = campaign.funded_amount > 0;
 
   const names = contributions.map(c => c.contributor_name);
@@ -70,6 +69,11 @@ export default function ViewPage() {
     : names.length === 1 ? names[0]
     : names.length === 2 ? `${names[0]} & ${names[1]}`
     : `${names[0]}, ${names[1]} & ${names.length - 2} more`;
+
+  // 1 contributor = solo card (personal message layout); 2+ = group (team bubbles)
+  const isSolo = contributions.length <= 1;
+  const soloMessage = isSolo && contributions.length === 1 ? contributions[0].message ?? undefined : undefined;
+  const groupMessages = isSolo ? [] : contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
@@ -100,7 +104,8 @@ export default function ViewPage() {
           recipientName={name}
           fromText={fromText}
           message={campaign.card_message ?? ''}
-          messages={messages}
+          messages={groupMessages}
+          soloMessage={soloMessage}
           giftAmount={hasGift ? campaign.funded_amount : undefined}
           landscapeCover
         />
