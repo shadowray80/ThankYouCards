@@ -1,9 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Btn } from '@/components/ui/Button';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { THEMES, DEMO_MSGS } from '@/lib/themes';
+
+const HERO_CARDS = [
+  {
+    themeId: 'coach',
+    customImgUrl: '/hero-coach.jpg',
+    recipientName: 'Coach Dave',
+    fromText: 'From the Under 12s',
+    message: 'Thank you for an incredible season!',
+    messages: DEMO_MSGS.slice(0, 2),
+    giftAmount: 50,
+    soloMessage: undefined as string | undefined,
+    landscapeCover: true,
+  },
+  {
+    themeId: 'mum',
+    customImgUrl: '/default-flowers.jpg',
+    recipientName: 'Mum',
+    fromText: 'From all of us ❤️',
+    message: 'Happy Birthday! 🌸',
+    messages: [],
+    giftAmount: undefined as number | undefined,
+    soloMessage: "Happy birthday Mum! 🌸\n\nYou make every day brighter and every room warmer. Thank you for everything you do — we love you to bits.\n\nAll our love xx",
+    landscapeCover: true,
+  },
+  {
+    themeId: 'mates',
+    customImgUrl: '/mates-fishing.jpg',
+    recipientName: 'Richo',
+    fromText: 'From the boys 🍺',
+    message: "Cheers for the best trip ever! 🎣",
+    messages: [],
+    giftAmount: undefined as number | undefined,
+    soloMessage: "Mate, that fishing trip was absolutely legendary 🎣\n\nYou somehow managed to out-fish everyone AND cook the best barramundi we've ever had. Absolute champion.\n\nBeers on us next time.",
+    landscapeCover: true,
+  },
+];
 
 interface HomeViewProps {
   onSolo: () => void;
@@ -16,7 +52,32 @@ interface HomeViewProps {
 export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: HomeViewProps) {
   const [devOpen, setDevOpen] = useState(false);
   const [code, setCode] = useState('');
-  const heroMsgs = DEMO_MSGS.slice(0, 2);
+  const [cardIdx, setCardIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function goToCardIdx(idx: number) {
+    if (idx === cardIdx) return;
+    setFading(true);
+    timerRef.current = setTimeout(() => {
+      setCardIdx(idx);
+      setFading(false);
+    }, 300);
+  }
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setFading(true);
+      timerRef.current = setTimeout(() => {
+        setCardIdx(i => (i + 1) % HERO_CARDS.length);
+        setFading(false);
+      }, 300);
+    }, 4500);
+    return () => { clearInterval(iv); if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  const card = HERO_CARDS[cardIdx];
+  const cardTheme = THEMES.find(t => t.id === card.themeId) ?? THEMES[0];
 
   async function goToCard() {
     const raw = code.trim();
@@ -108,18 +169,36 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
             Beautiful, personalised thank you cards — sent instantly, anywhere in the world.
           </p>
 
-          {/* Hero card mockup */}
-          <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -24, pointerEvents: 'none' }}>
+          {/* Hero card showcase — auto-cycles */}
+          <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -8, pointerEvents: 'none', opacity: fading ? 0 : 1, transition: 'opacity 0.3s ease' }}>
             <CardScrollView
-              theme={THEMES.find(t => t.id === 'coach')!}
-              customImgUrl="/hero-coach.jpg"
-              recipientName="Coach Dave"
-              fromText="From the Under 12s"
-              message="Thank you for an incredible season!"
-              messages={heroMsgs}
-              giftAmount={50}
+              theme={cardTheme}
+              customImgUrl={card.customImgUrl}
+              recipientName={card.recipientName}
+              fromText={card.fromText}
+              message={card.message}
+              messages={card.messages}
+              giftAmount={card.giftAmount}
+              soloMessage={card.soloMessage}
               landscapeCover
             />
+          </div>
+
+          {/* Dot indicators */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, paddingBottom: 28, pointerEvents: 'auto' }}>
+            {HERO_CARDS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goToCardIdx(i)}
+                aria-label={`View card ${i + 1}`}
+                style={{
+                  width: i === cardIdx ? 22 : 8, height: 8, borderRadius: 4,
+                  border: 'none', cursor: 'pointer', padding: 0,
+                  background: i === cardIdx ? '#3A8FA0' : '#C8D8E0',
+                  transition: 'all 0.35s ease',
+                }}
+              />
+            ))}
           </div>
         </div>
       </div>
