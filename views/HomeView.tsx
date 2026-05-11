@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Btn } from '@/components/ui/Button';
 import { CardScrollView } from '@/components/cards/CardScrollView';
-import { THEMES, DEMO_MSGS } from '@/lib/themes';
+import { THEMES } from '@/lib/themes';
 
 interface HomeViewProps {
   onSolo: () => void;
@@ -16,7 +16,10 @@ interface HomeViewProps {
 export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: HomeViewProps) {
   const [devOpen, setDevOpen] = useState(false);
   const [code, setCode] = useState('');
-  const heroMsgs = DEMO_MSGS.slice(0, 2);
+  const heroMsgs = [
+    { name: 'Sarah', msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
+    { name: 'Michael', msg: "We couldn't have done it without you! ⭐", timestamp: '2 hours ago' },
+  ];
 
   async function goToCard() {
     const raw = code.trim();
