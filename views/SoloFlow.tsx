@@ -407,14 +407,21 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Appears on the card in a beautiful script font</div>
           </div>
 
-          {/* Card message */}
+          {/* Cover text */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
-              Cover message
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <label style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>
+                Cover Text
+              </label>
+              {cardMsg
+                ? <button onClick={() => setCardMsg('')} style={{ background: 'none', border: 'none', fontSize: '.72rem', fontWeight: 700, color: '#B0A8BC', cursor: 'pointer', padding: 0, fontFamily: "'Nunito',sans-serif" }}>✕ Remove</button>
+                : <button onClick={() => setCardMsg(theme.frontMsg)} style={{ background: 'none', border: 'none', fontSize: '.72rem', fontWeight: 700, color: '#3A8FA0', cursor: 'pointer', padding: 0, fontFamily: "'Nunito',sans-serif" }}>+ Restore</button>
+              }
+            </div>
             <input
               value={cardMsg}
               onChange={e => setCardMsg(e.target.value)}
+              placeholder="e.g. Happy Birthday, Thank You…"
               style={{
                 width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px',
                 fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1rem', color: '#2A2A2A',
@@ -423,7 +430,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
               onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
             />
-            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Shown on the cover — pre-filled from your theme</div>
+            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Shown in large text on the cover — leave blank to hide</div>
           </div>
 
           {/* From */}

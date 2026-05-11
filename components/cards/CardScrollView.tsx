@@ -91,7 +91,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
   const from = fromText || 'From the Under 12s';
-  const msg = message || t.frontMsg || 'Thank you!';
+  const msg = message ?? '';
 
   return (
     <div style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)', marginBottom: 22 }}>
@@ -123,20 +123,22 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
           </div>
         </div>
 
-        {/* Frosted gradient strip — bottom of image */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3,
-          background: 'linear-gradient(to top, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.0) 100%)',
-          padding: '36px 20px 20px',
-        }}>
+        {/* Frosted gradient strip — bottom of image, only when cover text set */}
+        {msg ? (
           <div style={{
-            fontFamily: "'Lora',serif", fontStyle: 'italic',
-            fontSize: '1rem', color: '#2A2A2A', lineHeight: 1.55, marginBottom: 5,
+            position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3,
+            background: 'linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.0) 100%)',
+            padding: '48px 22px 22px',
+            textAlign: 'center',
           }}>
-            {msg}
+            <div style={{
+              fontFamily: "'Lora',serif", fontStyle: 'italic',
+              fontSize: 'clamp(1.45rem, 5.5vw, 1.9rem)', color: '#2A2A2A', lineHeight: 1.3,
+            }}>
+              {msg}
+            </div>
           </div>
-          <div style={{ fontSize: '.74rem', color: '#7A7585', fontWeight: 600 }}>— {from}</div>
-        </div>
+        ) : null}
 
         {/* Visa gift card badge — bottom right, only when giftAmount is set */}
         {giftAmount != null && giftAmount > 0 && (
