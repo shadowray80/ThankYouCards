@@ -13,9 +13,7 @@ const HERO_CARDS = [
     fromText: 'From the Under 12s',
     message: 'Thank you for an incredible season!',
     messages: DEMO_MSGS.slice(0, 2),
-    giftAmount: 50,
-    soloMessage: undefined as string | undefined,
-    landscapeCover: true,
+    giftAmount: 50 as number | undefined,
   },
   {
     themeId: 'mum',
@@ -23,21 +21,23 @@ const HERO_CARDS = [
     recipientName: 'Mum',
     fromText: 'From all of us ❤️',
     message: 'Happy Birthday! 🌸',
-    messages: [],
+    messages: [
+      { name: 'Tom (your son) 😄', msg: "Happy birthday Mum! You're the glue that holds this whole family together. Love you to bits. 🌸", timestamp: 'Just now' },
+      { name: 'Grace (your daughter)', msg: "Best Mum in the world — full stop. Every day you make us feel so loved. Hope this is your best birthday yet! ❤️", timestamp: '2 mins ago' },
+    ],
     giftAmount: undefined as number | undefined,
-    soloMessage: "Happy birthday Mum! 🌸\n\nYou make every day brighter and every room warmer. Thank you for everything you do — we love you to bits.\n\nAll our love xx",
-    landscapeCover: true,
   },
   {
     themeId: 'mates',
     customImgUrl: '/mates-fishing.jpg',
     recipientName: 'Richo',
     fromText: 'From the boys 🍺',
-    message: "Cheers for the best trip ever! 🎣",
-    messages: [],
+    message: 'Cheers for the best trip ever! 🎣',
+    messages: [
+      { name: 'Dazza', msg: "Mate, that was the best trip we've had. You caught the most, gutted them all AND still cooked the barramundi. Absolute legend. 🎣", timestamp: 'Yesterday' },
+      { name: 'Wazza & Baz', msg: "Still can't believe you out-fished all of us. Beers are on us next trip — that is a promise. Cheers! 🍺", timestamp: 'Yesterday' },
+    ],
     giftAmount: undefined as number | undefined,
-    soloMessage: "Mate, that fishing trip was absolutely legendary 🎣\n\nYou somehow managed to out-fish everyone AND cook the best barramundi we've ever had. Absolute champion.\n\nBeers on us next time.",
-    landscapeCover: true,
   },
 ];
 
@@ -53,31 +53,36 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
   const [devOpen, setDevOpen] = useState(false);
   const [code, setCode] = useState('');
   const [cardIdx, setCardIdx] = useState(0);
-  const [fading, setFading] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [nextIdx, setNextIdx] = useState<number | null>(null);
+  const [crossfade, setCrossfade] = useState(false);
+  const cardIdxRef = useRef(0);
+  const nextIdxRef = useRef<number | null>(null);
+  const xTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function goToCardIdx(idx: number) {
-    if (idx === cardIdx) return;
-    setFading(true);
-    timerRef.current = setTimeout(() => {
-      setCardIdx(idx);
-      setFading(false);
-    }, 300);
+  useEffect(() => {
+    HERO_CARDS.forEach(c => { const img = new window.Image(); img.src = c.customImgUrl; });
+  }, []);
+
+  function advanceTo(n: number) {
+    if (n === cardIdxRef.current || nextIdxRef.current !== null) return;
+    if (xTimer.current) clearTimeout(xTimer.current);
+    nextIdxRef.current = n;
+    setNextIdx(n);
+    setCrossfade(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setCrossfade(true)));
+    xTimer.current = setTimeout(() => {
+      cardIdxRef.current = n;
+      nextIdxRef.current = null;
+      setCardIdx(n);
+      setNextIdx(null);
+      setCrossfade(false);
+    }, 600);
   }
 
   useEffect(() => {
-    const iv = setInterval(() => {
-      setFading(true);
-      timerRef.current = setTimeout(() => {
-        setCardIdx(i => (i + 1) % HERO_CARDS.length);
-        setFading(false);
-      }, 300);
-    }, 4500);
-    return () => { clearInterval(iv); if (timerRef.current) clearTimeout(timerRef.current); };
+    const iv = setInterval(() => advanceTo((cardIdxRef.current + 1) % HERO_CARDS.length), 4500);
+    return () => clearInterval(iv);
   }, []);
-
-  const card = HERO_CARDS[cardIdx];
-  const cardTheme = THEMES.find(t => t.id === card.themeId) ?? THEMES[0];
 
   async function goToCard() {
     const raw = code.trim();
@@ -169,19 +174,40 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
             Beautiful, personalised thank you cards — sent instantly, anywhere in the world.
           </p>
 
-          {/* Hero card showcase — auto-cycles */}
-          <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -8, pointerEvents: 'none', opacity: fading ? 0 : 1, transition: 'opacity 0.3s ease' }}>
-            <CardScrollView
-              theme={cardTheme}
-              customImgUrl={card.customImgUrl}
-              recipientName={card.recipientName}
-              fromText={card.fromText}
-              message={card.message}
-              messages={card.messages}
-              giftAmount={card.giftAmount}
-              soloMessage={card.soloMessage}
-              landscapeCover
-            />
+          {/* Hero card showcase — crossfades between cards, no flash */}
+          <div style={{ position: 'relative', pointerEvents: 'none', marginBottom: -8 }}>
+            {/* Base card — always fully visible */}
+            <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
+              <CardScrollView
+                theme={THEMES.find(t => t.id === HERO_CARDS[cardIdx].themeId) ?? THEMES[0]}
+                customImgUrl={HERO_CARDS[cardIdx].customImgUrl}
+                recipientName={HERO_CARDS[cardIdx].recipientName}
+                fromText={HERO_CARDS[cardIdx].fromText}
+                message={HERO_CARDS[cardIdx].message}
+                messages={HERO_CARDS[cardIdx].messages}
+                giftAmount={HERO_CARDS[cardIdx].giftAmount}
+                landscapeCover
+              />
+            </div>
+            {/* Incoming card fades in on top — old card never disappears so no white flash */}
+            {nextIdx !== null && (
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0,
+                transform: 'scale(0.88)', transformOrigin: 'top center',
+                opacity: crossfade ? 1 : 0, transition: 'opacity 0.5s ease',
+              }}>
+                <CardScrollView
+                  theme={THEMES.find(t => t.id === HERO_CARDS[nextIdx].themeId) ?? THEMES[0]}
+                  customImgUrl={HERO_CARDS[nextIdx].customImgUrl}
+                  recipientName={HERO_CARDS[nextIdx].recipientName}
+                  fromText={HERO_CARDS[nextIdx].fromText}
+                  message={HERO_CARDS[nextIdx].message}
+                  messages={HERO_CARDS[nextIdx].messages}
+                  giftAmount={HERO_CARDS[nextIdx].giftAmount}
+                  landscapeCover
+                />
+              </div>
+            )}
           </div>
 
           {/* Dot indicators */}
@@ -189,7 +215,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
             {HERO_CARDS.map((_, i) => (
               <button
                 key={i}
-                onClick={() => goToCardIdx(i)}
+                onClick={() => advanceTo(i)}
                 aria-label={`View card ${i + 1}`}
                 style={{
                   width: i === cardIdx ? 22 : 8, height: 8, borderRadius: 4,
