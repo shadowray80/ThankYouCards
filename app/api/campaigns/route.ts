@@ -12,23 +12,28 @@ function randomSuffix(): string {
   return Math.random().toString(36).slice(2, 7);
 }
 
+function randomToken(): string {
+  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { recipient_name, occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_image_url } = body;
 
-  if (!recipient_name || target_amount == null || !organiser_email) {
+  if (!recipient_name || !organiser_email) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   const base = slugify(recipient_name) || 'card';
   const slug = `${base}-${randomSuffix()}`;
+  const organiser_token = randomToken();
 
   const { data, error } = await supabaseAdmin
     .from('campaigns')
     .insert({
       recipient_name,
       occasion: occasion ?? null,
-      target_amount,
+      target_amount: target_amount ?? null,
       funded_amount: 0,
       deadline: deadline ?? null,
       status: 'open',
@@ -37,6 +42,7 @@ export async function POST(request: NextRequest) {
       card_message: card_message ?? null,
       card_image_url: card_image_url ?? null,
       slug,
+      organiser_token,
     })
     .select()
     .single();

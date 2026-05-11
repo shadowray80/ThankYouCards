@@ -18,7 +18,7 @@ interface Campaign {
   card_message: string | null;
   card_image_url: string | null;
   funded_amount: number;
-  target_amount: number;
+  target_amount: number | null;
   deadline: string | null;
   status: string;
 }
@@ -46,22 +46,24 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [loading, setLoading]             = useState(false);
   const [loadError, setLoadError]         = useState('');
 
-  const [phase, setPhase]         = useState<'card' | 'form'>('card');
-  const [msgMode, setMsgMode]     = useState<'typed' | 'handwritten'>('typed');
-  const [msg, setMsg]             = useState('');
-  const [photoData, setPhotoData] = useState<string | null>(null);
-  const [name, setName]           = useState('');
-  const [giftSel, setGiftSel]     = useState<string | null>(null);
+  const [msgMode, setMsgMode]       = useState<'typed' | 'handwritten'>('typed');
+  const [msg, setMsg]               = useState('');
+  const [photoData, setPhotoData]   = useState<string | null>(null);
+  const [name, setName]             = useState('');
+  const [email, setEmail]           = useState('');
+  const [giftSel, setGiftSel]       = useState<string | null>(null);
   const [giftCustom, setGiftCustom] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing]       = useState(false);
   const [contributeOnly, setContributeOnly] = useState(false);
-  const [myContrib, setMyContrib] = useState<{ id: string; name: string; message: string } | null>(null);
+  const [myContrib, setMyContrib]       = useState<{ id: string; name: string; message: string; amount?: number } | null>(null);
 
-  const hasMsg    = msgMode === 'typed' ? msg.trim().length > 0 : photoData !== null;
-  const hasAmount = !!(giftSel || giftCustom);
-  const canSubmit = name.trim() && hasMsg;
+  const hasMsg      = msgMode === 'typed' ? msg.trim().length > 0 : photoData !== null;
+  const hasAmount   = !!(giftSel || giftCustom);
+  const validEmail  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const canSubmit   = name.trim() && hasMsg;
+  const canPay      = canSubmit && validEmail;
 
   useEffect(() => {
     if (!activeSlug) return;
@@ -73,7 +75,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
         if (json.error) { setLoadError(json.error); return; }
         setCampaign(json.campaign);
         setContributions(json.contributions ?? []);
-        setPhase('card');
         const saved = localStorage.getItem(`tyc_contrib_${activeSlug}`);
         if (saved) setMyContrib(JSON.parse(saved));
       })
@@ -97,7 +98,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       const res = await fetch('/api/contributions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null }),
+        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null, contributor_email: email.trim() || null }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to save');
@@ -105,8 +106,8 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       localStorage.setItem(`tyc_contrib_${activeSlug}`, JSON.stringify(saved));
       setMyContrib(saved);
       setContributions(prev => [...prev, { id: json.contribution.id, contributor_name: name, message: msg || null, amount: 0 }]);
+      setMsg(''); setName(''); setGiftSel(null); setGiftCustom('');
       onToast("You're on the card! ✨");
-      setPhase('card');
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -130,7 +131,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       setMyContrib(updated);
       setContributions(prev => prev.map(c => c.id === myContrib.id ? { ...c, message: msg } : c));
       setIsEditing(false);
-      setPhase('card');
+      onToast('Message updated! ✏️');
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -141,34 +142,26 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   async function submitWithPayment(overrideName?: string, overrideMsg?: string) {
     if (!campaign) return;
     const amountCents = Math.round(Number(giftSel || giftCustom) * 100);
-    if (!amountCents || amountCents < 100) {
-      setSubmitError('Please enter an amount of at least $1');
-      return;
-    }
+    if (!amountCents || amountCents < 100) { setSubmitError('Please enter an amount of at least $1'); return; }
     setSubmitting(true);
     setSubmitError('');
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: overrideName ?? name, message: (overrideMsg ?? msg) || null, amount_cents: amountCents }),
+        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: overrideName ?? name, message: (overrideMsg ?? msg) || null, amount_cents: amountCents, contributor_email: email.trim() || null }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to start checkout');
+      // Save to localStorage now so when Stripe redirects back they're recognised
+      const saved = { id: json.contribution_id, name: overrideName ?? name, message: (overrideMsg ?? msg) || '', amount: amountCents / 100 };
+      localStorage.setItem(`tyc_contrib_${activeSlug}`, JSON.stringify(saved));
       window.location.href = json.url;
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
       setSubmitting(false);
     }
   }
-
-  const theme = THEMES.find(t => t.id === campaign?.card_theme) ?? THEMES[0];
-  const recipientName = campaign
-    ? campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1)
-    : '';
-  const deadlineStr = campaign?.deadline
-    ? new Date(campaign.deadline).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
 
   // ── No slug — lookup screen ──
   if (!activeSlug || (!campaign && !loading && !loadError)) {
@@ -202,184 +195,212 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
     );
   }
 
+  const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
+  const recipientName = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
+  const deadlineStr = campaign.deadline
+    ? new Date(campaign.deadline).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
+  const noGift     = campaign.target_amount === 0;
+  const hasTarget  = campaign.target_amount !== null && campaign.target_amount > 0;
+  const openFund   = campaign.target_amount === null;
+
+  // If myContrib has an amount and isn't in the paid list yet (webhook pending), show it optimistically
+  const myContribIsPending = myContrib?.amount && !contributions.find(c => c.id === myContrib.id);
+  const displayFunded = campaign.funded_amount + (myContribIsPending ? (myContrib?.amount ?? 0) : 0);
+  const pct = hasTarget ? Math.min(100, Math.round((displayFunded / campaign.target_amount!) * 100)) : 0;
+
   const existingMsgs = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
 
-  // When editing, exclude their existing message so it doesn't show twice alongside the draft
+  // If their paid contribution is still pending in DB, show their message optimistically
+  const optimisticMsg: { name: string; msg: string }[] = myContribIsPending && myContrib?.message
+    ? [{ name: myContrib.name, msg: myContrib.message }]
+    : [];
+
+  // Live preview: exclude their existing message when editing so it doesn't double up
   const baseForPreview = isEditing && myContrib
     ? contributions.filter(c => c.id !== myContrib.id).map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))
-    : existingMsgs;
-
-  // Live preview includes their draft if they've started typing
-  const previewMsgs = phase === 'form' && name.trim() && msg.trim()
+    : [...existingMsgs, ...optimisticMsg];
+  const previewMsgs = name.trim() && msg.trim()
     ? [...baseForPreview, { name: name.trim(), msg: msg.trim() }]
-    : existingMsgs;
+    : [...existingMsgs, ...optimisticMsg];
 
-  const tealHeader = (backLabel: string, backFn: () => void, title?: string) => (
-    <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <button onClick={backFn} style={{ background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: 8, padding: '6px 10px', color: '#fff', fontWeight: 700, fontSize: '.82rem', cursor: 'pointer' }}>← {backLabel}</button>
-      {title && <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#fff' }}>{title}</div>}
-      <div style={{ width: 60 }} />
-    </div>
-  );
+  const showForm = !myContrib || isEditing || contributeOnly;
 
-  // ── Card view ──
-  if (phase === 'card') {
-    const pct = campaign.target_amount > 0 ? Math.min(100, Math.round((campaign.funded_amount / campaign.target_amount) * 100)) : 0;
-    return (
-      <div>
-        <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '20px 20px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)' }}>
-              thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
-            </div>
-            <button onClick={onBack} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 8, padding: '5px 10px', color: 'rgba(255,255,255,.85)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>← Home</button>
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)' }}>
+            thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {campaign.occasion && <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>{campaign.occasion}</div>}
-            {deadlineStr && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>⏰ Closes {deadlineStr}</div>}
+          <button onClick={onBack} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 8, padding: '5px 10px', color: 'rgba(255,255,255,.85)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>← Home</button>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {campaign.occasion && <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>{campaign.occasion}</div>}
+          {deadlineStr && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>⏰ Closes {deadlineStr}</div>}
+        </div>
+        {hasTarget && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 5, letterSpacing: '.04em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+              Gift fund — ${displayFunded} raised of ${campaign.target_amount}
+              {pct >= 100 && <span style={{ background: '#4ADE80', color: '#166534', borderRadius: 20, padding: '1px 8px', fontSize: '.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' }}>✓ Goal reached!</span>}
+            </div>
+            <div style={{ background: 'rgba(255,255,255,.2)', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: '#4ADE80', borderRadius: 8, transition: 'width .5s ease' }} />
+            </div>
           </div>
-          {campaign.target_amount > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 6, letterSpacing: '.04em', textTransform: 'uppercase' }}>
-                Gift fund — ${campaign.funded_amount} raised of ${campaign.target_amount}
-              </div>
-              <div style={{ background: 'rgba(255,255,255,.2)', borderRadius: 8, height: 8, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: '#fff', borderRadius: 8, transition: 'width .5s ease' }} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ padding: '18px 18px 80px', maxWidth: 480, margin: '0 auto' }}>
-          <CardScrollView
-            theme={theme} imgIdx={0}
-            customImgUrl={campaign.card_image_url ?? undefined}
-            recipientName={recipientName}
-            fromText={campaign.occasion ?? undefined}
-            message={campaign.card_message ?? ''}
-            messages={existingMsgs}
-            giftAmount={campaign.funded_amount > 0 ? campaign.funded_amount : undefined}
-            onAddMessage={myContrib ? undefined : () => { setIsEditing(false); setContributeOnly(false); setPhase('form'); }}
-          />
-          {myContrib ? (
-            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', fontSize: '.83rem', color: '#7C5CBF', fontWeight: 700 }}>
-                👋 Know someone who hasn't added their message yet? Forward them the link!
-              </div>
-              <button
-                onClick={() => { setContributeOnly(true); setGiftSel(null); setGiftCustom(''); setPhase('form'); }}
-                style={{ width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '12px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', color: '#fff' }}
-              >
-                💳 Make a contribution
-              </button>
-              <button
-                onClick={() => { setMsg(myContrib.message); setName(myContrib.name); setIsEditing(true); setContributeOnly(false); setPhase('form'); }}
-                style={{ width: '100%', background: '#F0ECFB', border: 'none', borderRadius: 10, padding: '10px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.85rem', color: '#7C5CBF' }}
-              >
-                ✏️ Edit your message
-              </button>
-            </div>
-          ) : null}
-        </div>
+        )}
+        {openFund && displayFunded > 0 && (
+          <div style={{ marginTop: 10, fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.85)', letterSpacing: '.04em', textTransform: 'uppercase' }}>
+            💰 ${displayFunded} raised so far
+          </div>
+        )}
       </div>
-    );
-  }
 
-  // ── Combined form (message + gift on one screen) ──
-  if (phase === 'form') {
-    const noGift = campaign.target_amount === 0;
-    return (
-      <div>
-        {tealHeader('Back', () => { setIsEditing(false); setPhase('card'); }, isEditing ? 'Edit your message' : 'Add your message')}
+      {/* Card preview */}
+      <div style={{ padding: '16px 18px 0' }}>
+        <CardScrollView
+          theme={theme} imgIdx={0}
+          customImgUrl={campaign.card_image_url ?? undefined}
+          recipientName={recipientName}
+          fromText={campaign.occasion ?? undefined}
+          message={campaign.card_message ?? ''}
+          messages={showForm ? previewMsgs : [...existingMsgs, ...optimisticMsg]}
+          giftAmount={displayFunded > 0 ? displayFunded : undefined}
+        />
+      </div>
 
-        {/* Live card preview */}
-        <div style={{ padding: '16px 18px 0', background: '#F7F5FB' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Live preview</div>
-          <div style={{ transform: 'scale(0.82)', transformOrigin: 'top left', width: '122%', marginBottom: -40, pointerEvents: 'none' }}>
-            <CardScrollView
-              theme={theme} imgIdx={0}
-              customImgUrl={campaign.card_image_url ?? undefined}
-              recipientName={recipientName}
-              fromText={campaign.occasion ?? undefined}
-              message={campaign.card_message ?? ''}
-              messages={previewMsgs}
-              landscapeCover
-            />
+      {/* Form or returned-contributor actions */}
+      <div style={{ padding: '20px 18px 160px' }}>
+
+        {myContrib && !isEditing && !contributeOnly ? (
+          // Already contributed — show actions
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Card link */}
+            <div style={{ background: '#EAF4FB', borderRadius: 12, padding: '14px 16px' }}>
+              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Bookmark this link to check back anytime</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
+                  thankyoucards.au/card/{activeSlug}
+                </div>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(`thankyoucards.au/card/${activeSlug}`); onToast('Link copied! 🎉'); }}
+                  style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >Copy</button>
+              </div>
+              <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginTop: 8 }}>
+                👋 Forward this to anyone who hasn't added their message yet
+              </div>
+            </div>
+            <button
+              onClick={() => { setContributeOnly(true); setGiftSel(null); setGiftCustom(''); }}
+              style={{ width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '13px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', color: '#fff' }}
+            >
+              💳 Make a contribution
+            </button>
+            <button
+              onClick={() => { setMsg(myContrib.message); setName(myContrib.name); setIsEditing(true); }}
+              style={{ width: '100%', background: '#F0ECFB', border: 'none', borderRadius: 10, padding: '11px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.85rem', color: '#7C5CBF' }}
+            >
+              ✏️ Edit your message
+            </button>
           </div>
-        </div>
+        ) : (
+          // Form
+          <>
+            {!contributeOnly && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your name</label>
+                  <input
+                    value={name} onChange={e => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+                    placeholder="e.g. Sarah (Liam's mum)"
+                    disabled={isEditing}
+                    autoCapitalize="words"
+                    style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: isEditing ? '#F7F5FB' : '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s', opacity: isEditing ? .6 : 1 }}
+                    onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+                    onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+                  />
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
+                  <MessageTabs mode={msgMode} onSwitch={setMsgMode} msg={msg} onMsgChange={setMsg} photoData={photoData} onPhoto={handlePhoto} onRetake={() => setPhotoData(null)} />
+                </div>
+              </>
+            )}
 
-        <div style={{ padding: '56px 18px 140px' }}>
-
-          {/* Name + message — hidden when contribute-only */}
-          {!contributeOnly && (
-            <>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your name</label>
+            {/* Email field */}
+            {!isEditing && (
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Your email {hasAmount ? <span style={{ color: '#E8724A' }}>*</span> : <span style={{ color: '#B0A8BC', fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}>— optional</span>}
+                </label>
                 <input
-                  value={name} onChange={e => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
-                  placeholder="e.g. Sarah (Liam's mum)"
-                  disabled={isEditing}
-                  autoCapitalize="words"
-                  style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: isEditing ? '#F7F5FB' : '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s', opacity: isEditing ? .6 : 1 }}
+                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
                   onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
                   onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
                 />
-              </div>
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
-                <MessageTabs mode={msgMode} onSwitch={setMsgMode} msg={msg} onMsgChange={setMsg} photoData={photoData} onPhoto={handlePhoto} onRetake={() => setPhotoData(null)} />
-              </div>
-            </>
-          )}
-
-          {/* Gift — shown when not editing, or when contribute-only */}
-          {(!isEditing || contributeOnly) && (
-            <div style={{ borderTop: '2px solid #E8E2F0', paddingTop: 20 }}>
-              {noGift ? (
-                <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
-                  <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#7C5CBF', marginBottom: 2 }}>Want to chip in anyway? <span style={{ fontWeight: 600, color: '#B0A8BC' }}>— optional</span></div>
-                  <div style={{ fontSize: '.8rem', color: '#7A7585', lineHeight: 1.5, fontWeight: 600 }}>No gift was planned, but contributions are welcome. Completely your call.</div>
+                <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4, fontWeight: 600 }}>
+                  {hasAmount ? 'Required — Stripe will send your payment receipt here' : 'We\'ll send you the card link so you can check back anytime'}
                 </div>
-              ) : (
-                <div style={{ marginBottom: 14 }}>
-                  <GiftProgress raised={campaign.funded_amount} target={campaign.target_amount} />
-                  <div style={{ marginTop: 10, fontSize: '.82rem', color: '#7A7585', fontWeight: 600 }}>Every bit helps — no minimum, no pressure.</div>
-                </div>
-              )}
-              <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', marginBottom: 10 }}>
-                {noGift ? 'Optional amount' : 'Choose an amount'}
               </div>
-              <GiftSelector
-                selected={giftSel}
-                onSelect={a => { setGiftSel(a); setGiftCustom(''); }}
-                custom={giftCustom}
-                onCustom={v => { setGiftCustom(v); setGiftSel(null); }}
-              />
-            </div>
-          )}
+            )}
 
-          {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
-        </div>
+            {!isEditing && (
+              <div style={{ borderTop: contributeOnly ? 'none' : '2px solid #E8E2F0', paddingTop: contributeOnly ? 0 : 20 }}>
+                {contributeOnly && (
+                  <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 14 }}>Make a contribution</div>
+                )}
+                {!openFund && noGift ? (
+                  <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
+                    <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#7C5CBF', marginBottom: 2 }}>Want to chip in anyway? <span style={{ fontWeight: 600, color: '#B0A8BC' }}>— optional</span></div>
+                    <div style={{ fontSize: '.8rem', color: '#7A7585', lineHeight: 1.5, fontWeight: 600 }}>No gift was planned, but contributions are welcome. Completely your call.</div>
+                  </div>
+                ) : hasTarget ? (
+                  <div style={{ marginBottom: 14 }}>
+                    <GiftProgress raised={campaign.funded_amount} target={campaign.target_amount!} />
+                    <div style={{ marginTop: 8, fontSize: '.82rem', color: '#7A7585', fontWeight: 600 }}>Every bit helps — no minimum, no pressure.</div>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: 14 }} />
+                )}
+                <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', marginBottom: 10 }}>
+                  Choose an amount
+                </div>
+                <GiftSelector selected={giftSel} onSelect={a => { setGiftSel(a); setGiftCustom(''); }} custom={giftCustom} onCustom={v => { setGiftCustom(v); setGiftSel(null); }} />
+              </div>
+            )}
 
-        {/* Sticky buttons */}
+            {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
+          </>
+        )}
+      </div>
+
+      {/* Sticky buttons */}
+      {(showForm) && (
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
           {isEditing ? (
             <>
               <Btn variant="teal" full disabled={!hasMsg || submitting} onClick={submitEdit}>{submitting ? 'Saving…' : 'Save changes →'}</Btn>
-              <Btn variant="outline" full onClick={() => { setIsEditing(false); setPhase('card'); }} style={{ marginTop: 8 }}>Cancel</Btn>
+              <Btn variant="outline" full onClick={() => { setIsEditing(false); setMsg(''); setName(''); }} style={{ marginTop: 8 }}>Cancel</Btn>
             </>
           ) : contributeOnly ? (
             <>
-              <Btn variant="coral" full disabled={submitting || !hasAmount} onClick={() => submitWithPayment(myContrib?.name, myContrib?.message)}>
+              <Btn variant="coral" full disabled={submitting || !hasAmount || !validEmail} onClick={() => submitWithPayment(myContrib?.name, myContrib?.message)}>
                 {submitting ? 'Starting checkout…' : `Contribute $${giftSel || giftCustom} →`}
               </Btn>
-              <Btn variant="outline" full onClick={() => { setContributeOnly(false); setPhase('card'); }} style={{ marginTop: 8 }}>Cancel</Btn>
+              {!validEmail && hasAmount && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6, textAlign: 'center' }}>Please enter your email to continue</div>}
+              <Btn variant="outline" full onClick={() => setContributeOnly(false)} style={{ marginTop: 8 }}>Cancel</Btn>
             </>
           ) : hasAmount ? (
             <>
-              <Btn variant="coral" full disabled={!canSubmit || submitting} onClick={submitWithPayment}>
+              <Btn variant="coral" full disabled={!canPay || submitting} onClick={() => submitWithPayment()}>
                 {submitting ? 'Starting checkout…' : `Add message + contribute $${giftSel || giftCustom} →`}
               </Btn>
+              {!validEmail && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6, textAlign: 'center' }}>Please enter your email to continue</div>}
               <Btn variant="outline" full disabled={submitting} onClick={submitMessageOnly} style={{ marginTop: 8 }}>Just my message, no contribution</Btn>
             </>
           ) : (
@@ -388,8 +409,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             </Btn>
           )}
         </div>
-      </div>
-    );
-  }
-
+      )}
+    </div>
+  );
 }

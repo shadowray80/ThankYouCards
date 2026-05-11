@@ -18,11 +18,30 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
   const [code, setCode] = useState('');
   const heroMsgs = DEMO_MSGS.slice(0, 2);
 
-  function goToCard() {
-    let slug = code.trim().toLowerCase();
-    // Accept full URL or just the code
-    const match = slug.match(/\/card\/([^/?#]+)/);
-    if (match) slug = match[1];
+  async function goToCard() {
+    const raw = code.trim();
+
+    // Organiser manage link — full URL or path
+    const manageMatch = raw.match(/\/manage\/([^?#]+)(\?[^#]*)?/);
+    if (manageMatch) {
+      window.location.href = `/manage/${manageMatch[1]}${manageMatch[2] ?? ''}`;
+      return;
+    }
+
+    // Bare organiser token — long alphanumeric, no slashes
+    if (/^[a-z0-9]{15,}$/i.test(raw)) {
+      const res = await fetch(`/api/manage?token=${raw}`);
+      if (res.ok) {
+        const json = await res.json();
+        window.location.href = `/manage/${json.slug}?token=${raw}`;
+        return;
+      }
+    }
+
+    // Contributor card link — full URL or just slug
+    let slug = raw.toLowerCase();
+    const cardMatch = slug.match(/\/card\/([^/?#]+)/);
+    if (cardMatch) slug = cardMatch[1];
     if (!slug) return;
     onNav(`contrib:${slug}`);
   }

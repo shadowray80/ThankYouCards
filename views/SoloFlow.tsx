@@ -233,7 +233,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
         {/* ── Image strip ── */}
         <div style={{ background: '#2A7E8F', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose a vibe</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose a vibe they'll love</div>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             {/* Upload button */}
             <div

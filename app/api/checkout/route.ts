@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { campaign_id, contributor_name, message, amount_cents } = body;
+  const { campaign_id, contributor_name, message, amount_cents, contributor_email } = body;
 
   if (!campaign_id || !contributor_name || !amount_cents || amount_cents < 100) {
     return Response.json({ error: 'Missing required fields or amount too small' }, { status: 400 });
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       message: message ?? null,
       amount: amount_cents / 100,
       status: 'pending',
+      contributor_email: contributor_email ?? null,
     })
     .select()
     .single();
@@ -63,13 +64,14 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       },
     ],
+    customer_email: contributor_email || undefined,
     metadata: {
       contribution_id: contribution.id,
       campaign_id,
     },
-    success_url: `${origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/?payment=cancelled`,
+    success_url: `${origin}/?payment=success&card=${campaign.slug}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/?payment=cancelled&card=${campaign.slug}`,
   });
 
-  return Response.json({ url: session.url }, { status: 200 });
+  return Response.json({ url: session.url, contribution_id: contribution.id }, { status: 200 });
 }

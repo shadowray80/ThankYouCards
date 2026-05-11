@@ -15,11 +15,23 @@ interface GroupFlowProps {
   onNav: (view: string) => void;
 }
 
+interface MiniCard { name: string; bg: string; logo?: string; logoH?: number; logoFilter?: string; textColor?: string; fontSize?: string; letterSpacing?: string; }
+const MINI_CARDS: MiniCard[] = [
+  { name: 'Visa',           bg: 'linear-gradient(135deg,#1A1F71,#2E3DA8)', logo: 'https://cdn.simpleicons.org/visa/ffffff', logoH: 18 },
+  { name: 'Mastercard',     bg: 'linear-gradient(135deg,#252525,#444)', logo: 'https://cdn.simpleicons.org/mastercard/ffffff', logoH: 18 },
+  { name: 'amazon',         bg: 'linear-gradient(135deg,#232F3E,#37475A)', textColor: '#FF9900', fontSize: '.52rem', letterSpacing: '.01em' },
+  { name: 'Apple',          bg: 'linear-gradient(135deg,#1C1C1E,#3A3A3C)', logo: 'https://cdn.simpleicons.org/apple/ffffff', logoH: 16 },
+  { name: 'JB HI-FI',      bg: 'linear-gradient(135deg,#FFD200,#FFC000)', textColor: '#1A1A1A', fontSize: '.48rem', letterSpacing: '.02em' },
+  { name: 'Myer',           bg: 'linear-gradient(135deg,#C8102E,#A00C24)', fontSize: '.52rem', letterSpacing: '.08em' },
+  { name: 'Starbucks',      bg: 'linear-gradient(135deg,#00704A,#005C3A)', logo: 'https://cdn.simpleicons.org/starbucks/ffffff', logoH: 20 },
+  { name: 'Event Cinemas',  bg: 'linear-gradient(135deg,#E31837,#B5122B)', fontSize: '.42rem', letterSpacing: '.03em' },
+  { name: 'Dan Murphy\'s',  bg: 'linear-gradient(135deg,#003087,#00246B)', fontSize: '.44rem', letterSpacing: '.02em' },
+  { name: 'Bunnings',       bg: 'linear-gradient(135deg,#D62B27,#B02220)', fontSize: '.48rem', letterSpacing: '.03em' },
+];
+
 const GIFT_TYPES = [
-  { id: 'visa',   label: '💳 Visa gift card',            desc: 'Spendable anywhere, any country' },
-  { id: 'amazon', label: '📦 Amazon voucher',             desc: 'Online shopping, great for gift ideas' },
-  { id: 'custom', label: '🎁 We\'re organising our own gift', desc: 'Add a description below' },
-  { id: 'none',   label: '💌 No gift — card only',        desc: 'Just the messages' },
+  { id: 'collect', label: '🎁 Add a gift fund',  desc: 'Set a target, everyone contributes what they can' },
+  { id: 'none',    label: '💌 Card only',               desc: 'Just the messages, no gift collection' },
 ];
 
 export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) {
@@ -35,22 +47,19 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [deadline, setDeadline]     = useState('');
   const [cardMsg, setCardMsg]       = useState(THEMES[11].frontMsg);
 
-  const [giftType, setGiftType]     = useState('visa');
-  const [giftDesc, setGiftDesc]     = useState('');
+  const [giftType, setGiftType]     = useState('collect');
 
   const [organiserEmail, setOrganiserEmail] = useState('');
-  const [targetAmount, setTargetAmount]     = useState('');
   const [showDone, setShowDone]             = useState(false);
   const [saving, setSaving]                 = useState(false);
   const [saveError, setSaveError]           = useState('');
   const [campaignSlug, setCampaignSlug]     = useState('');
+  const [organiserToken, setOrganiserToken] = useState('');
 
   const uploadRef = useRef<HTMLInputElement>(null);
 
   const theme = THEMES[themeIdx];
-  const needsTarget = giftType !== 'none';
-  const canCreate = recip.trim() && occasion.trim() && deadline && organiserEmail.trim() &&
-    (!needsTarget || (targetAmount && Number(targetAmount) > 0));
+  const canCreate = recip.trim() && occasion.trim() && deadline && organiserEmail.trim();
 
   async function handleCreate() {
     setSaveError('');
@@ -62,7 +71,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         body: JSON.stringify({
           recipient_name: recip.trim(),
           occasion: occasion.trim() || null,
-          target_amount: needsTarget ? Number(targetAmount) : 0,
+          target_amount: giftType === 'collect' ? null : 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
           card_theme: theme.id,
@@ -73,6 +82,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create campaign');
       setCampaignSlug(json.campaign.slug);
+      setOrganiserToken(json.campaign.organiser_token);
       setShowDone(true);
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong');
@@ -102,7 +112,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
   // ── Done / share screen ──
   if (showDone) {
-    const giftLabel = GIFT_TYPES.find(g => g.id === giftType)?.label || '';
+    const giftLabel = giftType === 'collect' ? 'Gift fund' : 'Card only';
     return (
       <div>
         <Nav onHome={onBack} onNav={onNav} badge="group" />
@@ -125,8 +135,14 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             landscapeCover
           />
 
-          <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', margin: '20px 0 10px' }}>Your shareable link</div>
+          <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', margin: '20px 0 10px' }}>Share with contributors</div>
           <ShareLink link={`thankyoucards.au/card/${campaignSlug}`} onCopy={() => onToast('Link copied! 🎉')} />
+
+          <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '14px 16px', marginTop: 16, marginBottom: 4 }}>
+            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>🔐 Your organiser link</div>
+            <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginBottom: 10, lineHeight: 1.5 }}>Bookmark this — it's your private access to manage the card and see contributions.</div>
+            <ShareLink link={`thankyoucards.au/manage/${campaignSlug}?token=${organiserToken}`} onCopy={() => onToast('Organiser link copied!')} />
+          </div>
 
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
             <Btn variant="ghost" sm onClick={() => onToast('Opening WhatsApp… 💬')} style={{ flex: 1 }}>💬 WhatsApp</Btn>
@@ -139,8 +155,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               ['From', occasion || '—'],
               ['Theme', `${theme.emoji} ${theme.name}`],
               ['Deadline', deadline ? new Date(deadline).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'],
-              ['Gift', giftType === 'none' ? 'Card only' : giftLabel],
-              ['Target', giftType === 'none' ? '—' : `$${targetAmount}`],
+              ['Gift', giftLabel],
             ] as [string, string][]).map(([l, v], i, arr) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid #E8E2F0' : 'none', fontSize: '.87rem' }}>
                 <span style={{ color: '#7A7585', fontWeight: 600 }}>{l}</span>
@@ -183,7 +198,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
         {/* ── Theme strip ── */}
         <div style={{ background: '#B8DCEA', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose your theme</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>What's the occasion?</div>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             {THEMES.slice(0, 4).map((t, i) => {
               const isSelected = themeIdx === i;
@@ -258,7 +273,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
         {/* ── Image strip ── */}
         <div style={{ background: '#2A7E8F', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Select image</div>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose a vibe they'll love</div>
           <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
             <div
               onClick={() => uploadRef.current?.click()}
@@ -380,7 +395,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>From / occasion</label>
             <input
-              value={occasion} onChange={e => setOccasion(e.target.value)}
+              value={occasion} onChange={e => setOccasion(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
               placeholder="e.g. From the Under 12s — End of Season"
               style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
               onFocus={e => (e.target.style.borderColor = '#E8724A')}
@@ -402,7 +417,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
           {/* Gift type */}
           <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Gift type</label>
+            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Gift</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {GIFT_TYPES.map(g => (
                 <div
@@ -412,44 +427,37 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     border: giftType === g.id ? '2px solid #E8724A' : '2px solid #E8E2F0',
                     background: giftType === g.id ? '#FDF0E8' : '#fff',
                     borderRadius: 12, padding: '12px 14px', cursor: 'pointer', transition: 'all .2s',
-                    display: 'flex', alignItems: 'center', gap: 12,
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
                   }}
                 >
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: giftType === g.id ? '5px solid #E8724A' : '2px solid #C0B8CC', flexShrink: 0, transition: 'all .2s' }} />
-                  <div>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: giftType === g.id ? '5px solid #E8724A' : '2px solid #C0B8CC', flexShrink: 0, marginTop: 2, transition: 'all .2s' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: '.9rem', color: '#2A2A2A' }}>{g.label}</div>
                     <div style={{ fontSize: '.76rem', color: '#7A7585', marginTop: 1 }}>{g.desc}</div>
+                    {g.id === 'collect' && (
+                      <div style={{ display: 'flex', gap: 7, marginTop: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+                        {MINI_CARDS.map(card => (
+                          <div key={card.name} style={{
+                            flexShrink: 0, width: 54, height: 34, borderRadius: 5, position: 'relative', overflow: 'hidden',
+                            background: card.bg, boxShadow: '0 2px 8px rgba(0,0,0,.18)',
+                          }}>
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 60%)' }} />
+                            <div style={{ position: 'absolute', top: 4, right: 5, width: 8, height: 6, borderRadius: 1, background: 'rgba(255,255,255,.25)' }} />
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {card.logo
+                                ? <img src={card.logo} alt={card.name} style={{ height: card.logoH ?? 14, filter: card.logoFilter ?? 'brightness(0) invert(1)', objectFit: 'contain' }} />
+                                : <span style={{ fontSize: card.fontSize ?? '.5rem', fontWeight: 900, color: card.textColor ?? '#fff', letterSpacing: card.letterSpacing ?? '.04em', textAlign: 'center', lineHeight: 1.2, padding: '0 4px' }}>{card.name}</span>
+                              }
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
 
-            {giftType === 'custom' && (
-              <input
-                value={giftDesc} onChange={e => setGiftDesc(e.target.value)}
-                placeholder="e.g. Team hoodie with name on the back"
-                style={{ marginTop: 10, width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
-              />
-            )}
-
-            {giftType !== 'none' && (
-              <>
-                <div style={{ background: '#FDF0E8', borderRadius: 12, padding: '13px 15px', fontSize: '.83rem', color: '#E8724A', fontWeight: 700, marginTop: 10 }}>
-                  💡 We suggest $10 per person. People can give more — no one is shamed for giving less.
-                </div>
-                <div style={{ marginTop: 16 }}>
-                  <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Collection target ($)</label>
-                  <input
-                    type="number" min="1" value={targetAmount} onChange={e => setTargetAmount(e.target.value)}
-                    placeholder="e.g. 150"
-                    style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
-                    onFocus={e => (e.target.style.borderColor = '#E8724A')}
-                    onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-                  />
-                  <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Total you're hoping to collect across all contributors</div>
-                </div>
-              </>
-            )}
           </div>
 
           {/* Organiser email */}

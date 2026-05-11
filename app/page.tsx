@@ -54,14 +54,15 @@ export default function App() {
   // Handle Stripe redirect back after payment
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') === 'success') {
-      showToast('Payment confirmed! You\'re on the card 🎉');
-      window.history.replaceState({}, '', '/');
+    const payment = params.get('payment');
+    const cardSlug = params.get('card');
+    if (payment === 'success') showToast('Payment confirmed! You\'re on the card 🎉');
+    if (payment === 'cancelled') showToast('Payment cancelled — you can try again anytime.');
+    if (cardSlug) {
+      setContribSlug(cardSlug);
+      setView('contrib');
     }
-    if (params.get('payment') === 'cancelled') {
-      showToast('Payment cancelled — you can try again anytime.');
-      window.history.replaceState({}, '', '/');
-    }
+    window.history.replaceState({}, '', '/');
   }, [showToast]);
 
   const go = (v: string) => {
