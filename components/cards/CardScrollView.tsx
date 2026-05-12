@@ -216,7 +216,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
       {/* Footer */}
       <div style={{ background: '#3A8FA0', padding: '16px 22px', textAlign: 'center' }}>
         <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, color: 'rgba(255,255,255,.9)', fontSize: '.95rem', marginBottom: 2 }}>
-          thankyou<span style={{ color: '#F09070' }}>cards</span>.au
+thank<span style={{ color: '#F09070' }}>you</span>cards.au
         </div>
         <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
       </div>
