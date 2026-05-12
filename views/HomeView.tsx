@@ -208,14 +208,13 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
       <div style={{ padding: '52px 18px 0', maxWidth: 480, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.55rem', color: '#2A2A2A', marginBottom: 6 }}>
-            Everything sorted.<br /><span style={{ color: '#3A8FA0' }}>In under 2 minutes.</span>
+            You&apos;re all set in 2 minutes!
           </div>
-          <div style={{ fontSize: '.88rem', color: '#7A7585', fontWeight: 600 }}>No shops. No stamps. No chasing people.</div>
+          <div style={{ fontSize: '.88rem', color: '#7A7585', fontWeight: 600 }}>Curated and convenient, without a trip to the shops.</div>
         </div>
 
         {[
-          { bg: '#EAF4FB', icon: '⚡', title: 'Done in 2 minutes, seriously', desc: 'Pick a theme, write your message, send the link. No faff, no newsagent queue, no last-minute panic.' },
-          { bg: '#F0ECFB', icon: '🖼️', title: 'Cards that actually look the part', desc: 'Curated images for every occasion — AFL, cricket, school, swim and more. Or upload your own team photo.' },
+{ bg: '#F0ECFB', icon: '🖼️', title: 'Cards that actually look the part', desc: 'Curated images for every occasion — AFL, cricket, school, swim and more. Or upload your own team photo.' },
           { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo — it appears on the card exactly as you wrote it. Personal, not generic.' },
           { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family — no postage, no delays, no address headaches.' },
           { bg: '#FBE8EE', icon: '💳', title: 'Add a Visa gift card', desc: 'Include a Visa gift card with any amount — spendable anywhere, by anyone, in any country.' },
