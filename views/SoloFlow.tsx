@@ -166,7 +166,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{ background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 ✉️ Email
               </a>
-              <a href={`/view/${slug}`} target="_blank"
+              <a href={`/view/${slug}?preview=1`} target="_blank"
                 style={{ background: '#fff', color: '#7C5CBF', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', border: '2px solid #D4C8EE', fontFamily: "'Nunito',sans-serif" }}>
                 👁 Preview
               </a>

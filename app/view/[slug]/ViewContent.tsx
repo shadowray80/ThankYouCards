@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { THEMES } from '@/lib/themes';
 
@@ -25,7 +25,9 @@ interface Contribution {
 
 export function ViewContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
+  const isPreview = searchParams.get('preview') === '1';
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -76,6 +78,19 @@ export function ViewContent() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
+
+      {/* Preview banner */}
+      {isPreview && (
+        <div style={{ background: '#2A2A2A', padding: '10px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '.78rem', fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>Previewing as recipient</div>
+          <button
+            onClick={() => window.close()}
+            style={{ background: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 800, fontSize: '.78rem', color: '#2A2A2A', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+          >
+            ← Back to your card
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
