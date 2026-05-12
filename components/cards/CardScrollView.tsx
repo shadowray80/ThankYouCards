@@ -159,7 +159,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
         soloPhotoData ? (
           <div style={{ background: '#fff' }}>
             <img src={soloPhotoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', display: 'block' }} />
-            {from && <div style={{ padding: '12px 22px 18px', fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>— {from}</div>}
+            {from && <div style={{ padding: '12px 22px 18px', fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>- {from}</div>}
           </div>
         ) : soloMessage ? (
           <div style={{ background: '#fff', padding: '22px 22px 24px' }}>
@@ -167,7 +167,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
               {soloMessage}
             </div>
             {from && (
-              <div style={{ marginTop: 14, fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>— {from}</div>
+              <div style={{ marginTop: 14, fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>- {from}</div>
             )}
           </div>
         ) : (

@@ -108,7 +108,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
             {' '}in your life
           </h1>
           <p style={{ color: '#7A7585', fontSize: '.94rem', lineHeight: 1.65, marginBottom: 28, fontWeight: 600, maxWidth: 300, marginLeft: 'auto', marginRight: 'auto' }}>
-            Beautiful, personalised thank you cards — sent instantly, anywhere in the world.
+            Beautiful, personalised thank you cards - sent instantly, anywhere in the world.
           </p>
 
           {/* Hero card mockup */}
@@ -151,7 +151,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         {/* Got a code? */}
         <div style={{ background: '#fff', border: '2.5px solid #E8E2F0', borderRadius: 18, padding: '18px 16px', marginBottom: 14 }}>
           <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A', marginBottom: 4 }}>📬 Got a card code?</div>
-          <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you — enter the code to add your message.</div>
+          <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you - enter the code to add your message.</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               value={code}
@@ -173,7 +173,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         </div>
 
         <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '12px 16px', fontSize: '.84rem', color: '#E8724A', fontWeight: 700, textAlign: 'center', marginBottom: 40 }}>
-          💡 Group card is <strong>free for the organiser</strong> — covered by contributions
+          💡 Group card is <strong>free for the organiser</strong> - covered by contributions
         </div>
 
         {/* ── Testimonials ── */}
@@ -214,10 +214,10 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         </div>
 
         {[
-{ bg: '#F0ECFB', icon: '🖼️', title: 'Cards that actually look the part', desc: 'Curated images for every occasion — AFL, cricket, school, swim and more. Or upload your own team photo.' },
-          { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo — it appears on the card exactly as you wrote it. Personal, not generic.' },
-          { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family — no postage, no delays, no address headaches.' },
-          { bg: '#FBE8EE', icon: '💳', title: 'Add a Visa gift card', desc: 'Include a Visa gift card with any amount — spendable anywhere, by anyone, in any country.' },
+{ bg: '#F0ECFB', icon: '🖼️', title: 'Cards that actually look the part', desc: 'Curated images for every occasion - AFL, cricket, school, swim and more. Or upload your own team photo.' },
+          { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
+          { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
+          { bg: '#FBE8EE', icon: '💳', title: 'Add a Visa gift card', desc: 'Include a Visa gift card with any amount - spendable anywhere, by anyone, in any country.' },
         ].map((b, i) => (
           <div key={i} style={{ background: b.bg, borderRadius: 16, padding: '17px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 11 }}>
             <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>{b.icon}</div>
@@ -232,7 +232,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         <div style={{ background: 'linear-gradient(135deg,#E87240,#F09070)', borderRadius: 18, padding: '22px 20px', marginBottom: 28, color: '#fff' }}>
           <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 6 }}>👥 Running a group gift?</div>
           <div style={{ fontSize: '.86rem', lineHeight: 1.55, opacity: .9, fontWeight: 600, marginBottom: 14 }}>
-            Share one link. Everyone adds their own message and chips into the gift. We send the reminders so you don't have to chase a single person. The card pays for itself — <strong>free for the organiser.</strong>
+            Share one link. Everyone adds their own message and chips into the gift. We send the reminders so you don't have to chase a single person. The card pays for itself - <strong>free for the organiser.</strong>
           </div>
           <Btn onClick={onGroup} style={{ background: '#fff', color: '#E8724A' }}>Set up a group card →</Btn>
         </div>
