@@ -27,7 +27,7 @@ function avatarColor(name: string): string {
 }
 
 function initials(name: string): string {
-  return name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  return name.replace(/\s*\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
 function MessageBubble({ m, index }: { m: CardMessage; index: number }) {

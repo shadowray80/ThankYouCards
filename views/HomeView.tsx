@@ -17,8 +17,8 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
   const [devOpen, setDevOpen] = useState(false);
   const [code, setCode] = useState('');
   const heroMsgs = [
-    { name: 'Sarah', msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
-    { name: 'Michael', msg: "We couldn't have done it without you! ⭐", timestamp: '2 hours ago' },
+    { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
+    { name: "Michael (Jack's Dad)", msg: "We couldn't have done it without you! ⭐", timestamp: '2 hours ago' },
   ];
 
   async function goToCard() {
