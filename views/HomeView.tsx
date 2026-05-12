@@ -177,7 +177,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         </div>
 
         {/* ── Testimonials ── */}
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 20 }}>
           <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 6 }}>It feels good to say thank you.</div>
           <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>What people are saying</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -205,7 +205,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
       </div>
 
       {/* Benefits */}
-      <div style={{ padding: '52px 18px 0', maxWidth: 480, margin: '0 auto' }}>
+      <div style={{ padding: '32px 18px 0', maxWidth: 480, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
           <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.55rem', color: '#2A2A2A', marginBottom: 6 }}>
             You&apos;re all set in 2 minutes!
