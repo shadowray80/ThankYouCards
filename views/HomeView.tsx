@@ -179,7 +179,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         {/* ── Testimonials ── */}
         <div style={{ marginBottom: 40 }}>
           <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 6 }}>What people are saying</div>
-          <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>Real people. Real cards.</div>
+          <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>It feels good to say thank you.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and the gift collection handled itself. I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
