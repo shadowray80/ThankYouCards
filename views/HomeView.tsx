@@ -185,10 +185,9 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
               { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and the gift collection handled itself. I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
               { quote: "When I opened it and saw messages from every single parent and kid in the team, I actually teared up. It meant so much more than a generic card from the newsagent.", name: 'Coach Dave', role: 'Group card recipient', color: '#F0ECFB', nameColor: '#7C5CBF' },
               { quote: "My nan lives in the UK and I never know what to send her. I made her a card in 3 minutes and she called me crying happy tears. Worth every cent.", name: 'Liam T.', role: 'Solo card sender', color: '#FDF0E8', nameColor: '#E8724A' },
-              { quote: "I've never received anything like it. Seeing my name on a beautiful card with a personal message just for me — it felt so thoughtful. I've saved it on my phone.", name: 'Margaret W.', role: 'Solo card recipient', color: '#E8F5EF', nameColor: '#2E7D5E' },
             ].map((t, i) => (
-              <div key={i} style={{ background: t.color, borderRadius: 16, padding: '20px 18px' }}>
-                <div style={{ fontSize: '1.4rem', marginBottom: 8, color: t.nameColor }}>"</div>
+              <div key={i} style={{ background: t.color, borderRadius: 16, padding: '20px 18px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ fontFamily: 'Georgia, serif', fontSize: '5.5rem', lineHeight: 1, color: t.nameColor, opacity: 0.18, position: 'absolute', top: -8, left: 12, fontWeight: 900, userSelect: 'none' }}>&ldquo;</div>
                 <div style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', marginBottom: 14 }}>{t.quote}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.nameColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
