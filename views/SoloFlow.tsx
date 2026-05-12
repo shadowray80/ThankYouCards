@@ -433,6 +433,22 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Shown in large text on the cover — leave blank to hide</div>
           </div>
 
+          {/* Message — typed or handwritten */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+              Your message
+            </label>
+            <MessageTabs
+              mode={msgMode}
+              onSwitch={m => { setMsgMode(m); setPhotoData(null); setMsg(''); }}
+              msg={msg}
+              onMsgChange={setMsg}
+              photoData={photoData}
+              onPhoto={handleMsgPhoto}
+              onRetake={() => setPhotoData(null)}
+            />
+          </div>
+
           {/* From */}
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
@@ -449,22 +465,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               }}
               onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
               onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-            />
-          </div>
-
-          {/* Message — typed or handwritten */}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-              Your message
-            </label>
-            <MessageTabs
-              mode={msgMode}
-              onSwitch={m => { setMsgMode(m); setPhotoData(null); setMsg(''); }}
-              msg={msg}
-              onMsgChange={setMsg}
-              photoData={photoData}
-              onPhoto={handleMsgPhoto}
-              onRetake={() => setPhotoData(null)}
             />
           </div>
 
