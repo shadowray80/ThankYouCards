@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
-import { BackBtn } from '@/components/ui/BackBtn';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { THEMES } from '@/lib/themes';
@@ -37,6 +36,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
   const uploadRef = useRef<HTMLInputElement>(null);
   const msgPhotoRef = useRef<HTMLInputElement>(null);
+  const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleSubmit() {
     setSaving(true);
@@ -170,12 +170,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     <div>
       <Nav onHome={onBack} onNav={onNav} badge="solo" />
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
-        <div style={{ padding: '16px 18px 12px' }}>
-          <BackBtn onClick={onBack} />
-        </div>
 
         {/* ── Inline editable card ── */}
-        <div style={{ margin: '0 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
+        <div style={{ margin: '12px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
           {/* Cover image */}
           <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
@@ -284,15 +281,22 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               <img src={photoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
             ) : (
               <textarea
+                ref={msgTextareaRef}
                 value={msg}
-                onChange={e => setMsg(e.target.value)}
+                onChange={e => {
+                  setMsg(e.target.value);
+                  const el = e.target;
+                  el.style.height = 'auto';
+                  el.style.height = el.scrollHeight + 'px';
+                }}
                 placeholder="Write your message here…"
-                rows={4}
+                rows={2}
                 style={{
                   width: '100%',
                   border: 'none',
                   outline: 'none',
                   resize: 'none',
+                  overflow: 'hidden',
                   fontFamily: "'Lora',serif",
                   fontStyle: 'italic',
                   fontSize: '1.08rem',
