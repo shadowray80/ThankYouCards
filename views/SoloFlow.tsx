@@ -191,30 +191,35 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             {/* Inset border */}
             <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
 
-            {/* Recipient name — tap to edit */}
+            {/* Recipient name — contentEditable so text-shadow isn't clipped */}
             <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
-              <input
-                value={to}
-                onChange={e => setTo(e.target.value)}
-                placeholder="The Legend's Name"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  textAlign: 'center',
-                  fontFamily: 'var(--font-dancing), cursive',
-                  fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                  lineHeight: 1.1,
-                  color: to ? '#fff' : 'rgba(255,255,255,0.4)',
-                  textShadow: to ? '0 2px 20px rgba(0,0,0,0.55)' : 'none',
-                  width: '85%',
-                  caretColor: '#fff',
-                  boxSizing: 'border-box',
-                  display: 'block',
-                  margin: '0 auto',
-                }}
-              />
+              <div style={{ position: 'relative', display: 'inline-block', minWidth: '60%', maxWidth: '85%' }}>
+                {!to && (
+                  <div style={{
+                    position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
+                    fontFamily: 'var(--font-dancing), cursive',
+                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
+                    lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap',
+                  }}>
+                    The Legend&apos;s Name
+                  </div>
+                )}
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={e => setTo(e.currentTarget.textContent ?? '')}
+                  style={{
+                    outline: 'none', cursor: 'text', textAlign: 'center',
+                    fontFamily: 'var(--font-dancing), cursive',
+                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
+                    lineHeight: 1.1, color: '#fff',
+                    textShadow: '0 2px 20px rgba(0,0,0,0.55)',
+                    caretColor: '#fff', padding: '6px 4px',
+                    minWidth: 40,
+                  }}
+                />
+              </div>
             </div>
 
             {/* Cover text — floating on image, always shown for editing */}
