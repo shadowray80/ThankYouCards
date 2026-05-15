@@ -244,6 +244,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   width: '90%',
                   caretColor: '#fff',
                   boxSizing: 'border-box',
+                  textShadow: '0 3px 24px rgba(0,0,0,0.7)',
                 }}
               />
             </div>
