@@ -182,7 +182,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
           <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
           <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
               {THEMES.map((t, i) => {
                 const isSelected = themeIdx === i;
                 return (
@@ -208,7 +208,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
           <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
           <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
               {theme.imgs.map((url, j) => {
                 if (failedImgs.has(j)) return null;
                 const isSelected = !customImgUrl && imgIdx === j;
