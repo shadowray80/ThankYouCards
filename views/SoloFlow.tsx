@@ -208,6 +208,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 <div
                   contentEditable
                   suppressContentEditableWarning
+                  spellCheck={false}
                   onInput={e => setTo(e.currentTarget.textContent ?? '')}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
