@@ -18,8 +18,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [themeIdx, setThemeIdx] = useState(7);
   const [imgIdx, setImgIdx] = useState(0);
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
-  const [themeOpen, setThemeOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
   const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
 
   const [to, setTo] = useState('');
@@ -102,7 +100,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   };
 
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
-  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); setMoreOpen(false); setFailedImgs(new Set()); };
+  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); setFailedImgs(new Set()); };
 
   // ── Done screen ──────────────────────────────────────────────
   if (showDone && slug) {
@@ -190,6 +188,24 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
             {/* Inset border */}
             <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
+
+            {/* Upload own photo — corner button */}
+            <div
+              onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+              style={{
+                position: 'absolute', top: 14, right: 14, zIndex: 5,
+                width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+                background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)',
+                backdropFilter: 'blur(4px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+                transition: 'background .2s',
+              }}
+              title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
+            >
+              {customImgUrl ? '✕' : '📷'}
+            </div>
+            <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
             <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
@@ -340,134 +356,62 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           </div>
         </div>
 
-        {/* ── Theme strip ── */}
-        <div style={{ background: '#B8DCEA', padding: '10px 14px 12px', marginTop: 16 }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>What&apos;s the occasion?</div>
-          <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-            {THEMES.slice(0, 4).map((t, i) => {
-              const isSelected = themeIdx === i;
-              return (
-                <div key={t.id} onClick={() => selectTheme(i)} style={{
-                  flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                  border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
-                  boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
-                  background: t.color, transition: 'all .2s',
-                }}>
-                  <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
-                  {isSelected && <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>}
-                </div>
-              );
-            })}
-            <div onClick={() => setThemeOpen(o => !o)} style={{
-              flexShrink: 0, width: 80, height: 60, borderRadius: 8, cursor: 'pointer',
-              border: themeOpen ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
-              background: themeOpen ? 'rgba(58,143,160,.25)' : 'rgba(58,143,160,.12)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, transition: 'all .2s',
-            }}>
-              <span style={{ fontSize: '1rem', color: '#3A8FA0', fontWeight: 800 }}>{themeOpen ? '✕' : '⊞'}</span>
-              <span style={{ fontSize: '.55rem', color: '#3A8FA0', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{themeOpen ? 'Close' : 'More'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Theme More accordion ── */}
-        {themeOpen && (
-          <div style={{ background: '#A3CFDF', padding: '12px 14px 16px' }}>
-            <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#3A8FA0', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>All themes</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {THEMES.map((t, i) => (
-                <div key={t.id} onClick={() => selectTheme(i)} style={{
-                  borderRadius: 12, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                  aspectRatio: '4/3', background: t.color,
-                  border: themeIdx === i ? '3px solid #3A8FA0' : '3px solid transparent',
-                  boxShadow: themeIdx === i ? '0 0 0 2px rgba(58,143,160,.4)' : 'none', transition: 'all .2s',
-                }}>
-                  <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,.75))', padding: '20px 10px 8px' }}>
-                    <div style={{ color: '#fff', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase' }}>{t.name}</div>
+        {/* ── Occasion film strip ── */}
+        <div style={{ background: '#B8DCEA', padding: '10px 0 12px', marginTop: 16 }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+              {THEMES.map((t, i) => {
+                const isSelected = themeIdx === i;
+                return (
+                  <div key={t.id} onClick={() => selectTheme(i)} style={{
+                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                    border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
+                    background: t.color, transition: 'all .2s',
+                  }}>
+                    <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
+                    {isSelected && <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>}
                   </div>
-                  <div style={{ position: 'absolute', top: 6, right: 6, fontSize: '1.1rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.5))' }}>{t.emoji}</div>
-                  {themeIdx === i && <div style={{ position: 'absolute', top: 6, left: 6, background: '#3A8FA0', color: '#fff', width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 800 }}>✓</div>}
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        )}
-
-        {/* ── Image strip ── */}
-        <div style={{ background: '#2A7E8F', padding: '10px 14px 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase' }}>Choose a vibe they&apos;ll love</div>
-          <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-            <div onClick={() => uploadRef.current?.click()} style={{
-              flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
-              border: customImgUrl ? '3px solid #fff' : '3px solid rgba(255,255,255,.35)',
-              background: 'rgba(255,255,255,.12)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, transition: 'all .2s',
-            }}>
-              {customImgUrl
-                ? <img src={customImgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <><span style={{ fontSize: '1.2rem' }}>📷</span><span style={{ fontSize: '.55rem', color: 'rgba(255,255,255,.8)', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>Your photo</span></>
-              }
-            </div>
-            <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
-
-            {theme.imgs.slice(0, 3).map((url, j) => {
-              if (failedImgs.has(j)) return null;
-              const isSelected = !customImgUrl && imgIdx === j;
-              return (
-                <div key={j} onClick={() => selectThemeImg(j)} style={{
-                  flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
-                  border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
-                  boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
-                  transition: 'all .2s', position: 'relative', background: 'rgba(255,255,255,.1)',
-                }}>
-                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
-                  {isSelected && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            <div onClick={() => setMoreOpen(o => !o)} style={{
-              flexShrink: 0, width: 80, height: 60, borderRadius: 8, cursor: 'pointer',
-              border: moreOpen ? '3px solid #fff' : '3px solid rgba(255,255,255,.35)',
-              background: moreOpen ? 'rgba(255,255,255,.25)' : 'rgba(255,255,255,.12)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, transition: 'all .2s',
-            }}>
-              <span style={{ fontSize: '1rem', color: '#fff', fontWeight: 800 }}>{moreOpen ? '✕' : '⊞'}</span>
-              <span style={{ fontSize: '.55rem', color: 'rgba(255,255,255,.85)', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{moreOpen ? 'Close' : 'More'}</span>
-            </div>
+            {/* Right fade hint */}
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #B8DCEA)', pointerEvents: 'none' }} />
           </div>
         </div>
 
-        {/* ── More images accordion ── */}
-        {moreOpen && (
-          <div style={{ background: '#1F6B7A', padding: '12px 14px 16px' }}>
-            <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.6)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>All images for this theme</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {/* ── Image film strip ── */}
+        <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
               {theme.imgs.map((url, j) => {
                 if (failedImgs.has(j)) return null;
                 const isSelected = !customImgUrl && imgIdx === j;
                 return (
                   <div key={j} onClick={() => selectThemeImg(j)} style={{
-                    borderRadius: 12, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                    aspectRatio: '4/3', background: 'rgba(255,255,255,.1)',
-                    border: isSelected ? '3px solid #fff' : '3px solid transparent',
-                    boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none', transition: 'all .2s',
+                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
+                    border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
+                    transition: 'all .2s', position: 'relative', background: 'rgba(255,255,255,.1)',
                   }}>
-                    <img src={url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
-                    {isSelected && <div style={{ position: 'absolute', top: 8, left: 8, background: '#fff', color: '#2A7E8F', width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.7rem', fontWeight: 800 }}>✓</div>}
+                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
+                    {isSelected && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
+                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
+            {/* Right fade hint */}
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #2A7E8F)', pointerEvents: 'none' }} />
           </div>
-        )}
+        </div>
 
         {/* ── Gift voucher ── */}
         <div style={{ padding: '16px 18px 0' }}>
