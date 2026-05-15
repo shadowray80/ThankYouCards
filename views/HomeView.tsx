@@ -214,7 +214,7 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         </div>
 
         {[
-          { bg: '#F0ECFB', icon: '🖼️', title: 'Curated images for every occasion', desc: 'AFL, cricket, school, swim and more. Or upload your own team photo.' },
+          { bg: '#F0ECFB', icon: '🖼️', title: 'Curated images for every occasion', desc: 'Coaches, birthdays, thank yous, weddings, new babies, retirement, mum, dad and more. Or upload your own team photo!' },
           { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
           { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
           { bg: '#FBE8EE', icon: '💳', title: 'Add a Visa gift card', desc: 'Include a Visa gift card with any amount - spendable anywhere, by anyone, in any country.' },
