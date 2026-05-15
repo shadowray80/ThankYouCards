@@ -171,8 +171,63 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       <Nav onHome={onBack} onNav={onNav} badge="solo" />
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
 
+        {/* ── Occasion film strip ── */}
+        <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+              {THEMES.map((t, i) => {
+                const isSelected = themeIdx === i;
+                return (
+                  <div key={t.id} onClick={() => selectTheme(i)} style={{
+                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                    border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
+                    background: t.color, transition: 'all .2s',
+                  }}>
+                    <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
+                    {isSelected && <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #B8DCEA)', pointerEvents: 'none' }} />
+          </div>
+        </div>
+
+        {/* ── Image film strip ── */}
+        <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+              {theme.imgs.map((url, j) => {
+                if (failedImgs.has(j)) return null;
+                const isSelected = !customImgUrl && imgIdx === j;
+                return (
+                  <div key={j} onClick={() => selectThemeImg(j)} style={{
+                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
+                    border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
+                    transition: 'all .2s', position: 'relative', background: 'rgba(255,255,255,.1)',
+                  }}>
+                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
+                    {isSelected && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
+                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #2A7E8F)', pointerEvents: 'none' }} />
+          </div>
+        </div>
+
         {/* ── Inline editable card ── */}
-        <div style={{ margin: '12px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
+        <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
           {/* Cover image */}
           <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
@@ -357,63 +412,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               thank<span style={{ color: '#F09070' }}>you</span>cards.au
             </div>
             <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
-          </div>
-        </div>
-
-        {/* ── Occasion film strip ── */}
-        <div style={{ background: '#B8DCEA', padding: '10px 0 12px', marginTop: 16 }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
-              {THEMES.map((t, i) => {
-                const isSelected = themeIdx === i;
-                return (
-                  <div key={t.id} onClick={() => selectTheme(i)} style={{
-                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                    border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
-                    boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
-                    background: t.color, transition: 'all .2s',
-                  }}>
-                    <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
-                    {isSelected && <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Right fade hint */}
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #B8DCEA)', pointerEvents: 'none' }} />
-          </div>
-        </div>
-
-        {/* ── Image film strip ── */}
-        <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
-              {theme.imgs.map((url, j) => {
-                if (failedImgs.has(j)) return null;
-                const isSelected = !customImgUrl && imgIdx === j;
-                return (
-                  <div key={j} onClick={() => selectThemeImg(j)} style={{
-                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
-                    border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
-                    boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
-                    transition: 'all .2s', position: 'relative', background: 'rgba(255,255,255,.1)',
-                  }}>
-                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
-                    {isSelected && (
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
-                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Right fade hint */}
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #2A7E8F)', pointerEvents: 'none' }} />
           </div>
         </div>
 
