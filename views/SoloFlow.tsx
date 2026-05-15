@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -37,6 +37,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const uploadRef = useRef<HTMLInputElement>(null);
   const msgPhotoRef = useRef<HTMLInputElement>(null);
   const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const cardMsgRef = useRef<HTMLDivElement>(null);
+
+  // Sync cover text DOM when theme changes (not triggered by user typing)
+  useEffect(() => {
+    const el = cardMsgRef.current;
+    if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
+  }, [cardMsg]);
 
   async function handleSubmit() {
     setSaving(true);
@@ -291,30 +298,39 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </div>
             </div>
 
-            {/* Cover text — floating on image, always shown for editing */}
+            {/* Cover text — floating on image, wraps to two lines if long */}
             <div style={{
               position: 'absolute', bottom: '12%', left: 0, right: 0, zIndex: 3,
               textAlign: 'center', padding: '0 16px',
             }}>
-              <input
-                value={cardMsg}
-                onChange={e => setCardMsg(e.target.value)}
-                placeholder="Add cover text…"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  textAlign: 'center',
-                  fontFamily: 'var(--font-dancing), cursive',
-                  fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
-                  color: '#fff',
-                  lineHeight: 1.2,
-                  width: '90%',
-                  caretColor: '#fff',
-                  boxSizing: 'border-box',
-                  textShadow: '0 3px 24px rgba(0,0,0,0.7)',
-                }}
-              />
+              <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
+                {!cardMsg && (
+                  <div style={{
+                    position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
+                    fontFamily: 'var(--font-dancing), cursive',
+                    fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
+                    lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
+                  }}>
+                    Add cover text…
+                  </div>
+                )}
+                <div
+                  ref={cardMsgRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  spellCheck={false}
+                  onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                  style={{
+                    outline: 'none', cursor: 'text', textAlign: 'center',
+                    fontFamily: 'var(--font-dancing), cursive',
+                    fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
+                    lineHeight: 1.2, color: '#fff',
+                    textShadow: '0 3px 24px rgba(0,0,0,0.7)',
+                    caretColor: '#fff',
+                    wordBreak: 'break-word',
+                  }}
+                />
+              </div>
             </div>
 
             {/* Gift badge */}
