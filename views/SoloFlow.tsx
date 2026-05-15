@@ -267,7 +267,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
-            <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+            <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
               <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
                 {!to && (
