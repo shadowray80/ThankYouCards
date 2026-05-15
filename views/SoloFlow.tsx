@@ -197,11 +197,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               <input
                 value={to}
                 onChange={e => setTo(e.target.value)}
-                placeholder="Their name"
+                placeholder="The Legend's Name"
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '2px dashed rgba(255,255,255,0.4)',
                   outline: 'none',
                   textAlign: 'center',
                   fontFamily: 'var(--font-dancing), cursive',
@@ -232,7 +231,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '1px dashed rgba(0,0,0,0.18)',
                   outline: 'none',
                   textAlign: 'center',
                   fontFamily: "'Lora',serif",
@@ -296,7 +294,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 placeholder="Your name"
                 style={{
                   border: 'none',
-                  borderBottom: '1px dashed #D4C8EE',
                   outline: 'none',
                   background: 'transparent',
                   fontSize: '.78rem',
