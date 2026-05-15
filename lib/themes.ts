@@ -114,7 +114,7 @@ export const THEMES: Theme[] = [
     name: "Mates",
     emoji: "🍺",
     color: "linear-gradient(135deg,#C9933A,#F59E0B)",
-    frontMsg: "To the best mate!",
+    frontMsg: "Cheers Buddy!",
     imgs: [
       "/mates-fishing.jpg",
       "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",

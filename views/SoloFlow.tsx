@@ -217,12 +217,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               />
             </div>
 
-            {/* Cover text — frosted strip, always shown for editing */}
+            {/* Cover text — floating on image, always shown for editing */}
             <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 3,
-              background: 'linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.0) 100%)',
-              padding: '48px 22px 18px',
-              textAlign: 'center',
+              position: 'absolute', bottom: '12%', left: 0, right: 0, zIndex: 3,
+              textAlign: 'center', padding: '0 16px',
             }}>
               <input
                 value={cardMsg}
@@ -233,14 +231,14 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   border: 'none',
                   outline: 'none',
                   textAlign: 'center',
-                  fontFamily: "'Lora',serif",
-                  fontStyle: 'italic',
-                  fontSize: 'clamp(1.45rem, 5.5vw, 1.9rem)',
-                  color: cardMsg ? '#2A2A2A' : '#B0A8BC',
-                  lineHeight: 1.3,
+                  fontFamily: 'var(--font-dancing), cursive',
+                  fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                  color: '#fff',
+                  lineHeight: 1.2,
                   width: '90%',
-                  caretColor: '#3A8FA0',
+                  caretColor: '#fff',
                   boxSizing: 'border-box',
+                  textShadow: '-2px -2px 0 rgba(0,0,0,0.5), 2px -2px 0 rgba(0,0,0,0.5), -2px 2px 0 rgba(0,0,0,0.5), 2px 2px 0 rgba(0,0,0,0.5)',
                 }}
               />
             </div>
