@@ -232,7 +232,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   outline: 'none',
                   textAlign: 'center',
                   fontFamily: 'var(--font-dancing), cursive',
-                  fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                  fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
                   color: '#fff',
                   lineHeight: 1.2,
                   width: '90%',
