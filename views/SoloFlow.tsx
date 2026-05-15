@@ -284,7 +284,11 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
-                  onInput={e => setTo(e.currentTarget.textContent ?? '')}
+                  autoCapitalize="words"
+                  onInput={e => {
+                    const raw = e.currentTarget.textContent ?? '';
+                    setTo(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase()));
+                  }}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
@@ -293,6 +297,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     textShadow: '0 2px 20px rgba(0,0,0,0.55)',
                     caretColor: '#fff', padding: '6px 4px',
                     minWidth: 40,
+                    textTransform: 'capitalize',
                   }}
                 />
               </div>
