@@ -42,7 +42,10 @@ export function AdminToolbar() {
         Admin
       </div>
 
-      <div style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div
+        onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }}
+        style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none', flex: 1, minWidth: 0 }}
+      >
         {NAV.map(item => (
           <a
             key={item.href}
@@ -60,8 +63,6 @@ export function AdminToolbar() {
           </a>
         ))}
       </div>
-
-      <div style={{ flex: 1 }} />
 
       <span style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.25)', marginRight: 10, whiteSpace: 'nowrap' }}>
         {user.email}
