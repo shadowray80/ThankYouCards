@@ -169,8 +169,8 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       <div>
         <Nav onHome={onBack} onNav={onNav} />
         <div style={{ padding: '40px 24px', maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 8 }}>View a campaign</div>
-          <div style={{ color: '#7A7585', fontSize: '.88rem', marginBottom: 20 }}>Enter a campaign code to load the card.</div>
+          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 8 }}>Contributor view</div>
+          <div style={{ color: '#7A7585', fontSize: '.88rem', marginBottom: 20 }}>Enter a campaign slug to load a real card, or load the demo to preview the experience.</div>
           <input
             value={slugInput} onChange={e => setSlugInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && slugInput.trim() && setActiveSlug(slugInput.trim())}
@@ -178,6 +178,18 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
           />
           <Btn variant="teal" full onClick={() => setActiveSlug(slugInput.trim())} style={{ marginTop: 12 }} disabled={!slugInput.trim()}>Load card →</Btn>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0 4px' }}>
+            <div style={{ flex: 1, height: 1, background: '#E8E2F0' }} />
+            <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 700 }}>or</div>
+            <div style={{ flex: 1, height: 1, background: '#E8E2F0' }} />
+          </div>
+          <Btn variant="outline" full onClick={() => {
+            setCampaign({ id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' });
+            setContributions([]);
+            setActiveSlug('demo');
+          }}>
+            Preview demo →
+          </Btn>
           {loadError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 10 }}>{loadError}</div>}
         </div>
       </div>
