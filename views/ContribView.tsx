@@ -39,9 +39,11 @@ interface ContribViewProps {
 }
 
 export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug }: ContribViewProps) {
+  const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
+
   const [slugInput, setSlugInput]         = useState('');
-  const [activeSlug, setActiveSlug]       = useState(initialSlug ?? '');
-  const [campaign, setCampaign]           = useState<Campaign | null>(null);
+  const [activeSlug, setActiveSlug]       = useState(initialSlug ?? 'demo');
+  const [campaign, setCampaign]           = useState<Campaign | null>(initialSlug ? null : DEMO_CAMPAIGN);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(false);
   const [loadError, setLoadError]         = useState('');
@@ -66,7 +68,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const canPay      = canSubmit && validEmail;
 
   useEffect(() => {
-    if (!activeSlug) return;
+    if (!activeSlug || activeSlug === 'demo') return;
     setLoading(true);
     setLoadError('');
     fetch(`/api/campaigns/${activeSlug}`)
@@ -178,19 +180,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
           />
           <Btn variant="teal" full onClick={() => setActiveSlug(slugInput.trim())} style={{ marginTop: 12 }} disabled={!slugInput.trim()}>Load card →</Btn>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0 4px' }}>
-            <div style={{ flex: 1, height: 1, background: '#E8E2F0' }} />
-            <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 700 }}>or</div>
-            <div style={{ flex: 1, height: 1, background: '#E8E2F0' }} />
-          </div>
-          <Btn variant="outline" full onClick={() => {
-            setCampaign({ id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' });
-            setContributions([]);
-            setActiveSlug('demo');
-          }}>
-            Preview demo →
-          </Btn>
-          {loadError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 10 }}>{loadError}</div>}
+{loadError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 10 }}>{loadError}</div>}
         </div>
       </div>
     );
