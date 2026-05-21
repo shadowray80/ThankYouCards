@@ -158,7 +158,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </a>
               <a href={`sms:?body=${encodeURIComponent(shareText)}`}
                 style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                💬 iMessage
+                💬 SMS
               </a>
               <a href={`mailto:?subject=A card for you, ${to}&body=${encodeURIComponent(shareText)}`}
                 style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
