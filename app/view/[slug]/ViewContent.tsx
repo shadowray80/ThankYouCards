@@ -78,7 +78,7 @@ export function ViewContent() {
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
 
       {/* Card — straight in, no header */}
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 20px' }}>
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
         <CardScrollView
           theme={theme}
           customImgUrl={campaign.card_image_url ?? undefined}
@@ -92,20 +92,24 @@ export function ViewContent() {
         />
       </div>
 
-      {/* Footer */}
-      <div style={{ textAlign: 'center', padding: '8px 24px 48px', borderTop: '1px solid #E8E2F0' }}>
-        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#3A8FA0', marginBottom: 4 }}>
-          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.85rem' }}>.au</span>
-        </div>
-        <div style={{ fontSize: '.78rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
-          Beautiful cards for the legends in your life
-        </div>
+      {/* CTA button — full width of card */}
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '14px 16px 0' }}>
         <a
           href="/"
-          style={{ background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '12px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', display: 'inline-block', fontFamily: "'Nunito',sans-serif" }}
+          style={{ background: '#E8724A', color: '#fff', borderRadius: 12, padding: '14px 24px', fontWeight: 800, fontSize: '1rem', textDecoration: 'none', display: 'block', textAlign: 'center', fontFamily: "'Nunito',sans-serif" }}
         >
           Create your own card →
         </a>
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', padding: '20px 24px 48px', marginTop: 16, borderTop: '1px solid #E8E2F0' }}>
+        <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0', marginBottom: 6 }}>
+          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '1rem' }}>.au</span>
+        </div>
+        <div style={{ fontSize: '.95rem', color: '#B0A8BC', fontWeight: 600 }}>
+          Beautiful cards for the legends in your life
+        </div>
       </div>
 
     </div>
