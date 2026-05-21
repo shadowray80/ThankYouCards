@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
