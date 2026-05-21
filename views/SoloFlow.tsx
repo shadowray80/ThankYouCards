@@ -436,43 +436,33 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           </div>
         </div>
 
-        {/* ── Gift voucher ── */}
+        {/* ── Gift card — coming soon ── */}
         <div style={{ padding: '16px 18px 0' }}>
-          <div onClick={() => setIncludeGift(g => !g)} style={{
+          <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: includeGift ? '#EAF4FB' : '#FAFAFA',
-            border: includeGift ? '2px solid #3A8FA0' : '2px solid #E8E2F0',
-            borderRadius: 12, padding: '14px 16px', cursor: 'pointer', transition: 'all .2s',
+            background: '#FAFAFA', border: '2px solid #E8E2F0',
+            borderRadius: 12, padding: '14px 16px', opacity: 0.6,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: '1.4rem' }}>💳</span>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '.93rem', color: '#2A2A2A' }}>Add a Visa gift card</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ fontWeight: 800, fontSize: '.93rem', color: '#2A2A2A' }}>Add a gift card</div>
+                  <div style={{ background: '#F09070', color: '#fff', fontSize: '.58rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', borderRadius: 6, padding: '2px 7px' }}>Coming soon</div>
+                </div>
                 <div style={{ fontSize: '.76rem', color: '#7A7585', marginTop: 1 }}>Spendable anywhere, any country</div>
               </div>
             </div>
-            <div style={{ width: 42, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0, background: includeGift ? '#3A8FA0' : '#D1C8DC', transition: 'background .2s' }}>
-              <div style={{ position: 'absolute', top: 3, left: includeGift ? 21 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
+            <div style={{ width: 42, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0, background: '#D1C8DC' }}>
+              <div style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
             </div>
           </div>
-
-          {includeGift && (
-            <div style={{ marginTop: 12, padding: '16px 16px 4px', background: '#EAF4FB', borderRadius: 12, border: '2px solid rgba(58,143,160,.2)' }}>
-              <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#3A8FA0', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Choose amount</div>
-              <GiftSelector
-                selected={giftSel}
-                onSelect={a => { setGiftSel(a); setGiftCustom(''); }}
-                custom={giftCustom}
-                onCustom={v => { setGiftCustom(v); setGiftSel(null); }}
-              />
-            </div>
-          )}
         </div>
 
         {/* ── Sticky continue button ── */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
           <Btn variant="teal" full disabled={!canContinue || saving} onClick={handleSubmit}>
-            {saving ? 'Saving…' : includeGift && giftAmount > 0 ? `Continue → Card + $${giftAmount} gift` : 'Continue → Send this card'}
+            {saving ? 'Saving…' : 'Continue → Send this card'}
           </Btn>
         </div>
 
