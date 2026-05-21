@@ -14,7 +14,6 @@ interface HomeViewProps {
 }
 
 export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: HomeViewProps) {
-  const [devOpen, setDevOpen] = useState(false);
   const [code, setCode] = useState('');
   const heroMsgs = [
     { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
@@ -57,44 +56,8 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
           <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0' }}>
             thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => setDevOpen(o => !o)}
-              style={{ background: 'none', border: '1.5px dashed #B0A8BC', borderRadius: 8, padding: '5px 10px', fontSize: '.72rem', color: '#B0A8BC', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
-            >
-              {devOpen ? '✕' : '🛠'}
-            </button>
-            <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
-          </div>
+          <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
         </div>
-
-        {devOpen && (
-          <div style={{ background: '#F7F5FB', borderTop: '1px dashed #D1C8DC', padding: '12px 20px 14px' }}>
-            <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 8 }}>Dev — jump to view</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {[
-                { label: '🏠 Home',             view: 'home' },
-                { label: '📨 Solo Card',         view: 'solo' },
-                { label: '👥 Group Card',        view: 'group' },
-                { label: '✍️ Contributor',       view: 'contrib' },
-                { label: '📊 Dashboard',         view: 'dash' },
-                { label: '🎴 Card View',         view: 'card' },
-              ].map(item => (
-                <button
-                  key={item.view}
-                  onClick={() => { onNav(item.view); setDevOpen(false); }}
-                  style={{
-                    background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 8,
-                    padding: '7px 12px', cursor: 'pointer',
-                    fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.8rem', color: '#2A2A2A',
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Hero ── */}
