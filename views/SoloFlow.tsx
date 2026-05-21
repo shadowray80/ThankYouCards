@@ -118,27 +118,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       <div>
         <Nav onHome={onBack} onNav={onNav} badge="solo" />
         <div style={{ padding: '22px 18px 60px', maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: '3.2rem', marginBottom: 8 }}>🎉</div>
-            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.8rem', color: '#2A2A2A', marginBottom: 6 }}>Card ready!</div>
-            <div style={{ color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, fontWeight: 600 }}>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.6rem', color: '#2A2A2A' }}>🎉 Card ready! 🎊</div>
+            <div style={{ color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, fontWeight: 600, marginTop: 4 }}>
               Share this link with {to} to deliver their card.
             </div>
           </div>
-          <CardScrollView
-            theme={theme}
-            imgIdx={imgIdx < 0 ? 0 : imgIdx}
-            customImgUrl={customImgUrl ?? undefined}
-            recipientName={to}
-            fromText={from || 'From a friend'}
-            message={cardMsg}
-            soloMessage={photoData === null ? msg : undefined}
-            soloPhotoData={photoData ?? undefined}
-            messages={[]}
-            landscapeCover
-            giftAmount={giftAmount}
-          />
-          <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 14 }}>
+          <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with {to}</div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
@@ -166,6 +152,19 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </a>
             </div>
           </div>
+          <CardScrollView
+            theme={theme}
+            imgIdx={imgIdx < 0 ? 0 : imgIdx}
+            customImgUrl={customImgUrl ?? undefined}
+            recipientName={to}
+            fromText={from || 'From a friend'}
+            message={cardMsg}
+            soloMessage={photoData === null ? msg : undefined}
+            soloPhotoData={photoData ?? undefined}
+            messages={[]}
+            landscapeCover
+            giftAmount={giftAmount}
+          />
           <Btn variant="outline" full onClick={onBack}>Make another card</Btn>
         </div>
       </div>
