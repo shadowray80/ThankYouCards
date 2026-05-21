@@ -92,6 +92,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
   const name = recipientName || null;
   const from = fromText || 'From the Under 12s';
   const msg = message ?? '';
+  const isSolo = soloMessage !== undefined || soloPhotoData !== undefined;
 
   return (
     <div style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)', marginBottom: 22 }}>
@@ -123,20 +124,33 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
           </div>
         </div>
 
-        {/* Cover text — floating on image in Dancing Script with stroke */}
-        {msg ? (
+        {/* Cover text + optional from line for group cards */}
+        {(msg || (from && !isSolo)) ? (
           <div style={{
-            position: 'absolute', bottom: '12%', left: 0, right: 0, zIndex: 3,
+            position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3,
             textAlign: 'center', padding: '0 16px',
           }}>
-            <div style={{
-              fontFamily: 'var(--font-dancing), cursive',
-              fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
-              color: '#fff',
-              lineHeight: 1.2,
-            }}>
-              {msg}
-            </div>
+            {msg && (
+              <div style={{
+                fontFamily: 'var(--font-dancing), cursive',
+                fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                color: '#fff',
+                lineHeight: 1.2,
+              }}>
+                {msg}
+              </div>
+            )}
+            {from && !isSolo && (
+              <div style={{
+                fontFamily: 'var(--font-dancing), cursive',
+                fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
+                color: 'rgba(255,255,255,0.88)',
+                lineHeight: 1.3, marginTop: 4,
+                textShadow: '0 2px 12px rgba(0,0,0,0.65)',
+              }}>
+                {from}
+              </div>
+            )}
           </div>
         ) : null}
 
@@ -207,6 +221,11 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
                 <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 700, color: '#3A8FA0', fontSize: '.92rem' }}>
                   Add your message
                 </div>
+              </div>
+            )}
+            {from && (
+              <div style={{ padding: '12px 22px 16px', fontSize: '1rem', color: '#7A7585', fontWeight: 700, borderTop: '1px solid #F0EDF5' }}>
+                — {from}
               </div>
             )}
           </div>
