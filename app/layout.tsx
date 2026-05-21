@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito, Lora, Dancing_Script } from "next/font/google";
 import "./globals.css";
+import { AdminToolbar } from "@/components/ui/AdminToolbar";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -37,7 +38,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${nunito.variable} ${lora.variable} ${dancing.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AdminToolbar />
+        {children}
+      </body>
     </html>
   );
 }

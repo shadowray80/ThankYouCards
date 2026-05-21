@@ -10,36 +10,7 @@ import { DashboardView } from '@/views/DashboardView';
 import { CardView } from '@/views/CardView';
 
 type View = 'home' | 'solo' | 'group' | 'contrib' | 'dash' | 'card';
-
-const DEV_VIEWS: { label: string; view: View }[] = [
-  { label: '🏠 Home',        view: 'home' },
-  { label: '📨 Solo Card',   view: 'solo' },
-  { label: '👥 Group Card',  view: 'group' },
-  { label: '✍️ Contributor', view: 'contrib' },
-  { label: '📊 Dashboard',   view: 'dash' },
-  { label: '🎴 Card View',   view: 'card' },
-];
-
-function DevButton({ onNav }: { onNav: (v: View) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 99999 }}>
-      {open && (
-        <div style={{ position: 'absolute', bottom: 48, right: 0, background: '#F7F5FB', border: '1.5px dashed #D1C8DC', borderRadius: 12, padding: '10px 12px', width: 180, boxShadow: '0 8px 24px rgba(0,0,0,.12)' }}>
-          <div style={{ fontSize: '.65rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 8 }}>Dev — jump to</div>
-          {DEV_VIEWS.map(item => (
-            <button key={item.view} onClick={() => { onNav(item.view); setOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '7px 10px', marginBottom: 5, cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.8rem', color: '#2A2A2A' }}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-      <button onClick={() => setOpen(o => !o)} style={{ background: '#fff', border: '1.5px dashed #B0A8BC', borderRadius: 10, padding: '8px 12px', fontSize: '.8rem', color: '#B0A8BC', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif", boxShadow: '0 4px 12px rgba(0,0,0,.1)' }}>
-        {open ? '✕' : '🛠'}
-      </button>
-    </div>
-  );
-}
+const VIEWS: View[] = ['home', 'solo', 'group', 'contrib', 'dash', 'card'];
 
 export default function App() {
   const [view, setView] = useState<View>('home');
@@ -51,11 +22,13 @@ export default function App() {
     setTimeout(() => setToast(t => ({ ...t, show: false })), 2500);
   }, []);
 
-  // Handle Stripe redirect back after payment
+  // Handle query param navigation (admin toolbar) and Stripe redirects
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const v = params.get('v') as View | null;
     const payment = params.get('payment');
     const cardSlug = params.get('card');
+    if (v && VIEWS.includes(v)) setView(v);
     if (payment === 'success') showToast('Payment confirmed! You\'re on the card 🎉');
     if (payment === 'cancelled') showToast('Payment cancelled — you can try again anytime.');
     if (cardSlug) {
@@ -85,7 +58,6 @@ export default function App() {
       {view === 'contrib' && <ContribView onBack={() => go('home')} onToCard={() => go('card')} onToast={showToast} onNav={go} campaignSlug={contribSlug || undefined} />}
       {view === 'dash'    && <DashboardView onBack={() => go('home')} onToCard={() => go('card')} onToast={showToast} onNav={go} />}
       {view === 'card'    && <CardView onBack={() => go('dash')} onToast={showToast} onNav={go} />}
-      <DevButton onNav={v => go(v)} />
       <Toast msg={toast.msg} show={toast.show} />
     </div>
   );
