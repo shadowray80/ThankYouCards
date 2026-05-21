@@ -77,26 +77,8 @@ export function ViewContent() {
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
 
-      {/* Header */}
-      <div style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
-        <div style={{ fontSize: '2.6rem', marginBottom: 10 }}>🎉</div>
-        <h1 style={{ fontWeight: 800, fontSize: '1.7rem', color: '#2A2A2A', lineHeight: 1.2, margin: '0 0 8px' }}>
-          {name}, you&apos;ve got a card!
-        </h1>
-        {fromText && (
-          <div style={{ fontSize: '.95rem', color: '#7A7585', fontWeight: 600, marginBottom: 10 }}>
-            From {fromText}
-          </div>
-        )}
-        {hasGift && (
-          <div style={{ display: 'inline-block', background: 'linear-gradient(135deg,#1a237e,#1565c0)', borderRadius: 20, padding: '6px 18px', color: '#fff', fontWeight: 800, fontSize: '.88rem', marginTop: 4 }}>
-            💳 ${campaign.funded_amount} gift included
-          </div>
-        )}
-      </div>
-
-      {/* Card */}
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 16px 20px' }}>
+      {/* Card — straight in, no header */}
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 20px' }}>
         <CardScrollView
           theme={theme}
           customImgUrl={campaign.card_image_url ?? undefined}
