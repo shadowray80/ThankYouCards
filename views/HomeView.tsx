@@ -92,15 +92,15 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
       <div style={{ background: '#FFFDF8', padding: '44px 20px 0', maxWidth: 440, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           {[
-            { icon: '📨', title: 'Solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', border: '#3A8FA0' },
-            { icon: '👥', title: 'Group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', border: '#E8724A' },
+            { icon: '📨', title: 'Send a solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', solid: '#3A8FA0' },
+            { icon: '👥', title: 'Send a group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', solid: '#E8724A' },
           ].map((c, i) => (
             <div
               key={i}
               onClick={c.onClick}
-              style={{ borderRadius: 18, padding: '22px 16px', border: '2.5px solid #E8E2F0', cursor: 'pointer', textAlign: 'center', background: '#fff', transition: 'all .25s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = c.border; (e.currentTarget as HTMLDivElement).style.background = c.bg; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#E8E2F0'; (e.currentTarget as HTMLDivElement).style.background = '#fff'; }}
+              style={{ borderRadius: 18, padding: '22px 16px', border: `2.5px solid ${c.solid}`, cursor: 'pointer', textAlign: 'center', background: c.bg, transition: 'all .25s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.filter = 'brightness(0.93)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.filter = ''; }}
             >
               <div style={{ fontSize: '2.4rem', marginBottom: 10 }}>{c.icon}</div>
               <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 5, color: c.color }}>{c.title}</div>
