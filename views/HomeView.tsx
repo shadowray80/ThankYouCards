@@ -178,7 +178,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           { bg: '#F0ECFB', icon: '🖼️', title: 'Curated images for every occasion', desc: 'Coaches, birthdays, thank yous, weddings, new babies, retirement, mum, dad and more. Or upload your own team photo!' },
           { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
           { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
-          { bg: '#FBE8EE', icon: '💳', title: 'Add a Visa gift card', desc: 'Include a Visa gift card with any amount - spendable anywhere, by anyone, in any country.' },
+          { bg: '#FBE8EE', icon: '💳', title: 'Add a gift card', desc: 'Include a gift card with any amount - spendable anywhere, by anyone, in any country.' },
         ].map((b, i) => (
           <div key={i} style={{ background: b.bg, borderRadius: 16, padding: '17px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 11 }}>
             <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>{b.icon}</div>
@@ -204,7 +204,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           <div style={{ fontSize: '.86rem', color: '#7A7585', fontWeight: 600, marginBottom: 14 }}>Less than a card from the newsagent. Way better.</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div style={{ background: '#EAF4FB', borderRadius: 14, padding: 18, border: '2px solid rgba(58,143,160,.2)' }}>
-              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#3A8FA0' }}>$4.99</div>
+              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#3A8FA0' }}>Free</div>
               <div style={{ fontSize: '.78rem', color: '#7A7585', marginTop: 3, fontWeight: 700 }}>Solo card</div>
             </div>
             <div style={{ background: '#FDF0E8', borderRadius: 14, padding: 18, border: '2px solid rgba(232,114,74,.2)' }}>

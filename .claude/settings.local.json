@@ -7,7 +7,10 @@
       "Bash(curl -L \"https://picsum.photos/seed/flowers/800/600\" -o \"F:/Thankyoucards/app/public/default-flowers.jpg\" --max-time 20)",
       "Bash(node -e \"require\\('stripe'\\); console.log\\('stripe ok'\\)\")",
       "Bash(node -e \"require\\('@supabase/supabase-js'\\); console.log\\('supabase ok'\\)\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm list *)",
+      "Bash(npm install *)"
     ]
   }
 }

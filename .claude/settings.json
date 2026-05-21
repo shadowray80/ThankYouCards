@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"^.\\\\{500,\\\\}\" \"f:/HunterKiller/hsd_fixed.html\")",
+      "Bash(awk -F: '{print $1, length\\($2\\), \"chars\"}')",
+      "Bash(awk 'NR>=1650 && NR<=1700' \"f:/HunterKiller/hsd_fixed.html\")",
+      "Bash(awk 'NR>=1700 && NR<=1900' \"f:/HunterKiller/hsd_fixed.html\")",
+      "Read(//f/HunterKiller/**)",
+      "Bash(node -e ' *)",
+      "Bash(npm --version)",
+      "Bash(npm create *)",
+      "Bash(rm -f src/counter.js src/main.js src/style.css public/icons.svg public/favicon.svg)",
+      "Bash(rmdir src/assets)",
+      "Bash(mkdir -p src/entities src/render src/maps src/audio src/controls src/ui src/net)",
+      "Bash(mkdir -p public/Images public/Sounds)",
+      "Bash(powershell -Command ' *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(npx vite *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem \"f:\\\\Thankyoucards\\\\app\\\\public\")",
+      "Bash(Select-Object Name)",
+      "Bash(git checkout *)",
+      "Bash(mkdir -p \"f:\\\\Thankyoucards\\\\app\\\\app\\\\view\\\\[slug]\")",
+      "Bash(npx next *)",
+      "Bash(git tag *)",
+      "WebSearch",
+      "Bash(git bundle *)",
+      "Bash(dir ..\\\\thankyoucards-backup-may12.bundle)",
+      "Bash(dir \"f:\\\\Thankyoucards\\\\thankyoucards-backup-may12.bundle\")",
+      "Bash(ls \"f:/Thankyoucards/\")",
+      "Read(//f/Thankyoucards/**)",
+      "Bash(Read \"C:\\\\Users\\\\Tim\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\f--Thankyoucards-app\\\\538e036d-e628-4754-a814-be4788659998\\\\tasks\\\\b3riyg7qz.output\")",
+      "Bash(ping -n 6 127.0.0.1)",
+      "Bash(taskkill /PID 11372 /F)",
+      "Bash(git commit *)"
+    ],
+    "additionalDirectories": [
+      "f:\\HunterKiller",
+      "f:\\HunterKiller\\Sounds",
+      "f:\\Thankyoucards\\app\\app\\view"
+    ]
+  }
+}

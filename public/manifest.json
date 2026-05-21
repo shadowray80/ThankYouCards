@@ -1,0 +1,17 @@
+{
+  "name": "thankyoucards.au",
+  "short_name": "TYCards",
+  "description": "Beautiful, personalised thank you cards sent instantly",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3A8FA0",
+  "icons": [
+    {
+      "src": "/TYC.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
