@@ -8,12 +8,10 @@ import { THEMES } from '@/lib/themes';
 interface HomeViewProps {
   onSolo: () => void;
   onGroup: () => void;
-  onContribDemo: () => void;
-  onDashDemo: () => void;
   onNav: (view: string) => void;
 }
 
-export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: HomeViewProps) {
+export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
   const heroMsgs = [
     { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
@@ -221,10 +219,6 @@ export function HomeView({ onSolo, onGroup, onContribDemo, onDashDemo, onNav }: 
         <div style={{ paddingBottom: 50 }}>
           <Btn variant="teal" full onClick={onSolo}>💌 Send a card now →</Btn>
           <Btn variant="coral" full onClick={onGroup}>👥 Create a group card →</Btn>
-          <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'center' }}>
-            <Btn variant="outline" sm onClick={onContribDemo}>Contributor view</Btn>
-            <Btn variant="outline" sm onClick={onDashDemo}>Dashboard demo</Btn>
-          </div>
         </div>
 
       </div>

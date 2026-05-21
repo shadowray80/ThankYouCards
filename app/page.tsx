@@ -52,7 +52,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Nunito', sans-serif", maxWidth: 480, margin: '0 auto', minHeight: '100vh', background: '#fff', position: 'relative' }}>
-      {view === 'home'    && <HomeView onSolo={() => go('solo')} onGroup={() => go('group')} onContribDemo={() => go('contrib')} onDashDemo={() => go('dash')} onNav={go} />}
+      {view === 'home'    && <HomeView onSolo={() => go('solo')} onGroup={() => go('group')} onNav={go} />}
       {view === 'solo'    && <SoloFlow onBack={() => go('home')} onToast={showToast} onNav={go} />}
       {view === 'group'   && <GroupFlow onBack={() => go('home')} onToDash={() => go('dash')} onToast={showToast} onNav={go} />}
       {view === 'contrib' && <ContribView onBack={() => go('home')} onToCard={() => go('card')} onToast={showToast} onNav={go} campaignSlug={contribSlug || undefined} />}
