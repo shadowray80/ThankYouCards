@@ -129,11 +129,13 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
             )}
             {from && !isSolo && (
               <div style={{
-                fontFamily: 'var(--font-dancing), cursive',
-                fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 700,
+                fontSize: 'clamp(.85rem, 3.2vw, 1.1rem)',
                 color: 'rgba(255,255,255,0.88)',
-                lineHeight: 1.3, marginTop: 4,
+                lineHeight: 1.3, marginTop: 6,
                 textShadow: '0 2px 12px rgba(0,0,0,0.65)',
+                letterSpacing: '.01em',
               }}>
                 {from}
               </div>
