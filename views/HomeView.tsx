@@ -199,20 +199,44 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
         </div>
 
         {/* Pricing */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontWeight: 800, fontSize: '1.3rem', marginBottom: 5 }}>Simple pricing.</div>
-          <div style={{ fontSize: '.86rem', color: '#7A7585', fontWeight: 600, marginBottom: 14 }}>Less than a card from the newsagent. Way better.</div>
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', marginBottom: 5 }}>Simple pricing.</div>
+          <div style={{ textAlign: 'center', fontSize: '.86rem', color: '#7A7585', fontWeight: 600, marginBottom: 14 }}>Less than a card from the newsagent. Way better.</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div style={{ background: '#EAF4FB', borderRadius: 14, padding: 18, border: '2px solid rgba(58,143,160,.2)' }}>
-              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#3A8FA0' }}>Free</div>
-              <div style={{ fontSize: '.78rem', color: '#7A7585', marginTop: 3, fontWeight: 700 }}>Solo card</div>
+
+            {/* Solo — free */}
+            <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(58,143,160,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: '1rem', marginBottom: 2 }}>📨</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#3A8FA0', lineHeight: 1 }}>Free</div>
+              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Solo card</div>
+              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Just you, to someone special</div>
             </div>
-            <div style={{ background: '#FDF0E8', borderRadius: 14, padding: 18, border: '2px solid rgba(232,114,74,.2)' }}>
-              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#E8724A' }}>Free*</div>
-              <div style={{ fontSize: '.78rem', color: '#7A7585', marginTop: 3, fontWeight: 700 }}>Group card</div>
+
+            {/* Solo + gift */}
+            <div style={{ background: '#F0ECFB', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(124,92,191,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: '1rem', marginBottom: 2 }}>💳</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#7C5CBF', lineHeight: 1 }}>$7.50</div>
+              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Solo + gift card</div>
+              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>+ gift card face value</div>
             </div>
+
+            {/* Group card */}
+            <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(232,114,74,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: '1rem', marginBottom: 2 }}>👥</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#E8724A', lineHeight: 1 }}>$15</div>
+              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Group card</div>
+              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Flat fee, gift or no gift</div>
+            </div>
+
+            {/* Group + gift */}
+            <div style={{ background: '#E8F5EF', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(90,144,112,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: '1rem', marginBottom: 2 }}>🎁</div>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#5A9070', lineHeight: 1 }}>$15</div>
+              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Group + gift fund</div>
+              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Contributions collected separately</div>
+            </div>
+
           </div>
-          <div style={{ fontSize: '.74rem', color: '#7A7585', marginTop: 8, fontWeight: 600 }}>*Group card covered by contributions. Small gift processing fee applies.</div>
         </div>
 
         {/* Final CTAs */}

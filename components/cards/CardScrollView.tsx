@@ -234,9 +234,11 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
 
       {/* Footer */}
       <div style={{ background: '#3A8FA0', padding: '16px 22px', textAlign: 'center' }}>
-        <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, color: 'rgba(255,255,255,.9)', fontSize: '.95rem', marginBottom: 2 }}>
-thank<span style={{ color: '#F09070' }}>you</span>cards.au
-        </div>
+        <a href="https://thankyoucards.au" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 2 }}>
+          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, color: 'rgba(255,255,255,.9)', fontSize: '.95rem' }}>
+            thank<span style={{ color: '#F09070' }}>you</span>cards.au
+          </div>
+        </a>
         <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
       </div>
     </div>

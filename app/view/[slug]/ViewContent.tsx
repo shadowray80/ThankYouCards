@@ -104,9 +104,11 @@ export function ViewContent() {
 
       {/* Footer */}
       <div style={{ textAlign: 'center', padding: '20px 24px 48px', marginTop: 16, borderTop: '1px solid #E8E2F0' }}>
-        <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0', marginBottom: 6 }}>
-          thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '1rem' }}>.au</span>
-        </div>
+        <a href="https://thankyoucards.au" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 6 }}>
+          <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0' }}>
+            thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '1rem' }}>.au</span>
+          </div>
+        </a>
         <div style={{ fontSize: '.95rem', color: '#B0A8BC', fontWeight: 600 }}>
           Beautiful cards for the legends in your life
         </div>

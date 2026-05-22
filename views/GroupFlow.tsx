@@ -55,6 +55,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const uploadRef  = useRef<HTMLInputElement>(null);
   const cardMsgRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
+
   useEffect(() => {
     const el = cardMsgRef.current;
     if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
@@ -160,7 +162,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           />
 
           <Btn variant="outline" sm full onClick={() => onNav(`contrib:${campaignSlug}`)} style={{ marginBottom: 8 }}>👀 Preview contributor view</Btn>
-          <Btn variant="coral" full onClick={onToDash}>Go to Dashboard →</Btn>
+          <Btn variant="coral" full onClick={() => { window.location.href = `/manage/${campaignSlug}?token=${organiserToken}`; }}>Go to Dashboard →</Btn>
           <Btn variant="outline" full onClick={onBack} style={{ marginTop: 10 }}>Back to home</Btn>
         </div>
       </div>
@@ -319,17 +321,15 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     caretColor: '#fff', wordBreak: 'break-word',
                   }}
                 />
-                {occasion && (
-                  <div style={{
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
-                    color: 'rgba(255,255,255,0.88)',
-                    lineHeight: 1.3, marginTop: 4,
-                    textShadow: '0 2px 12px rgba(0,0,0,0.65)',
-                  }}>
-                    {occasion}
-                  </div>
-                )}
+                <div style={{
+                  fontFamily: 'var(--font-dancing), cursive',
+                  fontSize: 'clamp(1.1rem, 4vw, 1.5rem)',
+                  color: occasion ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.3)',
+                  lineHeight: 1.3, marginTop: 4,
+                  textShadow: '0 2px 12px rgba(0,0,0,0.65)',
+                }}>
+                  {occasion || 'From the team'}
+                </div>
               </div>
             </div>
           </div>
@@ -371,20 +371,25 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           </div>
         </div>
 
-        {/* Group-specific fields */}
-        <div style={{ padding: '22px 18px 0' }}>
-
-          {/* Deadline */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Deadline</label>
+        {/* Deadline — same width as card */}
+        <div
+          style={{ margin: '12px 18px 0', background: '#FFFDF8', border: '2px solid #E8E2F0', borderRadius: 14, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color .2s', cursor: 'pointer' }}
+          onClick={() => (document.getElementById('group-deadline') as HTMLInputElement)?.showPicker?.()}
+        >
+          <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>📅</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 3 }}>Deadline</div>
             <input
+              id="group-deadline"
               type="date" value={deadline} onChange={e => setDeadline(e.target.value)}
-              style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
-              onFocus={e => (e.target.style.borderColor = '#E8724A')}
-              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+              style={{ width: '100%', border: 'none', outline: 'none', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: deadline ? '#2A2A2A' : '#B0A8BC', background: 'transparent', boxSizing: 'border-box' }}
             />
-            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>Contributors won&apos;t be able to add messages after this date</div>
           </div>
+        </div>
+        <div style={{ margin: '4px 18px 0', fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600 }}>Contributors won&apos;t be able to add messages after this date</div>
+
+        {/* Group-specific fields */}
+        <div style={{ padding: '16px 18px 0' }}>
 
           {/* Gift type */}
           <div style={{ marginBottom: 24 }}>
