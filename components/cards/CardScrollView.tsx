@@ -35,53 +35,40 @@ function MessageBubble({ m, index }: { m: CardMessage; index: number }) {
   const isLong = m.msg.length > 120;
 
   return (
-    <div style={{ padding: '16px 18px', borderBottom: '1px solid #F0EDF5', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-      {/* Avatar */}
-      <div style={{
-        flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
-        background: avatarColor(m.name),
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontSize: '.75rem', fontWeight: 800, letterSpacing: '.02em',
-      }}>
-        {initials(m.name)}
+    <div style={{ padding: '16px 22px', borderBottom: '1px solid #F0EDF5', textAlign: 'center' }}>
+      <div style={{ fontSize: '.67rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#3A8FA0', marginBottom: 6 }}>
+        {m.name}
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '.67rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#3A8FA0', marginBottom: 4 }}>
-          {m.name}
-        </div>
-
-        {m.photoData ? (
-          <img src={m.photoData} alt="Handwritten" style={{ width: '100%', maxHeight: 130, objectFit: 'contain', borderRadius: 8, border: '1px solid #E8E2F0' }} />
-        ) : m.hw ? (
-          <div style={{ fontSize: '.82rem', color: '#7A7585', fontStyle: 'italic' }}>[Handwritten message — shown when printed]</div>
-        ) : (
-          <>
-            <div style={{
-              fontFamily: "'Lora',serif", fontSize: '.97rem', lineHeight: 1.6, color: '#2A2A2A',
-              display: !expanded && isLong ? '-webkit-box' : 'block',
-              WebkitLineClamp: !expanded && isLong ? 2 : undefined,
-              WebkitBoxOrient: !expanded && isLong ? 'vertical' : undefined,
-              overflow: !expanded && isLong ? 'hidden' : 'visible',
+      {m.photoData ? (
+        <img src={m.photoData} alt="Handwritten" style={{ width: '100%', maxHeight: 130, objectFit: 'contain', borderRadius: 8, border: '1px solid #E8E2F0' }} />
+      ) : m.hw ? (
+        <div style={{ fontSize: '.82rem', color: '#7A7585', fontStyle: 'italic' }}>[Handwritten message — shown when printed]</div>
+      ) : (
+        <>
+          <div style={{
+            fontFamily: "'Lora',serif", fontSize: '.97rem', lineHeight: 1.6, color: '#2A2A2A',
+            display: !expanded && isLong ? '-webkit-box' : 'block',
+            WebkitLineClamp: !expanded && isLong ? 3 : undefined,
+            WebkitBoxOrient: !expanded && isLong ? 'vertical' : undefined,
+            overflow: !expanded && isLong ? 'hidden' : 'visible',
+          }}>
+            {m.msg}
+          </div>
+          {isLong && (
+            <button onClick={() => setExpanded(e => !e)} style={{
+              background: 'none', border: 'none', padding: '4px 0 0', color: '#3A8FA0',
+              fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif",
             }}>
-              {m.msg}
-            </div>
-            {isLong && (
-              <button onClick={() => setExpanded(e => !e)} style={{
-                background: 'none', border: 'none', padding: '4px 0 0', color: '#3A8FA0',
-                fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif",
-              }}>
-                {expanded ? 'Show less' : 'Read more'}
-              </button>
-            )}
-          </>
-        )}
+              {expanded ? 'Show less' : 'Read more'}
+            </button>
+          )}
+        </>
+      )}
 
-        {m.timestamp && (
-          <div style={{ fontSize: '.68rem', color: '#B0A8BC', marginTop: 5, textAlign: 'right' }}>{m.timestamp}</div>
-        )}
-      </div>
+      {m.timestamp && (
+        <div style={{ fontSize: '.68rem', color: '#B0A8BC', marginTop: 5 }}>{m.timestamp}</div>
+      )}
     </div>
   );
 }
