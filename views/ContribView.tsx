@@ -43,6 +43,14 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
 
   const [slugInput, setSlugInput]         = useState('');
   const [activeSlug, setActiveSlug]       = useState(initialSlug ?? 'demo');
+  const [manageToken, setManageToken]     = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialSlug && initialSlug !== 'demo') {
+      const sessions = JSON.parse(localStorage.getItem('tyc_manage') ?? '{}');
+      if (sessions[initialSlug]) setManageToken(sessions[initialSlug]);
+    }
+  }, [initialSlug]);
   const [campaign, setCampaign]           = useState<Campaign | null>(initialSlug ? null : DEMO_CAMPAIGN);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(false);
@@ -230,6 +238,16 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
 
   return (
     <div>
+      {/* Organiser recovery banner */}
+      {manageToken && (
+        <a
+          href={`/manage/${activeSlug}?token=${manageToken}`}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#F0ECFB', borderBottom: '1px solid #D4C8EE', padding: '10px 16px', textDecoration: 'none', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.82rem', color: '#7C5CBF' }}
+        >
+          🔐 Organiser view — back to your dashboard →
+        </a>
+      )}
+
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>

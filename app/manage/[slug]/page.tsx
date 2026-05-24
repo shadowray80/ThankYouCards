@@ -43,6 +43,14 @@ function ManageContent() {
   const [copiedRecipient, setCopiedRecipient] = useState(false);
 
   useEffect(() => {
+    if (slug && token) {
+      const sessions = JSON.parse(localStorage.getItem('tyc_manage') ?? '{}');
+      sessions[slug] = token;
+      localStorage.setItem('tyc_manage', JSON.stringify(sessions));
+    }
+  }, [slug, token]);
+
+  useEffect(() => {
     if (!slug || !token) { setError('Invalid link'); setLoading(false); return; }
     fetch(`/api/manage/${slug}?token=${token}`)
       .then(r => r.json())

@@ -161,7 +161,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             landscapeCover
           />
 
-          <Btn variant="outline" sm full onClick={() => onNav(`contrib:${campaignSlug}`)} style={{ marginBottom: 8 }}>👀 Preview contributor view</Btn>
+          <Btn variant="outline" sm full onClick={() => window.open(`/card/${campaignSlug}`, '_blank')} style={{ marginBottom: 8 }}>👀 Preview contributor view</Btn>
           <Btn variant="coral" full onClick={() => { window.location.href = `/manage/${campaignSlug}?token=${organiserToken}`; }}>Go to Dashboard →</Btn>
           <Btn variant="outline" full onClick={onBack} style={{ marginTop: 10 }}>Back to home</Btn>
         </div>
