@@ -65,8 +65,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [giftCustom, setGiftCustom] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [isEditing, setIsEditing]       = useState(false);
-  const [contributeOnly, setContributeOnly] = useState(false);
   const [myContrib, setMyContrib]       = useState<{ id: string; name: string; message: string; amount?: number } | null>(null);
 
   const hasMsg      = msgMode === 'typed' ? msg.trim().length > 0 : photoData !== null;
@@ -85,8 +83,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
         if (json.error) { setLoadError(json.error); return; }
         setCampaign(json.campaign);
         setContributions(json.contributions ?? []);
-        const saved = localStorage.getItem(`tyc_contrib_${activeSlug}`);
-        if (saved) setMyContrib(JSON.parse(saved));
       })
       .catch(() => setLoadError('Could not load campaign'))
       .finally(() => setLoading(false));
@@ -125,29 +121,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
     }
   }
 
-  async function submitEdit() {
-    if (!myContrib) return;
-    setSubmitting(true);
-    setSubmitError('');
-    try {
-      const res = await fetch(`/api/contributions/${myContrib.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg }),
-      });
-      if (!res.ok) throw new Error('Failed to update message');
-      const updated = { ...myContrib, message: msg };
-      localStorage.setItem(`tyc_contrib_${activeSlug}`, JSON.stringify(updated));
-      setMyContrib(updated);
-      setContributions(prev => prev.map(c => c.id === myContrib.id ? { ...c, message: msg } : c));
-      setIsEditing(false);
-      onToast('Message updated! ✏️');
-    } catch (err: unknown) {
-      setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   async function submitWithPayment(overrideName?: string, overrideMsg?: string) {
     if (!campaign) return;
@@ -226,15 +199,9 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
     ? [{ name: myContrib.name, msg: myContrib.message }]
     : [];
 
-  // Live preview: exclude their existing message when editing so it doesn't double up
-  const baseForPreview = isEditing && myContrib
-    ? contributions.filter(c => c.id !== myContrib.id).map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))
-    : [...existingMsgs, ...optimisticMsg];
   const previewMsgs = name.trim() && msg.trim()
-    ? [...baseForPreview, { name: name.trim(), msg: msg.trim() }]
+    ? [...existingMsgs, ...optimisticMsg, { name: name.trim(), msg: msg.trim() }]
     : [...existingMsgs, ...optimisticMsg];
-
-  const showForm = !myContrib || isEditing || contributeOnly;
 
   return (
     <div>
@@ -286,150 +253,79 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
           recipientName={recipientName}
           fromText={campaign.occasion ?? undefined}
           message={campaign.card_message ?? ''}
-          messages={showForm ? previewMsgs : [...existingMsgs, ...optimisticMsg]}
+          messages={previewMsgs}
           giftAmount={displayFunded > 0 ? displayFunded : undefined}
         />
       </div>
 
-      {/* Form or returned-contributor actions */}
+      {/* Form */}
       <div style={{ padding: '20px 18px 160px' }}>
-
-        {myContrib && !isEditing && !contributeOnly ? (
-          // Already contributed — show actions
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* Card link */}
-            <div style={{ background: '#EAF4FB', borderRadius: 12, padding: '14px 16px' }}>
-              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Bookmark this link to check back anytime</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
-                  thankyoucards.au/card/{activeSlug}
-                </div>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(`thankyoucards.au/card/${activeSlug}`); onToast('Link copied! 🎉'); }}
-                  style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >Copy</button>
-              </div>
-              <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginTop: 8 }}>
-                👋 Forward this to anyone who hasn't added their message yet
-              </div>
-            </div>
-            <button
-              onClick={() => { setContributeOnly(true); setGiftSel(null); setGiftCustom(''); }}
-              style={{ width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '13px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', color: '#fff' }}
-            >
-              💳 Make a contribution
-            </button>
-            <button
-              onClick={() => { setMsg(myContrib.message); setName(myContrib.name); setIsEditing(true); }}
-              style={{ width: '100%', background: '#F0ECFB', border: 'none', borderRadius: 10, padding: '11px 16px', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.85rem', color: '#7C5CBF' }}
-            >
-              ✏️ Edit your message
-            </button>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your name</label>
+          <input
+            value={name} onChange={e => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+            placeholder="e.g. Sarah (Liam's mum)"
+            autoCapitalize="words"
+            style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+            onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+            onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+          />
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
+          <MessageTabs mode={msgMode} onSwitch={setMsgMode} msg={msg} onMsgChange={setMsg} photoData={photoData} onPhoto={handlePhoto} onRetake={() => setPhotoData(null)} />
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+            Your email {hasAmount ? <span style={{ color: '#E8724A' }}>*</span> : <span style={{ color: '#B0A8BC', fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}>— optional</span>}
+          </label>
+          <input
+            type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+            onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+            onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+          />
+          <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4, fontWeight: 600 }}>
+            {hasAmount ? 'Required — Stripe will send your payment receipt here' : "We'll send you the card link so you can check back anytime"}
           </div>
-        ) : (
-          // Form
-          <>
-            {!contributeOnly && (
-              <>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your name</label>
-                  <input
-                    value={name} onChange={e => setName(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
-                    placeholder="e.g. Sarah (Liam's mum)"
-                    disabled={isEditing}
-                    autoCapitalize="words"
-                    style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: isEditing ? '#F7F5FB' : '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s', opacity: isEditing ? .6 : 1 }}
-                    onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
-                    onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-                  />
-                </div>
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
-                  <MessageTabs mode={msgMode} onSwitch={setMsgMode} msg={msg} onMsgChange={setMsg} photoData={photoData} onPhoto={handlePhoto} onRetake={() => setPhotoData(null)} />
-                </div>
-              </>
-            )}
-
-            {/* Email field */}
-            {!isEditing && (
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Your email {hasAmount ? <span style={{ color: '#E8724A' }}>*</span> : <span style={{ color: '#B0A8BC', fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}>— optional</span>}
-                </label>
-                <input
-                  type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
-                  onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
-                  onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-                />
-                <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4, fontWeight: 600 }}>
-                  {hasAmount ? 'Required — Stripe will send your payment receipt here' : 'We\'ll send you the card link so you can check back anytime'}
-                </div>
-              </div>
-            )}
-
-            {!isEditing && (
-              <div style={{ borderTop: contributeOnly ? 'none' : '2px solid #E8E2F0', paddingTop: contributeOnly ? 0 : 20 }}>
-                {contributeOnly && (
-                  <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 14 }}>Make a contribution</div>
-                )}
-                {!openFund && noGift ? (
-                  <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
-                    <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#7C5CBF', marginBottom: 2 }}>Want to chip in anyway? <span style={{ fontWeight: 600, color: '#B0A8BC' }}>— optional</span></div>
-                    <div style={{ fontSize: '.8rem', color: '#7A7585', lineHeight: 1.5, fontWeight: 600 }}>No gift was planned, but contributions are welcome. Completely your call.</div>
-                  </div>
-                ) : hasTarget ? (
-                  <div style={{ marginBottom: 14 }}>
-                    <GiftProgress raised={campaign.funded_amount} target={campaign.target_amount!} />
-                    <div style={{ marginTop: 8, fontSize: '.82rem', color: '#7A7585', fontWeight: 600 }}>Every bit helps — no minimum, no pressure.</div>
-                  </div>
-                ) : (
-                  <div style={{ marginBottom: 14 }} />
-                )}
-                <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', marginBottom: 10 }}>
-                  Choose an amount
-                </div>
-                <GiftSelector selected={giftSel} onSelect={a => { setGiftSel(a); setGiftCustom(''); }} custom={giftCustom} onCustom={v => { setGiftCustom(v); setGiftSel(null); }} />
-              </div>
-            )}
-
-            {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
-          </>
-        )}
+        </div>
+        <div style={{ borderTop: '2px solid #E8E2F0', paddingTop: 20 }}>
+          {!openFund && noGift ? (
+            <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
+              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#7C5CBF', marginBottom: 2 }}>Want to chip in anyway? <span style={{ fontWeight: 600, color: '#B0A8BC' }}>— optional</span></div>
+              <div style={{ fontSize: '.8rem', color: '#7A7585', lineHeight: 1.5, fontWeight: 600 }}>No gift was planned, but contributions are welcome. Completely your call.</div>
+            </div>
+          ) : hasTarget ? (
+            <div style={{ marginBottom: 14 }}>
+              <GiftProgress raised={campaign.funded_amount} target={campaign.target_amount!} />
+              <div style={{ marginTop: 8, fontSize: '.82rem', color: '#7A7585', fontWeight: 600 }}>Every bit helps — no minimum, no pressure.</div>
+            </div>
+          ) : (
+            <div style={{ marginBottom: 14 }} />
+          )}
+          <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', marginBottom: 10 }}>Choose an amount</div>
+          <GiftSelector selected={giftSel} onSelect={a => { setGiftSel(a); setGiftCustom(''); }} custom={giftCustom} onCustom={v => { setGiftCustom(v); setGiftSel(null); }} />
+        </div>
+        {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
       </div>
 
       {/* Sticky buttons */}
-      {(showForm) && (
-        <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
-          {isEditing ? (
-            <>
-              <Btn variant="teal" full disabled={!hasMsg || submitting} onClick={submitEdit}>{submitting ? 'Saving…' : 'Save changes →'}</Btn>
-              <Btn variant="outline" full onClick={() => { setIsEditing(false); setMsg(''); setName(''); }} style={{ marginTop: 8 }}>Cancel</Btn>
-            </>
-          ) : contributeOnly ? (
-            <>
-              <Btn variant="coral" full disabled={submitting || !hasAmount || !validEmail} onClick={() => submitWithPayment(myContrib?.name, myContrib?.message)}>
-                {submitting ? 'Starting checkout…' : `Contribute $${giftSel || giftCustom} →`}
-              </Btn>
-              {!validEmail && hasAmount && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6, textAlign: 'center' }}>Please enter your email to continue</div>}
-              <Btn variant="outline" full onClick={() => setContributeOnly(false)} style={{ marginTop: 8 }}>Cancel</Btn>
-            </>
-          ) : hasAmount ? (
-            <>
-              <Btn variant="coral" full disabled={!canPay || submitting} onClick={() => submitWithPayment()}>
-                {submitting ? 'Starting checkout…' : `Add message + contribute $${giftSel || giftCustom} →`}
-              </Btn>
-              {!validEmail && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6, textAlign: 'center' }}>Please enter your email to continue</div>}
-              <Btn variant="outline" full disabled={submitting} onClick={submitMessageOnly} style={{ marginTop: 8 }}>Just my message, no contribution</Btn>
-            </>
-          ) : (
-            <Btn variant="teal" full disabled={!canSubmit || submitting} onClick={submitMessageOnly}>
-              {submitting ? 'Saving…' : 'Add my message →'}
+      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
+        {hasAmount ? (
+          <>
+            <Btn variant="coral" full disabled={!canPay || submitting} onClick={() => submitWithPayment()}>
+              {submitting ? 'Starting checkout…' : `Add message + contribute $${giftSel || giftCustom} →`}
             </Btn>
-          )}
-        </div>
-      )}
+            {!validEmail && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6, textAlign: 'center' }}>Please enter your email to continue</div>}
+            <Btn variant="outline" full disabled={submitting} onClick={submitMessageOnly} style={{ marginTop: 8 }}>Just my message, no contribution</Btn>
+          </>
+        ) : (
+          <Btn variant="teal" full disabled={!canSubmit || submitting} onClick={submitMessageOnly}>
+            {submitting ? 'Saving…' : 'Add my message →'}
+          </Btn>
+        )}
+      </div>
     </div>
   );
 }
