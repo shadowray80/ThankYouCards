@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       target_amount:   0,
       funded_amount:   0,
       deadline:        deadline ?? null,
-      status:          'pending',
+      status:          'open',
       organiser_email: organiser_email ?? null,
       card_theme:      card_theme ?? null,
       card_message:    card_message ?? null,
