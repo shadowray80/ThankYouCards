@@ -231,13 +231,27 @@ function ManageContent() {
           <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
             Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
             <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
               thankyoucards.au/view/{slug}
             </div>
             <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
               {copiedRecipient ? '✓ Copied!' : 'Copy'}
             </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
+              style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+              💬 WhatsApp
+            </a>
+            <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`}
+              style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+              💬 SMS
+            </a>
+            <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`}
+              style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+              ✉️ Email
+            </a>
           </div>
           <a
             href={`/view/${slug}`}
