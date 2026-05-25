@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
+import { sendOrganiserLink } from '@/lib/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -83,6 +84,15 @@ export async function POST(request: NextRequest) {
     success_url: `${origin}/manage/${slug}?token=${organiser_token}`,
     cancel_url:  `${origin}/?cancelled=group`,
   });
+
+  if (organiser_email) {
+    sendOrganiserLink({
+      to: organiser_email,
+      recipientName: recipient_name,
+      manageUrl: `${origin}/manage/${slug}?token=${organiser_token}`,
+      shareUrl:  `${origin}/card/${slug}`,
+    }).catch(err => console.error('Failed to send organiser email:', err));
+  }
 
   return Response.json({ url: session.url }, { status: 200 });
 }
