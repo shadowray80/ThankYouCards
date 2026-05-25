@@ -83,13 +83,13 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   async function handleCreate() {
     setSaveError(''); setSaving(true);
     try {
-      const res = await fetch('/api/campaigns', {
+      const res = await fetch('/api/checkout/group-creation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient_name: recip.trim(),
           occasion: occasion.trim() || null,
-          target_amount: giftType === 'collect' ? null : 0,
+          target_amount: 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
           card_theme: theme.id,
@@ -99,10 +99,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create campaign');
-      setCampaignSlug(json.campaign.slug);
-      setOrganiserToken(json.campaign.organiser_token);
-      setShowDone(true);
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.location.href = json.url;
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -393,7 +390,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         {/* Group-specific fields */}
         <div style={{ padding: '16px 18px 0' }}>
 
-          {/* Gift type */}
+          {/* Gift type — hidden until gift fund feature is reinstated
           <div style={{ marginBottom: 24 }}>
             <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Gift</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -436,6 +433,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               ))}
             </div>
           </div>
+          */}
 
           {/* Organiser email */}
           <div style={{ marginBottom: 24 }}>
@@ -457,7 +455,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ fontSize: '.8rem', color: '#E8724A', fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
           )}
           <Btn variant="coral" full disabled={!canCreate || saving} onClick={handleCreate}>
-            {saving ? 'Creating…' : 'Create card & get link →'}
+            {saving ? 'Redirecting to payment…' : 'Create group card — $15 →'}
           </Btn>
         </div>
       </div>

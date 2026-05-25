@@ -28,6 +28,23 @@ export async function POST(request: NextRequest) {
 
   const pi = event.data.object as Stripe.PaymentIntent;
 
+  // ── Group card creation fee ──
+  if (pi.metadata?.type === 'group_card_creation') {
+    const campaignId = pi.metadata.campaign_id;
+    if (!campaignId) {
+      console.error('group_card_creation payment missing campaign_id', pi.id);
+      return Response.json({ received: true });
+    }
+    const { error } = await supabaseAdmin
+      .from('campaigns')
+      .update({ status: 'open' })
+      .eq('id', campaignId)
+      .eq('status', 'pending');
+    if (error) console.error('Failed to activate campaign:', error);
+    return Response.json({ received: true });
+  }
+
+  // ── Contributor payment ──
   // Idempotency check — skip if already processed
   const { data: existing } = await supabaseAdmin
     .from('contributions')

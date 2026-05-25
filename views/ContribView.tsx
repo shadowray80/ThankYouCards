@@ -290,6 +290,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             {hasAmount ? 'Required — Stripe will send your payment receipt here' : "We'll send you the card link so you can check back anytime"}
           </div>
         </div>
+        {/* Gift selector — hidden until gift fund feature is reinstated
         <div style={{ borderTop: '2px solid #E8E2F0', paddingTop: 20 }}>
           {!openFund && noGift ? (
             <div style={{ background: '#F0ECFB', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
@@ -307,6 +308,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
           <div style={{ fontSize: '.72rem', fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', color: '#2A2A2A', marginBottom: 10 }}>Choose an amount</div>
           <GiftSelector selected={giftSel} onSelect={a => { setGiftSel(a); setGiftCustom(''); }} custom={giftCustom} onCustom={v => { setGiftCustom(v); setGiftSel(null); }} />
         </div>
+        */}
         {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
       </div>
 
