@@ -63,14 +63,16 @@ function ManageContent() {
       .finally(() => setLoading(false));
   }, [slug, token]);
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
+
   const copyShareLink = () => {
-    navigator.clipboard.writeText(`thankyoucards.au/card/${slug}`);
+    navigator.clipboard.writeText(`${origin}/card/${slug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const copyRecipientLink = () => {
-    navigator.clipboard.writeText(`thankyoucards.au/view/${slug}`);
+    navigator.clipboard.writeText(`${origin}/view/${slug}`);
     setCopiedRecipient(true);
     setTimeout(() => setCopiedRecipient(false), 2000);
   };
@@ -168,7 +170,7 @@ function ManageContent() {
           <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
-              thankyoucards.au/card/{slug}
+              {origin}/card/{slug}
             </div>
             <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {copied ? 'Copied!' : 'Copy'}
@@ -233,22 +235,22 @@ function ManageContent() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
             <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
-              thankyoucards.au/view/{slug}
+              {origin}/view/{slug}
             </div>
             <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
               {copiedRecipient ? '✓ Copied!' : 'Copy'}
             </button>
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
               style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
               💬 WhatsApp
             </a>
-            <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`}
+            <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
               style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
               💬 SMS
             </a>
-            <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: https://thankyoucards.au/view/${slug}`)}`}
+            <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
               style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
               ✉️ Email
             </a>
