@@ -43,6 +43,7 @@ function ManageContent() {
   const [copied, setCopied]               = useState(false);
   const [copiedRecipient, setCopiedRecipient] = useState(false);
   const [paying, setPaying]               = useState(false);
+  const [refreshing, setRefreshing]       = useState(false);
 
   useEffect(() => {
     if (slug && token) {
@@ -52,8 +53,9 @@ function ManageContent() {
     }
   }, [slug, token]);
 
-  useEffect(() => {
+  const loadData = (isRefresh = false) => {
     if (!slug || !token) { setError('Invalid link'); setLoading(false); return; }
+    if (isRefresh) setRefreshing(true); else setLoading(true);
     fetch(`/api/manage/${slug}?token=${token}`)
       .then(r => r.json())
       .then(json => {
@@ -62,8 +64,10 @@ function ManageContent() {
         setContributions(json.contributions ?? []);
       })
       .catch(() => setError('Could not load campaign'))
-      .finally(() => setLoading(false));
-  }, [slug, token]);
+      .finally(() => { setLoading(false); setRefreshing(false); });
+  };
+
+  useEffect(() => { loadData(); }, [slug, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
 
@@ -132,8 +136,14 @@ function ManageContent() {
             <div style={{ fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)' }}>
               thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
             </div>
-            <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
-              {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button onClick={() => loadData(true)} disabled={refreshing}
+                style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 20, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#fff', cursor: 'pointer', letterSpacing: '.04em' }}>
+                {refreshing ? '…' : '↻ Refresh'}
+              </button>
+              <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
+                {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
+              </div>
             </div>
           </div>
 
