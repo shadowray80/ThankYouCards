@@ -6,6 +6,7 @@ import { Btn } from '@/components/ui/Button';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { ShareLink } from '@/components/dashboard/ShareLink';
 import { THEMES } from '@/lib/themes';
+import { CASUAL_PALETTES } from '@/lib/palettes';
 
 interface GroupFlowProps {
   onBack: () => void;
@@ -45,6 +46,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [cardMsg, setCardMsg]   = useState(THEMES[11].frontMsg);
 
   const [giftType, setGiftType]             = useState('collect');
+  const [cardStyle, setCardStyle]           = useState<'classic' | 'casual'>('classic');
+  const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
   const [showDone, setShowDone]             = useState(false);
   const [saving, setSaving]                 = useState(false);
@@ -95,6 +98,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_theme: theme.id,
           card_message: cardMsg,
           card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
+          card_style: cardStyle,
+          card_palette: cardPalette,
         }),
       });
       const json = await res.json();
@@ -437,6 +442,59 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           </div>
           */}
+
+          {/* Card style */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card style</label>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {([
+                { id: 'classic' as const, label: 'Classic', emoji: '✉️', desc: 'Elegant scroll with cover photo' },
+                { id: 'casual' as const, label: 'Casual',  emoji: '🎉', desc: 'Masonry board with vibrant cards' },
+              ] as { id: 'classic' | 'casual'; label: string; emoji: string; desc: string }[]).map(s => (
+                <div
+                  key={s.id}
+                  onClick={() => setCardStyle(s.id)}
+                  style={{
+                    flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center',
+                    border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0',
+                    background: cardStyle === s.id ? '#FDF0E8' : '#fff',
+                    transition: 'all .2s',
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{s.emoji}</div>
+                  <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', marginBottom: 2 }}>{s.label}</div>
+                  <div style={{ fontSize: '.7rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Palette swatches — only for casual */}
+            {cardStyle === 'casual' && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Colour palette</div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {CASUAL_PALETTES.map(p => (
+                    <div
+                      key={p.id}
+                      onClick={() => setCardPalette(p.id)}
+                      style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{
+                        width: 42, height: 42, borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
+                        border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent',
+                        boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
+                        transition: 'all .2s',
+                      }} />
+                      <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Organiser email */}
           <div style={{ marginBottom: 24 }}>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
+import { CasualView } from '@/components/cards/CasualView';
 import { THEMES } from '@/lib/themes';
 
 interface Campaign {
@@ -13,6 +14,8 @@ interface Campaign {
   card_theme: string | null;
   card_message: string | null;
   card_image_url: string | null;
+  card_style: string | null;
+  card_palette: string | null;
   funded_amount: number;
   target_amount: number | null;
   status: string;
@@ -66,6 +69,10 @@ export function ViewContent() {
       <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600 }}>The organiser is still collecting messages. Check back soon.</div>
     </div>
   );
+
+  if (campaign.card_style === 'casual') {
+    return <CasualView campaign={campaign} contributions={contributions} />;
+  }
 
   const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
