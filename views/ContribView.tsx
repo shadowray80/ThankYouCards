@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
-import { MessageTabs } from '@/components/forms/MessageTabs';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { GiftProgress } from '@/components/dashboard/GiftProgress';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -56,9 +55,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [loading, setLoading]             = useState(false);
   const [loadError, setLoadError]         = useState('');
 
-  const [msgMode, setMsgMode]       = useState<'typed' | 'handwritten'>('typed');
   const [msg, setMsg]               = useState('');
-  const [photoData, setPhotoData]   = useState<string | null>(null);
   const [name, setName]             = useState('');
   const [email, setEmail]           = useState('');
   const [giftSel, setGiftSel]       = useState<string | null>(null);
@@ -67,7 +64,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [submitError, setSubmitError] = useState('');
   const [myContrib, setMyContrib]       = useState<{ id: string; name: string; message: string; amount?: number } | null>(null);
 
-  const hasMsg      = msgMode === 'typed' ? msg.trim().length > 0 : photoData !== null;
+  const hasMsg      = msg.trim().length > 0;
   const hasAmount   = !!(giftSel || giftCustom);
   const validEmail  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit   = name.trim() && hasMsg;
@@ -87,14 +84,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       .catch(() => setLoadError('Could not load campaign'))
       .finally(() => setLoading(false));
   }, [activeSlug]);
-
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => setPhotoData(ev.target?.result as string);
-    r.readAsDataURL(f);
-  };
 
   async function submitMessageOnly() {
     if (!campaign) return;
@@ -273,7 +262,15 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
-          <MessageTabs mode={msgMode} onSwitch={setMsgMode} msg={msg} onMsgChange={setMsg} photoData={photoData} onPhoto={handlePhoto} onRetake={() => setPhotoData(null)} />
+          <textarea
+            value={msg} onChange={e => setMsg(e.target.value)}
+            placeholder={`Write something nice…`}
+            maxLength={400}
+            style={{ width: '100%', minHeight: 150, border: '2px solid #E8E2F0', borderRadius: 12, padding: 14, fontFamily: "'Lora',serif", fontSize: '1rem', color: '#2A2A2A', background: '#FFFDF8', resize: 'vertical', lineHeight: 1.7, outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+            onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+            onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+          />
+          <div style={{ textAlign: 'right', fontSize: '.73rem', color: '#7A7585', marginTop: 4 }}>{msg.length}/400</div>
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
