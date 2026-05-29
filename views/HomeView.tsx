@@ -81,7 +81,6 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
               fromText="From the Under 12s"
               message="Thank you for an incredible season!"
               messages={heroMsgs}
-              giftAmount={50}
               landscapeCover
             />
           </div>
@@ -133,9 +132,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           </div>
         </div>
 
-        <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '12px 16px', fontSize: '.84rem', color: '#E8724A', fontWeight: 700, textAlign: 'center', marginBottom: 40 }}>
-          💡 Group card is <strong>free for the organiser</strong> - covered by contributions
-        </div>
+        <div style={{ height: 40 }} />
 
         {/* ── Testimonials ── */}
         <div style={{ marginBottom: 20 }}>
@@ -143,7 +140,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>What people are saying</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
-              { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and the gift collection handled itself. I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
+              { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
               { quote: "When I opened it and saw messages from every single parent and kid in the team, I actually teared up. It meant so much more than a generic card from the newsagent.", name: 'Coach Dave', role: 'Group card recipient', color: '#F0ECFB', nameColor: '#7C5CBF' },
               { quote: "My nan lives in the UK and I never know what to send her. I made her a card in 3 minutes and she called me crying happy tears. Worth every cent.", name: 'Liam T.', role: 'Solo card sender', color: '#FDF0E8', nameColor: '#E8724A' },
             ].map((t, i) => (
@@ -178,7 +175,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           { bg: '#F0ECFB', icon: '🖼️', title: 'Curated images for every occasion', desc: 'Coaches, birthdays, thank yous, weddings, new babies, retirement, mum, dad and more. Or upload your own team photo!' },
           { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
           { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
-          { bg: '#FBE8EE', icon: '💳', title: 'Add a gift card', desc: 'Include a gift card with any amount - spendable anywhere, by anyone, in any country.' },
+          { bg: '#FBE8EE', icon: '👥', title: 'Everyone signs, no chasing', desc: 'Share one link. Everyone adds their own message. No more chasing people down for signatures.' },
         ].map((b, i) => (
           <div key={i} style={{ background: b.bg, borderRadius: 16, padding: '17px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 11 }}>
             <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>{b.icon}</div>
@@ -193,7 +190,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
         <div style={{ background: 'linear-gradient(135deg,#E87240,#F09070)', borderRadius: 18, padding: '22px 20px', marginBottom: 28, color: '#fff' }}>
           <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 6 }}>👥 Running a group gift?</div>
           <div style={{ fontSize: '.86rem', lineHeight: 1.55, opacity: .9, fontWeight: 600, marginBottom: 14 }}>
-            Share one link. Everyone adds their own message and chips into the gift. We send the reminders so you don't have to chase a single person. The card pays for itself - <strong>free for the organiser.</strong>
+            Share one link. Everyone adds their own message. No more chasing people down — they sign in their own time, from their phone.
           </div>
           <Btn onClick={onGroup} style={{ background: '#fff', color: '#E8724A' }}>Set up a group card →</Btn>
         </div>
@@ -212,28 +209,12 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
               <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Just you, to someone special</div>
             </div>
 
-            {/* Solo + gift */}
-            <div style={{ background: '#F0ECFB', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(124,92,191,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div style={{ fontSize: '1rem', marginBottom: 2 }}>💳</div>
-              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#7C5CBF', lineHeight: 1 }}>$7.50</div>
-              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Solo + gift card</div>
-              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>+ gift card face value</div>
-            </div>
-
             {/* Group card */}
             <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(232,114,74,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div style={{ fontSize: '1rem', marginBottom: 2 }}>👥</div>
               <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#E8724A', lineHeight: 1 }}>$15</div>
               <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Group card</div>
-              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Flat fee, gift or no gift</div>
-            </div>
-
-            {/* Group + gift */}
-            <div style={{ background: '#E8F5EF', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(90,144,112,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div style={{ fontSize: '1rem', marginBottom: 2 }}>🎁</div>
-              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#5A9070', lineHeight: 1 }}>$15</div>
-              <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Group + gift fund</div>
-              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Contributions collected separately</div>
+              <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Unlimited contributors, all messages in one card</div>
             </div>
 
           </div>
