@@ -19,7 +19,7 @@ export async function GET(
 
   const { data: contributions } = await supabaseAdmin
     .from('contributions')
-    .select('contributor_name, message')
+    .select('contributor_name, message, photo_url')
     .eq('campaign_id', campaign.id)
     .eq('status', 'paid')
     .order('created_at', { ascending: true });

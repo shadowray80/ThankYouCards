@@ -15,16 +15,27 @@ interface Campaign {
 interface Contribution {
   contributor_name: string;
   message: string | null;
+  photo_url?: string | null;
 }
 
 const DECORATIONS = ['🎉', '⭐', '🏆', '✨', '🙌', '💙', '🎊', '👏', '💫', '🤜🤛'];
 const MAX_AVATARS = 7;
+
+function Photo({ url }: { url: string }) {
+  return (
+    <img
+      src={url} alt=""
+      style={{ width: '100%', borderRadius: 10, marginBottom: 10, display: 'block', objectFit: 'cover', maxHeight: 200 }}
+    />
+  );
+}
 
 function MessageCard({ c, index, palette }: { c: Contribution; index: number; palette: CasualPalette }) {
   const type = index % 4;
   const deco = DECORATIONS[index % DECORATIONS.length];
   const bg   = palette.cardBgs[index % palette.cardBgs.length];
   const msg  = c.message || '';
+  const photo = c.photo_url ?? null;
 
   const base: React.CSSProperties = {
     breakInside: 'avoid',
@@ -41,8 +52,9 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 0) {
     return (
       <div style={{ ...base, background: '#fff' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '3rem', lineHeight: 0.75, color: palette.accent, opacity: 0.2, marginBottom: 6 }}>&ldquo;</div>
-        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>
+        {!photo && <div style={{ fontFamily: 'Georgia, serif', fontSize: '3rem', lineHeight: 0.75, color: palette.accent, opacity: 0.2, marginBottom: 6 }}>&ldquo;</div>}
+        {photo && <Photo url={photo} />}
+        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>}
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>
     );
@@ -62,7 +74,8 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
           </div>
           <span style={{ fontSize: '1.2rem' }}>{deco}</span>
         </div>
-        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
+        {photo && <Photo url={photo} />}
+        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>}
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#7A7585' }}>– {c.contributor_name}</div>
       </div>
     );
@@ -71,7 +84,8 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 2) {
     return (
       <div style={{ ...base, background: '#fff', borderLeft: `4px solid ${palette.accent}`, paddingLeft: 10 }}>
-        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', margin: '0 0 10px' }}>{msg}</p>
+        {photo && <Photo url={photo} />}
+        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', margin: '0 0 10px' }}>{msg}</p>}
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>
     );
@@ -79,8 +93,9 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
 
   return (
     <div style={{ ...base, background: bg, textAlign: 'center' }}>
-      <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{deco}</div>
-      <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
+      {!photo && <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{deco}</div>}
+      {photo && <Photo url={photo} />}
+      {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>}
       <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
     </div>
   );

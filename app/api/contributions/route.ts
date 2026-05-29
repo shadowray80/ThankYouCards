@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { campaign_id, contributor_name, message, contributor_email } = body;
+  const { campaign_id, contributor_name, message, contributor_email, photo_url } = body;
 
   if (!campaign_id || !contributor_name) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       campaign_id,
       contributor_name,
       message: message ?? null,
+      photo_url: photo_url ?? null,
       amount: 0,
       status: 'paid',
       contributor_email: contributor_email ?? null,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { GiftSelector } from '@/components/forms/GiftSelector';
@@ -56,6 +56,10 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [loadError, setLoadError]         = useState('');
 
   const [msg, setMsg]               = useState('');
+  const [photoUrl, setPhotoUrl]     = useState<string | null>(null);
+  const [uploading, setUploading]   = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const photoInputRef               = useRef<HTMLInputElement>(null);
   const [name, setName]             = useState('');
   const [email, setEmail]           = useState('');
   const [giftSel, setGiftSel]       = useState<string | null>(null);
@@ -64,7 +68,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [submitError, setSubmitError] = useState('');
   const [myContrib, setMyContrib]       = useState<{ id: string; name: string; message: string; amount?: number } | null>(null);
 
-  const hasMsg      = msg.trim().length > 0;
+  const hasMsg      = msg.trim().length > 0 || photoUrl !== null;
   const hasAmount   = !!(giftSel || giftCustom);
   const validEmail  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit   = name.trim() && hasMsg;
@@ -85,6 +89,26 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       .finally(() => setLoading(false));
   }, [activeSlug]);
 
+  async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setUploading(true);
+    setUploadError('');
+    const fd = new FormData();
+    fd.append('file', f);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Upload failed');
+      setPhotoUrl(json.url);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  }
+
   async function submitMessageOnly() {
     if (!campaign) return;
     setSubmitting(true);
@@ -93,7 +117,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       const res = await fetch('/api/contributions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null, contributor_email: email.trim() || null }),
+        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null, photo_url: photoUrl, contributor_email: email.trim() || null }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to save');
@@ -271,6 +295,29 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
           />
           <div style={{ textAlign: 'right', fontSize: '.73rem', color: '#7A7585', marginTop: 4 }}>{msg.length}/400</div>
+
+          {/* Photo upload */}
+          <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
+          {!photoUrl ? (
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploading}
+              style={{ marginTop: 10, background: 'none', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px 14px', width: '100%', cursor: uploading ? 'default' : 'pointer', color: '#7A7585', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            >
+              {uploading ? '⏳ Uploading…' : '📷 Add a photo (optional)'}
+            </button>
+          ) : (
+            <div style={{ marginTop: 10, position: 'relative' }}>
+              <img src={photoUrl} alt="Your photo" style={{ width: '100%', borderRadius: 10, display: 'block', maxHeight: 220, objectFit: 'cover' }} />
+              <button
+                type="button"
+                onClick={() => setPhotoUrl(null)}
+                style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', border: 'none', borderRadius: '50%', width: 28, height: 28, color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >✕</button>
+            </div>
+          )}
+          {uploadError && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6 }}>{uploadError}</div>}
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>

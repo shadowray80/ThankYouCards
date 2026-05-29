@@ -24,6 +24,7 @@ interface Campaign {
 interface Contribution {
   contributor_name: string;
   message: string | null;
+  photo_url?: string | null;
 }
 
 export function ViewContent() {
