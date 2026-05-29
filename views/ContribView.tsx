@@ -236,6 +236,14 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
           </div>
           <button onClick={onBack} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 8, padding: '5px 10px', color: 'rgba(255,255,255,.85)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer' }}>← Home</button>
         </div>
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontWeight: 800, fontSize: '1.25rem', color: '#fff', lineHeight: 1.3 }}>
+            We&apos;re making a group card for {recipientName}!
+          </div>
+          <div style={{ fontSize: '.88rem', color: 'rgba(255,255,255,.8)', fontWeight: 600, marginTop: 4 }}>
+            Add your message below — it&apos;ll mean a lot 💙
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {campaign.occasion && <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>{campaign.occasion}</div>}
           {deadlineStr && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>⏰ Closes {deadlineStr}</div>}
