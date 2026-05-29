@@ -79,12 +79,7 @@ export function ViewContent() {
   const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasGift = campaign.funded_amount > 0;
 
-  const names = contributions.map(c => c.contributor_name);
-  const fromText =
-    names.length === 0 ? undefined
-    : names.length === 1 ? names[0]
-    : names.length === 2 ? `${names[0]} & ${names[1]}`
-    : `${names[0]}, ${names[1]} & ${names.length - 2} more`;
+  const fromText = campaign.occasion ?? undefined;
 
   const isSolo = contributions.length <= 1;
   const soloMessage = isSolo && contributions.length === 1 ? contributions[0].message ?? undefined : undefined;
