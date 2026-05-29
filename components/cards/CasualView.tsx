@@ -86,7 +86,7 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   );
 }
 
-export function CasualView({ campaign, contributions }: { campaign: Campaign; contributions: Contribution[] }) {
+export function CasualView({ campaign, contributions, preview }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean }) {
   const palette        = CASUAL_PALETTES.find(p => p.id === (campaign.card_palette ?? 'sky')) ?? CASUAL_PALETTES[0];
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
@@ -94,7 +94,7 @@ export function CasualView({ campaign, contributions }: { campaign: Campaign; co
   const hasImage       = !!campaign.card_image_url;
 
   return (
-    <div style={{ background: palette.bg, minHeight: '100dvh', fontFamily: "'Nunito', sans-serif" }}>
+    <div style={{ background: palette.bg, minHeight: preview ? 'auto' : '100dvh', borderRadius: preview ? 16 : 0, overflow: preview ? 'hidden' : 'visible', fontFamily: "'Nunito', sans-serif" }}>
 
       {/* ── Cover ── */}
       <div style={{
@@ -176,20 +176,22 @@ export function CasualView({ campaign, contributions }: { campaign: Campaign; co
       )}
 
       {/* ── Footer ── */}
-      <div style={{ margin: '8px 14px 24px', borderRadius: 20, background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, padding: '28px 20px', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.6rem, 7vw, 2.4rem)', color: '#fff', lineHeight: 1.35, marginBottom: 4 }}>
-          {campaign.card_message || 'Thanks for everything!'}
+      {!preview && (
+        <div style={{ margin: '8px 14px 24px', borderRadius: 20, background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, padding: '28px 20px', textAlign: 'center' }}>
+          <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.6rem, 7vw, 2.4rem)', color: '#fff', lineHeight: 1.35, marginBottom: 4 }}>
+            {campaign.card_message || 'Thanks for everything!'}
+          </div>
+          {campaign.occasion && (
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.65)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion}</div>
+          )}
+          <a href="/" style={{ display: 'inline-block', background: '#fff', color: palette.accent, borderRadius: 12, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
+            Create your own card →
+          </a>
+          <div style={{ marginTop: 10, fontSize: '.72rem', color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>
+            It&apos;s easy, meaningful and unforgettable.
+          </div>
         </div>
-        {campaign.occasion && (
-          <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.65)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion}</div>
-        )}
-        <a href="/" style={{ display: 'inline-block', background: '#fff', color: palette.accent, borderRadius: 12, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
-          Create your own card →
-        </a>
-        <div style={{ marginTop: 10, fontSize: '.72rem', color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>
-          It&apos;s easy, meaningful and unforgettable.
-        </div>
-      </div>
+      )}
 
     </div>
   );

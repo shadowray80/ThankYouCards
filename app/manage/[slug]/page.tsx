@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { CardScrollView } from '@/components/cards/CardScrollView';
+import { CasualView } from '@/components/cards/CasualView';
 import { THEMES } from '@/lib/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
@@ -18,6 +19,8 @@ interface Campaign {
   deadline: string | null;
   status: string;
   organiser_email: string;
+  card_style: string | null;
+  card_palette: string | null;
 }
 
 interface Contribution {
@@ -200,15 +203,23 @@ function ManageContent() {
         {/* Card preview */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card preview</div>
-          <CardScrollView
-            theme={theme}
-            imgIdx={0}
-            customImgUrl={campaign.card_image_url ?? undefined}
-            recipientName={recipientName}
-            fromText={campaign.occasion ?? undefined}
-            message={campaign.card_message ?? ''}
-            messages={messages}
-          />
+          {campaign.card_style === 'casual' ? (
+            <CasualView
+              campaign={campaign}
+              contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message }))}
+              preview
+            />
+          ) : (
+            <CardScrollView
+              theme={theme}
+              imgIdx={0}
+              customImgUrl={campaign.card_image_url ?? undefined}
+              recipientName={recipientName}
+              fromText={campaign.occasion ?? undefined}
+              message={campaign.card_message ?? ''}
+              messages={messages}
+            />
+          )}
         </div>
 
         {/* Contributor list */}
