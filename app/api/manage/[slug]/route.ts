@@ -32,3 +32,34 @@ export async function GET(
 
   return Response.json({ campaign, contributions: contributions ?? [] });
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+  const body = await request.json();
+  const { token, action } = body;
+
+  if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
+  if (action !== 'mark_sent') return Response.json({ error: 'Unknown action' }, { status: 400 });
+
+  const { data: campaign, error } = await supabaseAdmin
+    .from('campaigns')
+    .select('id, status')
+    .eq('slug', slug)
+    .eq('organiser_token', token)
+    .single();
+
+  if (error || !campaign) return Response.json({ error: 'Not found or invalid token' }, { status: 404 });
+  if (campaign.status === 'sent') return Response.json({ ok: true });
+
+  const { error: updateError } = await supabaseAdmin
+    .from('campaigns')
+    .update({ status: 'sent' })
+    .eq('id', campaign.id)
+    .eq('status', 'open');
+
+  if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+  return Response.json({ ok: true });
+}

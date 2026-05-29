@@ -70,7 +70,16 @@ function ManageContent() {
       .finally(() => { setLoading(false); setRefreshing(false); });
   };
 
-  useEffect(() => { loadData(); }, [slug, token]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    loadData();
+    if (paidParam && token) {
+      fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'mark_sent' }),
+      }).catch(err => console.error('mark_sent failed:', err));
+    }
+  }, [slug, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
 
