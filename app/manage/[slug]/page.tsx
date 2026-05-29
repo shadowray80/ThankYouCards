@@ -34,6 +34,7 @@ function ManageContent() {
   const router       = useRouter();
   const slug         = typeof params.slug === 'string' ? params.slug : '';
   const token        = searchParams.get('token') ?? '';
+  const paidParam    = searchParams.get('paid') === '1';
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -41,6 +42,7 @@ function ManageContent() {
   const [error, setError]                 = useState('');
   const [copied, setCopied]               = useState(false);
   const [copiedRecipient, setCopiedRecipient] = useState(false);
+  const [paying, setPaying]               = useState(false);
 
   useEffect(() => {
     if (slug && token) {
@@ -77,6 +79,23 @@ function ManageContent() {
     setTimeout(() => setCopiedRecipient(false), 2000);
   };
 
+  const handlePay = async () => {
+    setPaying(true);
+    try {
+      const res = await fetch('/api/checkout/send-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, token }),
+      });
+      const json = await res.json();
+      if (json.error) { alert(json.error); setPaying(false); return; }
+      window.location.href = json.url;
+    } catch {
+      alert('Something went wrong — please try again.');
+      setPaying(false);
+    }
+  };
+
   if (loading) return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", fontWeight: 700, color: '#7A7585' }}>
       Loading…
@@ -91,6 +110,7 @@ function ManageContent() {
     </div>
   );
 
+  const isSent        = campaign.status === 'sent' || paidParam;
   const theme         = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const recipientName = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const deadlineStr   = campaign.deadline
@@ -99,10 +119,8 @@ function ManageContent() {
   const daysLeft = campaign.deadline
     ? Math.ceil((new Date(campaign.deadline).getTime() - Date.now()) / 86400000)
     : null;
-  const pct      = campaign.target_amount > 0 ? Math.min(100, Math.round((campaign.funded_amount / campaign.target_amount) * 100)) : 0;
-  const messages = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
+  const messages          = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
   const totalContributors = contributions.length;
-  const paidContributors  = contributions.filter(c => c.amount > 0).length;
 
   return (
     <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif" }}>
@@ -114,16 +132,16 @@ function ManageContent() {
             <div style={{ fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)' }}>
               thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
             </div>
-            <div style={{ background: 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
-              ORGANISER VIEW
+            <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
+              {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
             </div>
           </div>
 
           <div style={{ fontWeight: 800, fontSize: '1.3rem', color: '#fff', marginBottom: 4 }}>
-            {recipientName}'s card
+            {recipientName}&apos;s card
           </div>
 
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: campaign.target_amount > 0 ? 12 : 0 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {campaign.occasion && (
               <div style={{ background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>
                 {campaign.occasion}
@@ -135,28 +153,16 @@ function ManageContent() {
               </div>
             )}
           </div>
-
-          {campaign.target_amount > 0 && (
-            <div>
-              <div style={{ fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 5, letterSpacing: '.04em', textTransform: 'uppercase' }}>
-                Gift fund — ${campaign.funded_amount} raised of ${campaign.target_amount} ({pct}%)
-              </div>
-              <div style={{ background: 'rgba(255,255,255,.2)', borderRadius: 8, height: 8, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: '#fff', borderRadius: 8, transition: 'width .5s ease' }} />
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 18px 40px' }}>
 
         {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
           {[
             { label: 'Signed', value: totalContributors },
-            { label: 'Contributed', value: paidContributors },
-            { label: 'Raised', value: `$${campaign.funded_amount}` },
+            { label: 'Days left', value: daysLeft !== null ? (daysLeft > 0 ? daysLeft : '—') : '∞' },
           ].map(s => (
             <div key={s.label} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
               <div style={{ fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A' }}>{s.value}</div>
@@ -177,7 +183,7 @@ function ManageContent() {
             </button>
           </div>
           <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, marginTop: 6 }}>
-            Forward this to anyone who hasn't signed yet
+            Forward this to anyone who hasn&apos;t signed yet
           </div>
         </div>
 
@@ -192,7 +198,6 @@ function ManageContent() {
             fromText={campaign.occasion ?? undefined}
             message={campaign.card_message ?? ''}
             messages={messages}
-            giftAmount={campaign.funded_amount > 0 ? campaign.funded_amount : undefined}
           />
         </div>
 
@@ -208,61 +213,72 @@ function ManageContent() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {contributions.map(c => (
-                <div key={c.id} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
-                      {c.contributor_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
-                      {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.message}"</div>}
-                    </div>
+                <div key={c.id} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
+                    {c.contributor_name.charAt(0).toUpperCase()}
                   </div>
-                  {c.amount > 0 && (
-                    <div style={{ fontWeight: 800, fontSize: '.9rem', color: '#3A8FA0', flexShrink: 0 }}>${c.amount}</div>
-                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
+                    {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.message}"</div>}
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Send card */}
-        <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px' }}>
-          <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Ready to send?</div>
-          <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
-            Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-            <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
-              {origin}/view/{slug}
+        {/* Send card section */}
+        {isSent ? (
+          <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px' }}>
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Ready to send!</div>
+            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
+              Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
             </div>
-            <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
-              {copiedRecipient ? '✓ Copied!' : 'Copy'}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
+                {origin}/view/{slug}
+              </div>
+              <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
+                {copiedRecipient ? '✓ Copied!' : 'Copy'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                💬 WhatsApp
+              </a>
+              <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
+                style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                💬 SMS
+              </a>
+              <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
+                style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                ✉️ Email
+              </a>
+            </div>
+            <a href={`/view/${slug}`} target="_blank"
+              style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
+              Preview what {recipientName} will see →
+            </a>
+          </div>
+        ) : (
+          <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px' }}>
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Happy with the card?</div>
+            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
+              Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
+            </div>
+            <div style={{ fontSize: '.75rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
+              Contributors can still sign after you pay.
+            </div>
+            <button
+              onClick={handlePay}
+              disabled={paying}
+              style={{ width: '100%', background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+            >
+              {paying ? 'Redirecting…' : `Send the card — $15 →`}
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
-              style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-              💬 WhatsApp
-            </a>
-            <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
-              style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-              💬 SMS
-            </a>
-            <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
-              style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-              ✉️ Email
-            </a>
-          </div>
-          <a
-            href={`/view/${slug}`}
-            target="_blank"
-            style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}
-          >
-            Preview what {recipientName} will see →
-          </a>
-        </div>
+        )}
 
       </div>
     </div>

@@ -36,7 +36,10 @@
       "Bash(Read \"C:\\\\Users\\\\Tim\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\f--Thankyoucards-app\\\\538e036d-e628-4754-a814-be4788659998\\\\tasks\\\\b3riyg7qz.output\")",
       "Bash(ping -n 6 127.0.0.1)",
       "Bash(taskkill /PID 11372 /F)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(grep -r \"no longer accepting\" --include=\"*.tsx\" --include=\"*.ts\" -l)",
+      "Bash(grep -r \"no longer accepting\" --include=\"*.tsx\" --include=\"*.ts\" -n)",
+      "Bash(findstr -i \"engines\\\\|node\\\\|version\")"
     ],
     "additionalDirectories": [
       "f:\\HunterKiller",

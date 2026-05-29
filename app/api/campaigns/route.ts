@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { sendOrganiserLink } from '@/lib/email';
 
 function slugify(text: string): string {
   return text
@@ -50,6 +51,16 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error('Create campaign error:', error);
     return Response.json({ error: error.message }, { status: 500 });
+  }
+
+  const origin = request.headers.get('origin') ?? 'https://thankyoucards.au';
+  if (organiser_email) {
+    sendOrganiserLink({
+      to: organiser_email,
+      recipientName: recipient_name,
+      manageUrl: `${origin}/manage/${slug}?token=${organiser_token}`,
+      shareUrl:  `${origin}/card/${slug}`,
+    }).catch(err => console.error('Failed to send organiser email:', err));
   }
 
   return Response.json({ campaign: data }, { status: 201 });

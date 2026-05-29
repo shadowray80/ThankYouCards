@@ -28,7 +28,23 @@ export async function POST(request: NextRequest) {
 
   const pi = event.data.object as Stripe.PaymentIntent;
 
-  // ── Group card creation fee ──
+  // ── Send card payment ──
+  if (pi.metadata?.type === 'send_card') {
+    const campaignId = pi.metadata.campaign_id;
+    if (!campaignId) {
+      console.error('send_card payment missing campaign_id', pi.id);
+      return Response.json({ received: true });
+    }
+    const { error } = await supabaseAdmin
+      .from('campaigns')
+      .update({ status: 'sent' })
+      .eq('id', campaignId)
+      .eq('status', 'open');
+    if (error) console.error('Failed to mark campaign as sent:', error);
+    return Response.json({ received: true });
+  }
+
+  // ── Group card creation fee (legacy) ──
   if (pi.metadata?.type === 'group_card_creation') {
     const campaignId = pi.metadata.campaign_id;
     if (!campaignId) {

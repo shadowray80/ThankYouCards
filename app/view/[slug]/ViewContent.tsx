@@ -59,6 +59,14 @@ export function ViewContent() {
     </div>
   );
 
+  if (campaign.status !== 'sent') return (
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", gap: 12, padding: 24, textAlign: 'center' }}>
+      <div style={{ fontSize: '2.4rem' }}>⏳</div>
+      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#3A8FA0' }}>Your card is on its way!</div>
+      <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600 }}>The organiser is still collecting messages. Check back soon.</div>
+    </div>
+  );
+
   const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasGift = campaign.funded_amount > 0;

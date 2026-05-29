@@ -83,7 +83,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   async function handleCreate() {
     setSaveError(''); setSaving(true);
     try {
-      const res = await fetch('/api/checkout/group-creation', {
+      const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,7 +99,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create campaign');
-      window.location.href = json.url;
+      setCampaignSlug(json.campaign.slug);
+      setOrganiserToken(json.campaign.organiser_token);
+      setShowDone(true);
+      window.scrollTo({ top: 0, behavior: 'instant' });
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -455,7 +458,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ fontSize: '.8rem', color: '#E8724A', fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>{saveError}</div>
           )}
           <Btn variant="coral" full disabled={!canCreate || saving} onClick={handleCreate}>
-            {saving ? 'Redirecting to payment…' : 'Create group card — $15 →'}
+            {saving ? 'Creating…' : 'Create card & get link →'}
           </Btn>
         </div>
       </div>
