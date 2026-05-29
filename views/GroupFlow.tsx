@@ -132,7 +132,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
           <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
             <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with contributors</div>
-            <ShareLink link={`thankyoucards.au/card/${campaignSlug}`} onCopy={() => onToast('Link copied! 🎉')} />
+            <ShareLink link={`${origin}/card/${campaignSlug}`} onCopy={() => onToast('Link copied! 🎉')} />
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer"
                 style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
@@ -152,7 +152,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           <div style={{ background: '#EAF4FB', border: '2px solid rgba(58,143,160,.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
             <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔐 Your organiser link</div>
             <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginBottom: 10, lineHeight: 1.5 }}>Bookmark this — your private access to manage the card and see contributions.</div>
-            <ShareLink link={`thankyoucards.au/manage/${campaignSlug}?token=${organiserToken}`} onCopy={() => onToast('Organiser link copied!')} />
+            <ShareLink link={`${origin}/manage/${campaignSlug}?token=${organiserToken}`} onCopy={() => onToast('Organiser link copied!')} />
           </div>
 
           <CardScrollView
