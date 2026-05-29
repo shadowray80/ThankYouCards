@@ -27,6 +27,7 @@ interface Contribution {
   id: string;
   contributor_name: string;
   message: string | null;
+  photo_url?: string | null;
   amount: number;
   created_at: string;
 }
@@ -215,7 +216,7 @@ function ManageContent() {
           {campaign.card_style === 'casual' ? (
             <CasualView
               campaign={campaign}
-              contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message }))}
+              contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url }))}
               preview
             />
           ) : (
