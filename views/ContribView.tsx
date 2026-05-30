@@ -57,6 +57,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
 
   const [msg, setMsg]               = useState('');
   const [photoUrl, setPhotoUrl]     = useState<string | null>(null);
+  const [photoLabel, setPhotoLabel] = useState('');
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState('');
   const photoInputRef               = useRef<HTMLInputElement>(null);
@@ -117,7 +118,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       const res = await fetch('/api/contributions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null, photo_url: photoUrl, contributor_email: email.trim() || null }),
+        body: JSON.stringify({ campaign_id: campaign.id, contributor_name: name, message: msg || null, photo_url: photoUrl, photo_label: photoLabel.trim() || null, contributor_email: email.trim() || null }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to save');
@@ -316,13 +317,25 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
               {uploading ? '⏳ Uploading…' : '📷 Add a photo (optional)'}
             </button>
           ) : (
-            <div style={{ marginTop: 10, position: 'relative' }}>
-              <img src={photoUrl} alt="Your photo" style={{ width: '100%', borderRadius: 10, display: 'block', maxHeight: 220, objectFit: 'cover' }} />
-              <button
-                type="button"
-                onClick={() => setPhotoUrl(null)}
-                style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', border: 'none', borderRadius: '50%', width: 28, height: 28, color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >✕</button>
+            <div style={{ marginTop: 10 }}>
+              <div style={{ position: 'relative' }}>
+                <img src={photoUrl} alt="Your photo" style={{ width: '100%', borderRadius: 10, display: 'block', maxHeight: 220, objectFit: 'cover' }} />
+                <button
+                  type="button"
+                  onClick={() => { setPhotoUrl(null); setPhotoLabel(''); }}
+                  style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,.55)', border: 'none', borderRadius: '50%', width: 28, height: 28, color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >✕</button>
+              </div>
+              <input
+                value={photoLabel}
+                onChange={e => setPhotoLabel(e.target.value)}
+                placeholder="Label — e.g. Team Night, Legends! (optional)"
+                maxLength={30}
+                style={{ marginTop: 8, width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '10px 12px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.88rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+                onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
+                onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+              />
+              <div style={{ fontSize: '.7rem', color: '#B0A8BC', fontWeight: 600, marginTop: 3 }}>Shown as a badge on the photo card</div>
             </div>
           )}
           {uploadError && <div style={{ fontSize: '.75rem', color: '#E8724A', fontWeight: 700, marginTop: 6 }}>{uploadError}</div>}

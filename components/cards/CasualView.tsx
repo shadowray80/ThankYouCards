@@ -16,17 +16,47 @@ interface Contribution {
   contributor_name: string;
   message: string | null;
   photo_url?: string | null;
+  photo_label?: string | null;
 }
 
 const DECORATIONS = ['🎉', '⭐', '🏆', '✨', '🙌', '💙', '🎊', '👏', '💫', '🤜🤛'];
 const MAX_AVATARS = 7;
 
-function Photo({ url }: { url: string }) {
+function PhotoCard({ c, palette }: { c: Contribution; palette: CasualPalette }) {
   return (
-    <img
-      src={url} alt=""
-      style={{ width: '100%', borderRadius: 10, marginBottom: 10, display: 'block', objectFit: 'cover', maxHeight: 200 }}
-    />
+    <div style={{
+      breakInside: 'avoid',
+      marginBottom: 12,
+      borderRadius: 16,
+      overflow: 'hidden',
+      boxShadow: '0 2px 12px rgba(0,0,0,.12)',
+      display: 'inline-block',
+      width: '100%',
+      boxSizing: 'border-box',
+      position: 'relative',
+    }}>
+      <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+      {c.photo_label && (
+        <div style={{
+          position: 'absolute', top: 10, left: 10,
+          background: 'rgba(255,255,255,.93)',
+          borderRadius: 20, padding: '5px 11px',
+          fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A',
+          boxShadow: '0 1px 6px rgba(0,0,0,.15)',
+        }}>
+          {c.photo_label}
+        </div>
+      )}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: 'linear-gradient(to top, rgba(0,0,0,.58), transparent)',
+        padding: '28px 12px 10px',
+        fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.92)',
+        fontFamily: "'Nunito', sans-serif",
+      }}>
+        — {c.contributor_name}
+      </div>
+    </div>
   );
 }
 
@@ -35,7 +65,6 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   const deco = DECORATIONS[index % DECORATIONS.length];
   const bg   = palette.cardBgs[index % palette.cardBgs.length];
   const msg  = c.message || '';
-  const photo = c.photo_url ?? null;
 
   const base: React.CSSProperties = {
     breakInside: 'avoid',
@@ -52,9 +81,8 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 0) {
     return (
       <div style={{ ...base, background: '#fff' }}>
-        {!photo && <div style={{ fontFamily: 'Georgia, serif', fontSize: '3rem', lineHeight: 0.75, color: palette.accent, opacity: 0.2, marginBottom: 6 }}>&ldquo;</div>}
-        {photo && <Photo url={photo} />}
-        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>}
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '3rem', lineHeight: 0.75, color: palette.accent, opacity: 0.2, marginBottom: 6 }}>&ldquo;</div>
+        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>
     );
@@ -74,8 +102,7 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
           </div>
           <span style={{ fontSize: '1.2rem' }}>{deco}</span>
         </div>
-        {photo && <Photo url={photo} />}
-        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>}
+        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#7A7585' }}>– {c.contributor_name}</div>
       </div>
     );
@@ -84,8 +111,7 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 2) {
     return (
       <div style={{ ...base, background: '#fff', borderLeft: `4px solid ${palette.accent}`, paddingLeft: 10 }}>
-        {photo && <Photo url={photo} />}
-        {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', margin: '0 0 10px' }}>{msg}</p>}
+        <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', margin: '0 0 10px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>
     );
@@ -93,9 +119,8 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
 
   return (
     <div style={{ ...base, background: bg, textAlign: 'center' }}>
-      {!photo && <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{deco}</div>}
-      {photo && <Photo url={photo} />}
-      {msg && <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>}
+      <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{deco}</div>
+      <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
       <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
     </div>
   );
@@ -107,6 +132,15 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
   const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
+
+  // Flatten contributions into separate photo tiles and text tiles
+  let textIdx = 0;
+  const tiles = contributions.flatMap((c, i) => {
+    const result: React.ReactNode[] = [];
+    if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} palette={palette} />);
+    if (c.message)   result.push(<MessageCard key={`${i}-msg`} c={c} index={textIdx++} palette={palette} />);
+    return result;
+  });
 
   return (
     <div style={{ background: palette.bg, minHeight: preview ? 'auto' : '100dvh', borderRadius: preview ? 16 : 0, overflow: preview ? 'hidden' : 'visible', fontFamily: "'Nunito', sans-serif" }}>
@@ -178,15 +212,13 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
       )}
 
       {/* ── Masonry grid ── */}
-      {contributions.length === 0 ? (
+      {tiles.length === 0 ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: '#7A7585', fontWeight: 700 }}>
           No messages yet — check back soon!
         </div>
       ) : (
         <div style={{ padding: '16px 14px 4px', columns: 2, columnGap: '12px' }}>
-          {contributions.map((c, i) => (
-            <MessageCard key={i} c={c} index={i} palette={palette} />
-          ))}
+          {tiles}
         </div>
       )}
 

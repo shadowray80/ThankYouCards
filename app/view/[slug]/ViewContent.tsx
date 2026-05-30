@@ -25,6 +25,7 @@ interface Contribution {
   contributor_name: string;
   message: string | null;
   photo_url?: string | null;
+  photo_label?: string | null;
 }
 
 export function ViewContent() {
