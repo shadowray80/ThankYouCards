@@ -165,6 +165,15 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
       <Nav onHome={onBack} onNav={onNav} badge="group" />
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
 
+        {/* Step 1 banner */}
+        <div style={{ background: '#FDF0E8', borderBottom: '1.5px solid #F5D9C8', padding: '12px 18px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ background: '#E8724A', color: '#fff', borderRadius: 8, padding: '3px 9px', fontSize: '.65rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', flexShrink: 0, marginTop: 1 }}>Step 1</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', marginBottom: 2 }}>Set up your card</div>
+            <div style={{ fontSize: '.76rem', color: '#9A7A6A', fontWeight: 600, lineHeight: 1.5 }}>Just fill in the basics — you can tweak the design, colours, and photo any time from your organiser dashboard before you send it.</div>
+          </div>
+        </div>
+
         {/* Occasion film strip */}
         <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
           <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
