@@ -19,42 +19,59 @@ interface Contribution {
   photo_label?: string | null;
 }
 
-const DECORATIONS = ['🎉', '⭐', '🏆', '✨', '🙌', '💙', '🎊', '👏', '💫', '🤜🤛'];
+const DECORATIONS = ['🎂', '👑', '🏆', '🌟', '🎉', '💙', '🎊', '💪', '🎯', '🥇', '🎈', '⭐', '🙌', '🤜🤛', '🔥', '💫'];
+const ROTATIONS   = [-4, 3, -2.5, 5, -3, 4.5, -5, 2, -3.5, 4, -2, 5.5];
 const MAX_AVATARS = 7;
 
-function PhotoCard({ c, palette }: { c: Contribution; palette: CasualPalette }) {
+function PhotoCard({ c, index, palette }: { c: Contribution; index: number; palette: CasualPalette }) {
+  const deg = ROTATIONS[index % ROTATIONS.length];
+
   return (
     <div style={{
       breakInside: 'avoid',
-      marginBottom: 12,
-      borderRadius: 16,
-      overflow: 'hidden',
-      boxShadow: '0 2px 12px rgba(0,0,0,.12)',
+      marginBottom: 18,
       display: 'inline-block',
       width: '100%',
       boxSizing: 'border-box',
-      position: 'relative',
+      padding: '6px 2px',
     }}>
-      <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
-      {c.photo_label && (
-        <div style={{
-          position: 'absolute', top: 10, left: 10,
-          background: 'rgba(255,255,255,.93)',
-          borderRadius: 20, padding: '5px 11px',
-          fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A',
-          boxShadow: '0 1px 6px rgba(0,0,0,.15)',
-        }}>
-          {c.photo_label}
-        </div>
-      )}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(to top, rgba(0,0,0,.58), transparent)',
-        padding: '28px 12px 10px',
-        fontSize: '.72rem', fontWeight: 800, color: 'rgba(255,255,255,.92)',
-        fontFamily: "'Nunito', sans-serif",
+        transform: `rotate(${deg}deg)`,
+        background: '#fff',
+        padding: '7px 7px 26px',
+        boxShadow: '0 6px 28px rgba(0,0,0,.2)',
+        borderRadius: 3,
+        position: 'relative',
       }}>
-        — {c.contributor_name}
+        <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+        {c.photo_label && (
+          <div style={{
+            position: 'absolute',
+            top: -11, right: 10,
+            background: palette.accent,
+            color: '#fff',
+            borderRadius: 20,
+            padding: '5px 12px',
+            fontSize: '.7rem',
+            fontWeight: 800,
+            transform: `rotate(${-deg * 0.4 + 2}deg)`,
+            boxShadow: '0 2px 8px rgba(0,0,0,.22)',
+            whiteSpace: 'nowrap',
+          }}>
+            {c.photo_label}
+          </div>
+        )}
+        <div style={{
+          textAlign: 'center',
+          marginTop: 7,
+          fontSize: '.73rem',
+          fontWeight: 700,
+          color: '#9A9090',
+          fontFamily: "'Nunito', sans-serif",
+          letterSpacing: '.02em',
+        }}>
+          — {c.contributor_name}
+        </div>
       </div>
     </div>
   );
@@ -81,7 +98,7 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 0) {
     return (
       <div style={{ ...base, background: '#fff' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '3rem', lineHeight: 0.75, color: palette.accent, opacity: 0.2, marginBottom: 6 }}>&ldquo;</div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '3.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.18, marginBottom: 4, marginLeft: -2 }}>&ldquo;</div>
         <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>
@@ -91,16 +108,16 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
   if (type === 1) {
     return (
       <div style={{ ...base, background: bg }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
           <div style={{
-            width: 30, height: 30, borderRadius: '50%',
+            width: 32, height: 32, borderRadius: '50%',
             background: palette.avatarColors[index % palette.avatarColors.length],
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, fontSize: '.72rem', color: '#fff', flexShrink: 0,
           }}>
             {c.contributor_name.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontSize: '1.2rem' }}>{deco}</span>
+          <span style={{ fontSize: '2rem', lineHeight: 1 }}>{deco}</span>
         </div>
         <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#7A7585' }}>– {c.contributor_name}</div>
@@ -117,9 +134,10 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
     );
   }
 
+  // Type 3 — big icon, centred
   return (
     <div style={{ ...base, background: bg, textAlign: 'center' }}>
-      <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{deco}</div>
+      <div style={{ fontSize: '2.8rem', lineHeight: 1, marginBottom: 8 }}>{deco}</div>
       <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
       <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
     </div>
@@ -133,12 +151,12 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
   const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
 
-  // Flatten contributions into separate photo tiles and text tiles
-  let textIdx = 0;
+  let textIdx  = 0;
+  let photoIdx = 0;
   const tiles = contributions.flatMap((c, i) => {
     const result: React.ReactNode[] = [];
-    if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} palette={palette} />);
-    if (c.message)   result.push(<MessageCard key={`${i}-msg`} c={c} index={textIdx++} palette={palette} />);
+    if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} index={photoIdx++} palette={palette} />);
+    if (c.message)   result.push(<MessageCard key={`${i}-msg`}  c={c} index={textIdx++}  palette={palette} />);
     return result;
   });
 
@@ -151,11 +169,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
         background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`,
       }}>
         {hasImage && (
-          <img
-            src={campaign.card_image_url!}
-            alt=""
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
         <div style={{
           position: 'relative', zIndex: 2, minHeight: 300, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
