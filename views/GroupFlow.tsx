@@ -10,7 +10,7 @@ import { CorporateView } from '@/components/cards/CorporateView';
 
 const PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
-  { contributor_name: 'James',  message: null, photo_url: '/hero-coach.jpg', photo_label: 'Best season ever!' },
+  { contributor_name: 'James',  message: null, photo_url: '/Henry.png', photo_label: 'Best season ever!' },
   { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
   { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
 ];
@@ -91,6 +91,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     if (style === 'corporate') {
       const valid = CORPORATE_PALETTES.some(p => p.id === cardPalette) || (cardPalette?.startsWith('#') ?? false);
       if (!valid) setCardPalette('navy');
+      setCardMsg('Thank you for everything');
     }
     if (style === 'casual') {
       const valid = CASUAL_PALETTES.some(p => p.id === cardPalette);
@@ -218,6 +219,76 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           </div>
         </div>}
 
+        {/* Card style + palette */}
+        <div style={{ padding: '14px 18px 0' }}>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card style</label>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {([
+              { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
+              { id: 'casual'     as const, label: 'Casual',     emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
+              { id: 'corporate'  as const, label: 'Corporate',  emoji: '🏢', desc: 'Polished navy & gold, clean typography' },
+            ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
+              <div key={s.id} onClick={() => handleCardStyleChange(s.id)} style={{ flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center', border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0', background: cardStyle === s.id ? '#FDF0E8' : '#fff', transition: 'all .2s' }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{s.emoji}</div>
+                <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', marginBottom: 2 }}>{s.label}</div>
+                <div style={{ fontSize: '.7rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>{s.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Palette swatches — casual */}
+          {cardStyle === 'casual' && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Colour palette</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {CASUAL_PALETTES.map(p => (
+                  <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`, border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent', boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)', transition: 'all .2s' }} />
+                    <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Palette + logo — corporate */}
+          {cardStyle === 'corporate' && (
+            <>
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {CORPORATE_PALETTES.map(p => (
+                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`, border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent', boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)', transition: 'all .2s' }} />
+                      <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                    </div>
+                  ))}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', position: 'relative', overflow: 'hidden', background: cardPalette?.startsWith('#') ? cardPalette : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', border: cardPalette?.startsWith('#') ? '3px solid #E8724A' : '3px solid transparent', boxShadow: cardPalette?.startsWith('#') ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)' }}>
+                      <input type="color" value={cardPalette?.startsWith('#') ? cardPalette : '#1A2744'} onChange={e => setCardPalette(e.target.value)} style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }} />
+                    </div>
+                    <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette?.startsWith('#') ? '#E8724A' : '#7A7585' }}>Custom</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
+                <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                {logoUrl ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px' }}>
+                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
+                    <button onClick={() => setLogoUrl(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+                  </div>
+                ) : (
+                  <button onClick={() => logoUploadRef.current?.click()} disabled={logoUploading} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '11px', fontWeight: 700, fontSize: '.82rem', color: logoUploading ? '#B0A8BC' : '#7A7585', cursor: logoUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    {logoUploading ? 'Uploading…' : '⬆ Upload your logo (PNG or SVG)'}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
         {/* Inline editable card */}
         <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
@@ -226,12 +297,12 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             /* ── Corporate header ── */
             <div style={{ display: 'flex', minHeight: 240, background: `linear-gradient(135deg, ${corpPalette.headerFrom}, ${corpPalette.headerTo})` }}>
               {/* Text side */}
-              <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+              <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 2 }}>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 8 }}>To</div>
 
                 {/* Recipient */}
                 <div style={{ position: 'relative', marginBottom: 10 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>Their name</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>The legend</div>}
                   <div contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
@@ -256,9 +327,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
                   />
                 </div>
-                {/* Logo preview */}
+                {/* Logo preview — pushed to bottom */}
                 {logoUrl && (
-                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain', opacity: 0.9 }} />
                     <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                   </div>
@@ -376,176 +447,17 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         </div>
         <div style={{ margin: '4px 18px 0', fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600 }}>Contributors won&apos;t be able to add messages after this date</div>
 
-        {/* Group-specific fields */}
+        {/* Organiser email */}
         <div style={{ padding: '16px 18px 0' }}>
-
-          {/* Gift type — hidden until gift fund feature is reinstated
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Gift</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {GIFT_TYPES.map(g => (
-                <div
-                  key={g.id}
-                  onClick={() => setGiftType(g.id)}
-                  style={{
-                    border: giftType === g.id ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    background: giftType === g.id ? '#FDF0E8' : '#fff',
-                    borderRadius: 12, padding: '12px 14px', cursor: 'pointer', transition: 'all .2s',
-                    display: 'flex', alignItems: 'flex-start', gap: 12,
-                  }}
-                >
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: giftType === g.id ? '5px solid #E8724A' : '2px solid #C0B8CC', flexShrink: 0, marginTop: 2, transition: 'all .2s' }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, fontSize: '.9rem', color: '#2A2A2A' }}>{g.label}</div>
-                    <div style={{ fontSize: '.76rem', color: '#7A7585', marginTop: 1 }}>{g.desc}</div>
-                    {g.id === 'collect' && (
-                      <div style={{ display: 'flex', gap: 7, marginTop: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
-                        {MINI_CARDS.map(card => (
-                          <div key={card.name} style={{
-                            flexShrink: 0, width: 54, height: 34, borderRadius: 5, position: 'relative', overflow: 'hidden',
-                            background: card.bg, boxShadow: '0 2px 8px rgba(0,0,0,.18)',
-                          }}>
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 60%)' }} />
-                            <div style={{ position: 'absolute', top: 4, right: 5, width: 8, height: 6, borderRadius: 1, background: 'rgba(255,255,255,.25)' }} />
-                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {card.logo
-                                ? <img src={card.logo} alt={card.name} style={{ height: card.logoH ?? 14, filter: card.logoFilter ?? 'brightness(0) invert(1)', objectFit: 'contain' }} />
-                                : <span style={{ fontSize: card.fontSize ?? '.5rem', fontWeight: 900, color: card.textColor ?? '#fff', letterSpacing: card.letterSpacing ?? '.04em', textAlign: 'center', lineHeight: 1.2, padding: '0 4px' }}>{card.name}</span>
-                              }
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          */}
-
-          {/* Card style */}
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card style</label>
-            <div style={{ display: 'flex', gap: 10 }}>
-              {([
-                { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
-                { id: 'casual'     as const, label: 'Casual',     emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
-                { id: 'corporate'  as const, label: 'Corporate',  emoji: '🏢', desc: 'Polished navy & gold, clean typography' },
-              ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
-                <div
-                  key={s.id}
-                  onClick={() => handleCardStyleChange(s.id)}
-                  style={{
-                    flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center',
-                    border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    background: cardStyle === s.id ? '#FDF0E8' : '#fff',
-                    transition: 'all .2s',
-                  }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{s.emoji}</div>
-                  <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', marginBottom: 2 }}>{s.label}</div>
-                  <div style={{ fontSize: '.7rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Palette swatches — casual */}
-            {cardStyle === 'casual' && (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Colour palette</div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  {CASUAL_PALETTES.map(p => (
-                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                      <div style={{
-                        width: 42, height: 42, borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
-                        border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent',
-                        boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
-                        transition: 'all .2s',
-                      }} />
-                      <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Palette swatches — corporate */}
-            {cardStyle === 'corporate' && (
-              <>
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {CORPORATE_PALETTES.map(p => (
-                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
-                      <div style={{
-                        width: 38, height: 38, borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
-                        border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent',
-                        boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
-                        transition: 'all .2s',
-                      }} />
-                      <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
-                    </div>
-                  ))}
-                  {/* Custom colour picker */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer', position: 'relative' }}>
-                    <div style={{
-                      width: 38, height: 38, borderRadius: '50%', position: 'relative', overflow: 'hidden',
-                      background: cardPalette?.startsWith('#') ? cardPalette : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)',
-                      border: cardPalette?.startsWith('#') ? '3px solid #E8724A' : '3px solid transparent',
-                      boxShadow: cardPalette?.startsWith('#') ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
-                    }}>
-                      <input type="color"
-                        value={cardPalette?.startsWith('#') ? cardPalette : '#1A2744'}
-                        onChange={e => setCardPalette(e.target.value)}
-                        style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }}
-                      />
-                    </div>
-                    <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette?.startsWith('#') ? '#E8724A' : '#7A7585' }}>Custom</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Logo upload — corporate only */}
-              <div style={{ marginTop: 16 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
-                {logoUrl ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px' }}>
-                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
-                    <button onClick={() => setLogoUrl(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
-                  </div>
-                ) : (
-                  <div>
-                    <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
-                    <button
-                      onClick={() => logoUploadRef.current?.click()}
-                      disabled={logoUploading}
-                      style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '11px', fontWeight: 700, fontSize: '.82rem', color: logoUploading ? '#B0A8BC' : '#7A7585', cursor: logoUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
-                    >
-                      {logoUploading ? 'Uploading…' : '⬆ Upload your logo (PNG or SVG)'}
-                    </button>
-                    <div style={{ fontSize: '.68rem', color: '#B0A8BC', fontWeight: 600, marginTop: 4 }}>Appears in the card header below the team name</div>
-                  </div>
-                )}
-              </div>
-              </>
-            )}
-          </div>
-
-          {/* Organiser email */}
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your email</label>
-            <input
-              type="email" value={organiserEmail} onChange={e => setOrganiserEmail(e.target.value)}
-              placeholder="you@example.com"
-              style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
-              onFocus={e => (e.target.style.borderColor = '#E8724A')}
-              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-            />
-            <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>We&apos;ll send you updates when people contribute</div>
-          </div>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your email</label>
+          <input
+            type="email" value={organiserEmail} onChange={e => setOrganiserEmail(e.target.value)}
+            placeholder="you@example.com"
+            style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', transition: 'border-color .2s' }}
+            onFocus={e => (e.target.style.borderColor = '#E8724A')}
+            onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+          />
+          <div style={{ fontSize: '.72rem', color: '#B0A8BC', marginTop: 4 }}>We&apos;ll send you updates when people contribute</div>
         </div>
 
         {/* Sticky create button */}
