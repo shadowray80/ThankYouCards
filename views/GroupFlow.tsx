@@ -5,6 +5,15 @@ import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { THEMES } from '@/lib/themes';
 import { CASUAL_PALETTES } from '@/lib/palettes';
+import { CasualView } from '@/components/cards/CasualView';
+import { CorporateView } from '@/components/cards/CorporateView';
+
+const PREVIEW_CONTRIBUTIONS = [
+  { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
+  { contributor_name: 'James',  message: "Working with you has been an absolute pleasure. All the best!", photo_url: null, photo_label: null },
+  { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
+  { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
+];
 
 interface GroupFlowProps {
   onBack: () => void;
@@ -44,7 +53,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [cardMsg, setCardMsg]   = useState(THEMES[11].frontMsg);
 
   const [giftType, setGiftType]             = useState('collect');
-  const [cardStyle, setCardStyle]           = useState<'classic' | 'casual'>('classic');
+  const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('classic');
   const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
   const [saving, setSaving]                 = useState(false);
@@ -302,25 +311,39 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           </div>
 
-          {/* Group messages banner */}
-          <div style={{ background: '#3A8FA0', color: 'rgba(255,255,255,.9)', textAlign: 'center', padding: '10px 16px', fontSize: '.75rem', letterSpacing: '.07em', fontWeight: 700 }}>
-            Messages from the Team ↓
-          </div>
-
-          {/* Messages placeholder */}
-          <div style={{ background: '#FAFAF8', padding: '18px 22px', borderBottom: '1px solid #F0EDF5' }}>
-            <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '.95rem', color: '#C8C0D0', lineHeight: 1.7 }}>
-              Contributors&apos; messages will appear here…
-            </div>
-          </div>
-
-          {/* Card footer */}
-          <div style={{ background: '#3A8FA0', padding: '16px 22px', textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, color: 'rgba(255,255,255,.9)', fontSize: '.95rem', marginBottom: 2 }}>
-              thank<span style={{ color: '#F09070' }}>you</span>cards.au
-            </div>
-            <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
-          </div>
+          {/* Messages preview — style-aware */}
+          {cardStyle === 'casual' ? (
+            <CasualView
+              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette }}
+              contributions={PREVIEW_CONTRIBUTIONS}
+              preview
+              noHeader
+            />
+          ) : cardStyle === 'corporate' ? (
+            <CorporateView
+              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: null }}
+              contributions={PREVIEW_CONTRIBUTIONS}
+              preview
+              noHeader
+            />
+          ) : (
+            <>
+              <div style={{ background: '#3A8FA0', color: 'rgba(255,255,255,.9)', textAlign: 'center', padding: '10px 16px', fontSize: '.75rem', letterSpacing: '.07em', fontWeight: 700 }}>
+                Messages from the Team ↓
+              </div>
+              <div style={{ background: '#FAFAF8', padding: '18px 22px', borderBottom: '1px solid #F0EDF5' }}>
+                <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '.95rem', color: '#C8C0D0', lineHeight: 1.7 }}>
+                  Contributors&apos; messages will appear here…
+                </div>
+              </div>
+              <div style={{ background: '#3A8FA0', padding: '16px 22px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, color: 'rgba(255,255,255,.9)', fontSize: '.95rem', marginBottom: 2 }}>
+                  thank<span style={{ color: '#F09070' }}>you</span>cards.au
+                </div>
+                <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Deadline — same width as card */}
@@ -393,9 +416,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card style</label>
             <div style={{ display: 'flex', gap: 10 }}>
               {([
-                { id: 'classic' as const, label: 'Classic', emoji: '✉️', desc: 'Elegant scroll with cover photo' },
-                { id: 'casual' as const, label: 'Casual',  emoji: '🎉', desc: 'Masonry board with vibrant cards' },
-              ] as { id: 'classic' | 'casual'; label: string; emoji: string; desc: string }[]).map(s => (
+                { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
+                { id: 'casual'     as const, label: 'Casual',     emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
+                { id: 'corporate'  as const, label: 'Corporate',  emoji: '🏢', desc: 'Polished navy & gold, clean typography' },
+              ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
                 <div
                   key={s.id}
                   onClick={() => setCardStyle(s.id)}
@@ -413,7 +437,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               ))}
             </div>
 
-            {/* Palette swatches — only for casual */}
+            {/* Palette swatches — only for casual style */}
             {cardStyle === 'casual' && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Colour palette</div>

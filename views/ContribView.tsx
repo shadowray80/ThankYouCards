@@ -7,6 +7,7 @@ import { GiftSelector } from '@/components/forms/GiftSelector';
 import { GiftProgress } from '@/components/dashboard/GiftProgress';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
+import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 
 interface Campaign {
@@ -43,7 +44,7 @@ interface ContribViewProps {
 }
 
 export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug }: ContribViewProps) {
-  const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
+  const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, card_style: 'classic', card_palette: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
 
   const [slugInput, setSlugInput]         = useState('');
   const [activeSlug, setActiveSlug]       = useState(initialSlug ?? 'demo');
@@ -422,6 +423,8 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             {/* Card */}
             {campaign.card_style === 'casual' ? (
               <CasualView campaign={campaign} contributions={previewContribs} preview />
+            ) : campaign.card_style === 'corporate' ? (
+              <CorporateView campaign={campaign} contributions={previewContribs} preview />
             ) : (
               <div style={{ padding: '16px 16px 40px' }}>
                 <CardScrollView

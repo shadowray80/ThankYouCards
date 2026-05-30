@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
+import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 
 interface Campaign {
@@ -103,6 +104,17 @@ export function ViewContent() {
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
           <CasualView campaign={campaign} contributions={contributions} />
+        </div>
+      </>
+    );
+  }
+
+  if (campaign.card_style === 'corporate') {
+    return (
+      <>
+        {previewBar}
+        <div style={previewBar ? { paddingTop: 44 } : undefined}>
+          <CorporateView campaign={campaign} contributions={contributions} />
         </div>
       </>
     );

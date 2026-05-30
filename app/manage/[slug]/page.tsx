@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
+import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
@@ -47,6 +48,7 @@ function ManageContent() {
   const [error, setError]                 = useState('');
   const [copied, setCopied]               = useState(false);
   const [copiedRecipient, setCopiedRecipient] = useState(false);
+  const [copiedManage, setCopiedManage]   = useState(false);
   const [paying, setPaying]               = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
 
@@ -95,6 +97,12 @@ function ManageContent() {
     navigator.clipboard.writeText(`${origin}/view/${slug}`);
     setCopiedRecipient(true);
     setTimeout(() => setCopiedRecipient(false), 2000);
+  };
+
+  const copyManageLink = () => {
+    navigator.clipboard.writeText(`${origin}/manage/${slug}?token=${token}`);
+    setCopiedManage(true);
+    setTimeout(() => setCopiedManage(false), 2000);
   };
 
   const handlePay = async () => {
@@ -224,6 +232,16 @@ function ManageContent() {
           </div>
         )}
 
+        {/* Email confirmation notice */}
+        {campaign.organiser_email && (
+          <div style={{ background: '#EAF4FB', border: '1.5px solid #C8E8F0', borderRadius: 12, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: 1 }}>✉️</span>
+            <div style={{ fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, lineHeight: 1.5 }}>
+              A confirmation email with your dashboard and contributor links has been sent to <strong>{campaign.organiser_email}</strong>
+            </div>
+          </div>
+        )}
+
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
           {[
@@ -278,6 +296,12 @@ function ManageContent() {
           <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
             {campaign.card_style === 'casual' ? (
               <CasualView
+                campaign={campaign}
+                contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
+                preview
+              />
+            ) : campaign.card_style === 'corporate' ? (
+              <CorporateView
                 campaign={campaign}
                 contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
                 preview
@@ -342,7 +366,7 @@ function ManageContent() {
 
         {/* Send card section — only shown before sending; sent state is at top */}
         {!isSent && (
-          <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px' }}>
+          <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Happy with the card?</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
               Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
@@ -359,6 +383,22 @@ function ManageContent() {
             </button>
           </div>
         )}
+
+        {/* Organiser link — bookmark / return access */}
+        <div style={{ background: '#F7F5FB', border: '1.5px solid #E8E2F0', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#7A7585', marginBottom: 4 }}>🔐 Your organiser link</div>
+          <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 }}>
+            Bookmark this to return to your dashboard at any time. Keep it private — anyone with this link can manage the card.
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ flex: 1, fontSize: '.72rem', color: '#7A7585', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '8px 10px' }}>
+              {origin}/manage/{slug}?token={token}
+            </div>
+            <button onClick={copyManageLink} style={{ background: '#7A7585', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
+              {copiedManage ? '✓ Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>

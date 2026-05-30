@@ -176,7 +176,7 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
   );
 }
 
-export function CasualView({ campaign, contributions, preview }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean }) {
+export function CasualView({ campaign, contributions, preview, noHeader }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean; noHeader?: boolean }) {
   const palette        = CASUAL_PALETTES.find(p => p.id === (campaign.card_palette ?? 'sky')) ?? CASUAL_PALETTES[0];
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
@@ -198,10 +198,10 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
   });
 
   return (
-    <div style={{ background: palette.bg, minHeight: preview ? 'auto' : '100dvh', borderRadius: preview ? 16 : 0, overflow: preview ? 'hidden' : 'visible', fontFamily: "'Nunito', sans-serif" }}>
+    <div style={{ background: palette.bg, minHeight: (preview || noHeader) ? 'auto' : '100dvh', borderRadius: (preview || noHeader) ? 16 : 0, overflow: (preview || noHeader) ? 'hidden' : 'visible', fontFamily: "'Nunito', sans-serif" }}>
 
       {/* ── Cover ── */}
-      <div style={{
+      {!noHeader && <div style={{
         position: 'relative', overflow: 'hidden', minHeight: 300,
         background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`,
       }}>
@@ -226,7 +226,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
             <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* ── Contributor bar ── */}
       {contributions.length > 0 && (
@@ -274,7 +274,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
       )}
 
       {/* ── Footer ── */}
-      {!preview && (
+      {!preview && !noHeader && (
         <div style={{ margin: '8px 14px 24px', borderRadius: 20, background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, padding: '28px 20px', textAlign: 'center' }}>
           <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.6rem, 7vw, 2.4rem)', color: '#fff', lineHeight: 1.35, marginBottom: 4 }}>
             {campaign.card_message || 'Thanks for everything!'}
