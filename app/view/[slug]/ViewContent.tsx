@@ -157,6 +157,10 @@ export function ViewContent() {
         <div style={{ fontSize: '.95rem', color: '#B0A8BC', fontWeight: 600 }}>
           Beautiful cards for the legends in your life
         </div>
+        <div style={{ marginTop: 12, display: 'flex', gap: 16, justifyContent: 'center' }}>
+          <a href="/terms" style={{ fontSize: '.78rem', color: '#B0A8BC', fontWeight: 600, textDecoration: 'none' }}>Terms</a>
+          <a href="/privacy" style={{ fontSize: '.78rem', color: '#B0A8BC', fontWeight: 600, textDecoration: 'none' }}>Privacy</a>
+        </div>
       </div>
 
     </div>
