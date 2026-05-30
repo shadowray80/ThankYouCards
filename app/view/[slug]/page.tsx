@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { ViewContent } from './ViewContent';
 
@@ -52,5 +53,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function ViewPage() {
-  return <ViewContent />;
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", fontWeight: 700, color: '#7A7585' }}>Loading…</div>}>
+      <ViewContent />
+    </Suspense>
+  );
 }

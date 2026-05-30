@@ -128,7 +128,7 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
 
   if (type === 2) {
     return (
-      <div style={{ ...base, background: '#fff', borderLeft: `4px solid ${palette.accent}`, paddingLeft: 10 }}>
+      <div style={{ ...base, background: '#fff' }}>
         <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', margin: '0 0 10px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>

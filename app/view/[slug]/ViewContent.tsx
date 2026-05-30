@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { THEMES } from '@/lib/themes';
@@ -29,8 +29,10 @@ interface Contribution {
 }
 
 export function ViewContent() {
-  const params = useParams();
-  const slug = typeof params.slug === 'string' ? params.slug : '';
+  const params       = useParams();
+  const searchParams = useSearchParams();
+  const slug         = typeof params.slug === 'string' ? params.slug : '';
+  const isPreview    = searchParams.get('preview') === '1';
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -64,7 +66,7 @@ export function ViewContent() {
     </div>
   );
 
-  if (campaign.status !== 'sent') return (
+  if (campaign.status !== 'sent' && !isPreview) return (
     <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", gap: 12, padding: 24, textAlign: 'center' }}>
       <div style={{ fontSize: '2.4rem' }}>⏳</div>
       <div style={{ fontWeight: 800, fontSize: '1rem', color: '#3A8FA0' }}>Your card is on its way!</div>

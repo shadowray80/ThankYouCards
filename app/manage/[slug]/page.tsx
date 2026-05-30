@@ -213,7 +213,13 @@ function ManageContent() {
 
         {/* Card preview */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card preview</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>Card preview</div>
+            <a href={`/view/${slug}?preview=1`} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: '.72rem', fontWeight: 800, color: '#3A8FA0', textDecoration: 'none', letterSpacing: '.02em' }}>
+              Full preview ↗
+            </a>
+          </div>
           {campaign.card_style === 'casual' ? (
             <CasualView
               campaign={campaign}
