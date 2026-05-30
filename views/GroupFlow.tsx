@@ -3,8 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
-import { CardScrollView } from '@/components/cards/CardScrollView';
-import { ShareLink } from '@/components/dashboard/ShareLink';
 import { THEMES } from '@/lib/themes';
 import { CASUAL_PALETTES } from '@/lib/palettes';
 
@@ -49,11 +47,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [cardStyle, setCardStyle]           = useState<'classic' | 'casual'>('classic');
   const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
-  const [showDone, setShowDone]             = useState(false);
   const [saving, setSaving]                 = useState(false);
   const [saveError, setSaveError]           = useState('');
-  const [campaignSlug, setCampaignSlug]     = useState('');
-  const [organiserToken, setOrganiserToken] = useState('');
 
   const uploadRef    = useRef<HTMLInputElement>(null);
   const cardMsgRef   = useRef<HTMLDivElement>(null);
@@ -110,74 +105,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create campaign');
-      setCampaignSlug(json.campaign.slug);
-      setOrganiserToken(json.campaign.organiser_token);
-      setShowDone(true);
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.location.href = `/manage/${json.campaign.slug}?token=${json.campaign.organiser_token}`;
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
       setSaving(false);
     }
-  }
-
-  // ── Done screen ──
-  if (showDone) {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
-    const shareText = `${recip} has a group card — add your message here: ${origin}/card/${campaignSlug}`;
-    return (
-      <div>
-        <Nav onHome={onBack} onNav={onNav} badge="group" />
-        <div style={{ padding: '22px 18px 60px', maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
-            <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.6rem', color: '#2A2A2A' }}>🎉 Group card is live! 🎊</div>
-            <div style={{ color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, fontWeight: 600, marginTop: 4 }}>
-              Share the link — everyone adds their message and chips in.
-            </div>
-          </div>
-
-          <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with contributors</div>
-            <ShareLink link={`${origin}/card/${campaignSlug}`} onCopy={() => onToast('Link copied! 🎉')} />
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer"
-                style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                💬 WhatsApp
-              </a>
-              <a href={`sms:?body=${encodeURIComponent(shareText)}`}
-                style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                💬 SMS
-              </a>
-              <a href={`mailto:?subject=Add your message to ${recip}'s card&body=${encodeURIComponent(shareText)}`}
-                style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                ✉️ Email
-              </a>
-            </div>
-          </div>
-
-          <div style={{ background: '#EAF4FB', border: '2px solid rgba(58,143,160,.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔐 Your organiser link</div>
-            <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginBottom: 10, lineHeight: 1.5 }}>Bookmark this — your private access to manage the card and see contributions.</div>
-            <ShareLink link={`${origin}/manage/${campaignSlug}?token=${organiserToken}`} onCopy={() => onToast('Organiser link copied!')} />
-          </div>
-
-          <CardScrollView
-            theme={theme}
-            imgIdx={imgIdx < 0 ? 0 : imgIdx}
-            customImgUrl={customImgUrl ?? undefined}
-            recipientName={recip}
-            fromText={occasion}
-            message={cardMsg}
-            messages={[]}
-            landscapeCover
-          />
-
-          <Btn variant="outline" sm full onClick={() => window.open(`/card/${campaignSlug}`, '_blank')} style={{ marginBottom: 8 }}>👀 Preview contributor view</Btn>
-          <Btn variant="coral" full onClick={() => { window.location.href = `/manage/${campaignSlug}?token=${organiserToken}`; }}>Go to Dashboard →</Btn>
-          <Btn variant="outline" full onClick={onBack} style={{ marginTop: 10 }}>Back to home</Btn>
-        </div>
-      </div>
-    );
   }
 
   // ── Builder ──
