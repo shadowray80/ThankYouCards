@@ -43,29 +43,33 @@ function PhotoCard({ c, index, palette }: { c: Contribution; index: number; pale
         borderRadius: 20,
         padding: '5px 5px 22px',
         boxShadow: '0 8px 32px rgba(0,0,0,.18)',
+        position: 'relative',
       }}>
         {/* Inner clip — rounds the image corners to match frame */}
-        <div style={{ borderRadius: 15, overflow: 'hidden', position: 'relative' }}>
+        <div style={{ borderRadius: 15, overflow: 'hidden' }}>
           <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
-          {c.photo_label && (
-            <div style={{
-              position: 'absolute',
-              top: 10,
-              ...(labelLeft ? { left: 10 } : { right: 10 }),
-              background: palette.accent,
-              color: '#fff',
-              borderRadius: 20,
-              padding: '5px 12px',
-              fontSize: '.7rem',
-              fontWeight: 800,
-              transform: `rotate(${-deg * 0.4 + 2}deg)`,
-              boxShadow: '0 2px 10px rgba(0,0,0,.3)',
-              whiteSpace: 'nowrap',
-            }}>
-              {c.photo_label}
-            </div>
-          )}
         </div>
+
+        {/* Label — outside the clip so it can hang over the corner */}
+        {c.photo_label && (
+          <div style={{
+            position: 'absolute',
+            top: -10,
+            ...(labelLeft ? { left: -8 } : { right: -8 }),
+            background: palette.accent,
+            color: '#fff',
+            borderRadius: 20,
+            padding: '5px 12px',
+            fontSize: '.7rem',
+            fontWeight: 800,
+            transform: `rotate(${labelLeft ? -6 : 6}deg)`,
+            boxShadow: '0 2px 10px rgba(0,0,0,.3)',
+            whiteSpace: 'nowrap',
+            zIndex: 5,
+          }}>
+            {c.photo_label}
+          </div>
+        )}
         {/* Name in the white polaroid strip */}
         <div style={{
           textAlign: 'center',
