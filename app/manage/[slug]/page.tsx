@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
@@ -23,6 +23,7 @@ interface Campaign {
   organiser_email: string;
   card_style: string | null;
   card_palette: string | null;
+  card_logo_url: string | null;
 }
 
 interface Contribution {
@@ -53,6 +54,8 @@ function ManageContent() {
   const [paying, setPaying]               = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
   const [savingPalette, setSavingPalette] = useState(false);
+  const [savingLogo, setSavingLogo]       = useState(false);
+  const logoUploadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (slug && token) {
@@ -118,6 +121,36 @@ function ManageContent() {
       setCampaign(prev => prev ? { ...prev, card_palette: paletteId } : prev);
     } finally {
       setSavingPalette(false);
+    }
+  };
+
+  const saveLogo = async (url: string | null) => {
+    setSavingLogo(true);
+    try {
+      await fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: url }),
+      });
+      setCampaign(prev => prev ? { ...prev, card_logo_url: url } : prev);
+    } finally {
+      setSavingLogo(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSavingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) await saveLogo(json.url);
+    } finally {
+      setSavingLogo(false);
+      if (logoUploadRef.current) logoUploadRef.current.value = '';
     }
   };
 
@@ -380,6 +413,37 @@ function ManageContent() {
                 <div style={{ fontSize: '.58rem', fontWeight: 800, color: (campaign.card_palette?.startsWith('#')) ? '#E8724A' : '#7A7585' }}>Custom</div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Corporate logo upload */}
+        {campaign.card_style === 'corporate' && (
+          <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🏢 Company logo</div>
+            <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Upload a PNG logo to display in the card header. Transparent PNG works best.</div>
+            <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp" style={{ display: 'none' }} onChange={handleLogoUpload} />
+            {campaign.card_logo_url ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ background: '#1A2744', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                  <img src={campaign.card_logo_url} alt="Logo" style={{ maxHeight: 36, maxWidth: 120, objectFit: 'contain' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}
+                    style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", opacity: savingLogo ? 0.6 : 1 }}>
+                    {savingLogo ? '…' : 'Replace'}
+                  </button>
+                  <button onClick={() => saveLogo(null)} disabled={savingLogo}
+                    style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}
+                style={{ width: '100%', border: '2px dashed #C8D8F0', borderRadius: 10, padding: '16px', background: '#F7F9FC', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 800, fontSize: '.82rem' }}>
+                {savingLogo ? 'Uploading…' : '+ Upload logo'}
+              </button>
+            )}
           </div>
         )}
 

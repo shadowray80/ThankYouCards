@@ -20,6 +20,7 @@ interface Campaign {
   card_image_url: string | null;
   card_style: string | null;
   card_palette: string | null;
+  card_logo_url: string | null;
   funded_amount: number;
   target_amount: number | null;
   deadline: string | null;
@@ -44,7 +45,7 @@ interface ContribViewProps {
 }
 
 export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug }: ContribViewProps) {
-  const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, card_style: 'classic', card_palette: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
+  const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, card_style: 'classic', card_palette: null, card_logo_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
 
   const [slugInput, setSlugInput]         = useState('');
   const [activeSlug, setActiveSlug]       = useState(initialSlug ?? 'demo');

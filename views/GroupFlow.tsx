@@ -59,7 +59,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [saving, setSaving]                 = useState(false);
   const [saveError, setSaveError]           = useState('');
 
+  const [logoUrl, setLogoUrl]           = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+
   const uploadRef    = useRef<HTMLInputElement>(null);
+  const logoUploadRef = useRef<HTMLInputElement>(null);
   const cardMsgRef   = useRef<HTMLDivElement>(null);
   const occasionRef  = useRef<HTMLDivElement>(null);
 
@@ -108,6 +112,22 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     r.readAsDataURL(f);
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) setLogoUrl(json.url);
+    } finally {
+      setLogoUploading(false);
+      if (logoUploadRef.current) logoUploadRef.current.value = '';
+    }
+  };
+
   async function handleCreate() {
     setSaveError(''); setSaving(true);
     try {
@@ -125,6 +145,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
           card_style: cardStyle,
           card_palette: cardPalette,
+          card_logo_url: logoUrl,
         }),
       });
       const json = await res.json();
@@ -235,6 +256,13 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
                   />
                 </div>
+                {/* Logo preview */}
+                {logoUrl && (
+                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain', opacity: 0.9 }} />
+                    <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                  </div>
+                )}
               </div>
 
               {/* Colour/photo side */}
@@ -306,7 +334,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             />
           ) : cardStyle === 'corporate' ? (
             <CorporateView
-              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: null }}
+              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
               contributions={PREVIEW_CONTRIBUTIONS}
               preview
               noHeader
@@ -445,6 +473,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
             {/* Palette swatches — corporate */}
             {cardStyle === 'corporate' && (
+              <>
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -478,6 +507,30 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   </div>
                 </div>
               </div>
+
+              {/* Logo upload — corporate only */}
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
+                {logoUrl ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px' }}>
+                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
+                    <button onClick={() => setLogoUrl(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+                  </div>
+                ) : (
+                  <div>
+                    <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                    <button
+                      onClick={() => logoUploadRef.current?.click()}
+                      disabled={logoUploading}
+                      style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '11px', fontWeight: 700, fontSize: '.82rem', color: logoUploading ? '#B0A8BC' : '#7A7585', cursor: logoUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                    >
+                      {logoUploading ? 'Uploading…' : '⬆ Upload your logo (PNG or SVG)'}
+                    </button>
+                    <div style={{ fontSize: '.68rem', color: '#B0A8BC', fontWeight: 600, marginTop: 4 }}>Appears in the card header below the team name</div>
+                  </div>
+                )}
+              </div>
+              </>
             )}
           </div>
 

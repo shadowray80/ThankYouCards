@@ -17,6 +17,7 @@ interface Campaign {
   card_image_url: string | null;
   card_style: string | null;
   card_palette: string | null;
+  card_logo_url: string | null;
   funded_amount: number;
   target_amount: number | null;
   status: string;
