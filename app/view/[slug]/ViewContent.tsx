@@ -74,8 +74,38 @@ export function ViewContent() {
     </div>
   );
 
+  const backToDashboard = isPreview ? (() => {
+    try {
+      const sessions = JSON.parse(localStorage.getItem('tyc_manage') ?? '{}');
+      const token = sessions[slug];
+      return token ? `/manage/${slug}?token=${token}` : null;
+    } catch { return null; }
+  })() : null;
+
+  const previewBar = backToDashboard ? (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      background: 'rgba(42,42,42,.92)', backdropFilter: 'blur(6px)',
+      padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      fontFamily: "'Nunito',sans-serif",
+    }}>
+      <span style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.6)', fontWeight: 700 }}>Preview mode</span>
+      <a href={backToDashboard} style={{
+        background: '#3A8FA0', color: '#fff', borderRadius: 8, padding: '7px 14px',
+        fontWeight: 800, fontSize: '.82rem', textDecoration: 'none',
+      }}>← Back to dashboard</a>
+    </div>
+  ) : null;
+
   if (campaign.card_style === 'casual') {
-    return <CasualView campaign={campaign} contributions={contributions} />;
+    return (
+      <>
+        {previewBar}
+        <div style={previewBar ? { paddingTop: 44 } : undefined}>
+          <CasualView campaign={campaign} contributions={contributions} />
+        </div>
+      </>
+    );
   }
 
   const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
@@ -89,7 +119,8 @@ export function ViewContent() {
   const groupMessages = isSolo ? [] : contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif", paddingTop: previewBar ? 44 : 0 }}>
+      {previewBar}
 
       {/* Card — straight in, no header */}
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
