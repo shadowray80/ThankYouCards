@@ -238,20 +238,37 @@ function ManageContent() {
         </div>
 
         {/* Share link — only shown before sending */}
-        {!isSent && <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-          <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
-              {origin}/card/{slug}
+        {!isSent && (() => {
+          const from = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'the team';
+          const contribMsg = `We're making a group card for ${recipientName} from ${from} — add your message here 💙 ${origin}/card/${slug}`;
+          return (
+            <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
+                  {origin}/card/{slug}
+                </div>
+                <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <a href={`https://wa.me/?text=${encodeURIComponent(contribMsg)}`} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                  💬 WhatsApp
+                </a>
+                <a href={`sms:?body=${encodeURIComponent(contribMsg)}`}
+                  style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                  💬 SMS
+                </a>
+                <a href={`mailto:?subject=Add your message to ${recipientName}'s card&body=${encodeURIComponent(contribMsg)}`}
+                  style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                  ✉️ Email
+                </a>
+              </div>
             </div>
-            <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, marginTop: 6 }}>
-            Forward this to anyone who hasn&apos;t signed yet
-          </div>
-        </div>}
+          );
+        })()}
 
         {/* Card preview */}
         <div style={{ marginBottom: 20 }}>
