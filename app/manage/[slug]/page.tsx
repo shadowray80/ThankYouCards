@@ -355,19 +355,30 @@ function ManageContent() {
           <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🎨 Header colour</div>
             <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Change the colour of your card header anytime before sending.</div>
-            <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
               {CORPORATE_PALETTES.map(p => (
                 <div key={p.id} onClick={() => !savingPalette && savePalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: savingPalette ? 'default' : 'pointer' }}>
                   <div style={{
-                    width: 38, height: 38, borderRadius: '50%',
+                    width: 34, height: 34, borderRadius: '50%',
                     background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
                     border: (campaign.card_palette ?? 'navy') === p.id ? '3px solid #E8724A' : '3px solid transparent',
                     boxShadow: (campaign.card_palette ?? 'navy') === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
                     transition: 'all .2s', opacity: savingPalette ? 0.6 : 1,
                   }} />
-                  <div style={{ fontSize: '.6rem', fontWeight: 800, color: (campaign.card_palette ?? 'navy') === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                  <div style={{ fontSize: '.58rem', fontWeight: 800, color: (campaign.card_palette ?? 'navy') === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
                 </div>
               ))}
+              {/* Custom colour */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', position: 'relative', overflow: 'hidden', background: (campaign.card_palette?.startsWith('#')) ? campaign.card_palette : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', border: (campaign.card_palette?.startsWith('#')) ? '3px solid #E8724A' : '3px solid transparent', boxShadow: (campaign.card_palette?.startsWith('#')) ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)', opacity: savingPalette ? 0.6 : 1 }}>
+                  <input type="color"
+                    value={campaign.card_palette?.startsWith('#') ? campaign.card_palette : '#1A2744'}
+                    onChange={e => !savingPalette && savePalette(e.target.value)}
+                    style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: savingPalette ? 'default' : 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }}
+                  />
+                </div>
+                <div style={{ fontSize: '.58rem', fontWeight: 800, color: (campaign.card_palette?.startsWith('#')) ? '#E8724A' : '#7A7585' }}>Custom</div>
+              </div>
             </div>
           </div>
         )}

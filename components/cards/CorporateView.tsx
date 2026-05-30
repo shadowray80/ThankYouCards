@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CORPORATE_PALETTES, CorporatePalette } from '@/lib/palettes';
+import { CORPORATE_PALETTES, CorporatePalette, buildCustomPalette } from '@/lib/palettes';
 
 interface Campaign {
   slug: string;
@@ -131,7 +131,8 @@ export function CorporateView({
   preview?: boolean;
   noHeader?: boolean;
 }) {
-  const palette        = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy')) ?? CORPORATE_PALETTES[0];
+  const palette        = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy'))
+    ?? (campaign.card_palette?.startsWith('#') ? buildCustomPalette(campaign.card_palette) : CORPORATE_PALETTES[0]);
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasImage       = !!campaign.card_image_url;
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
@@ -178,7 +179,7 @@ export function CorporateView({
           {hasImage && (
             <div style={{ width: '45%', flexShrink: 0, position: 'relative' }}>
               <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${palette.headerFrom} 0%, transparent 50%)` }} />
+              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${palette.headerFrom} 0%, ${palette.headerFrom}E8 20%, ${palette.headerFrom}A0 45%, ${palette.headerFrom}40 65%, transparent 85%)` }} />
             </div>
           )}
         </div>

@@ -22,6 +22,10 @@ export interface CorporatePalette {
   cardLight: string;   // alternate card background
 }
 
+export function buildCustomPalette(hex: string): CorporatePalette {
+  return { id: hex, name: 'Custom', swatch: hex, headerFrom: hex, headerTo: hex, accent: '#C4903A', accentLight: '#FFF8EE', cardLight: '#F4F4F6' };
+}
+
 export const CORPORATE_PALETTES: CorporatePalette[] = [
   {
     id: 'navy',

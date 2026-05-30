@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { THEMES } from '@/lib/themes';
-import { CASUAL_PALETTES, CORPORATE_PALETTES } from '@/lib/palettes';
+import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 
@@ -78,6 +78,21 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const theme  = THEMES[themeIdx];
   const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
   const canCreate = recip.trim() && occasion.trim() && deadline && organiserEmail.trim();
+
+  const corpPalette = CORPORATE_PALETTES.find(p => p.id === cardPalette)
+    ?? (cardPalette?.startsWith('#') ? buildCustomPalette(cardPalette) : CORPORATE_PALETTES[0]);
+
+  const handleCardStyleChange = (style: 'classic' | 'casual' | 'corporate') => {
+    setCardStyle(style);
+    if (style === 'corporate') {
+      const valid = CORPORATE_PALETTES.some(p => p.id === cardPalette) || (cardPalette?.startsWith('#') ?? false);
+      if (!valid) setCardPalette('navy');
+    }
+    if (style === 'casual') {
+      const valid = CASUAL_PALETTES.some(p => p.id === cardPalette);
+      if (!valid) setCardPalette('sky');
+    }
+  };
 
   const selectTheme = (i: number) => {
     setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null);
@@ -153,8 +168,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           </div>
         </div>
 
-        {/* Image film strip */}
-        <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
+        {/* Image film strip — hidden for corporate (colour is the header, photo optional via card) */}
+        {cardStyle !== 'corporate' && <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
           <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
           <div style={{ position: 'relative' }}>
             <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
@@ -180,136 +195,106 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
             <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #2A7E8F)', pointerEvents: 'none' }} />
           </div>
-        </div>
+        </div>}
 
         {/* Inline editable card */}
         <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
-          {/* Cover image */}
-          <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
-            <img key={imgUrl} src={imgUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          {/* Cover — corporate shows split header; classic/casual shows full-width image */}
+          {cardStyle === 'corporate' ? (
+            /* ── Corporate header ── */
+            <div style={{ display: 'flex', minHeight: 240, background: `linear-gradient(135deg, ${corpPalette.headerFrom}, ${corpPalette.headerTo})` }}>
+              {/* Text side */}
+              <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', zIndex: 2 }}>
+                <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 8 }}>To</div>
 
-            <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
+                {/* Recipient */}
+                <div style={{ position: 'relative', marginBottom: 10 }}>
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>Their name</div>}
+                  <div contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
+                    onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                  />
+                </div>
 
-            {/* Upload corner button */}
-            <div
-              onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
-              style={{
-                position: 'absolute', top: 14, right: 14, zIndex: 5,
-                width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
-                background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(4px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
-                transition: 'background .2s',
-              }}
-              title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-            >
-              {customImgUrl ? '✕' : '📷'}
-            </div>
-            <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
+                {/* Message */}
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.25)', lineHeight: 1.4 }}>Add a tagline…</div>}
+                  <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                    onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
+                  />
+                </div>
 
-            {/* Recipient name */}
-            <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-              <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
-              <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
-                {!recip && (
-                  <div style={{
-                    position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap',
-                  }}>
-                    The Legend&apos;s Name
-                  </div>
-                )}
-                <div
-                  contentEditable
-                  suppressContentEditableWarning
-                  spellCheck={false}
-                  autoCapitalize="words"
-                  onInput={e => {
-                    const raw = e.currentTarget.textContent ?? '';
-                    setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase()));
-                  }}
-                  style={{
-                    outline: 'none', cursor: 'text', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, color: '#fff',
-                    textShadow: '0 2px 20px rgba(0,0,0,0.55)',
-                    caretColor: '#fff', padding: '6px 4px',
-                    minWidth: 40, textTransform: 'capitalize',
-                  }}
-                />
+                {/* From */}
+                <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>From</div>
+                <div style={{ position: 'relative' }}>
+                  {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.22)', fontWeight: 700 }}>the team</div>}
+                  <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                    onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
+                  />
+                </div>
+              </div>
+
+              {/* Colour/photo side */}
+              <div style={{ width: '42%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, ${corpPalette.headerTo}80, ${corpPalette.headerFrom}40)` }}>
+                {customImgUrl && <>
+                  <img src={customImgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 20%, transparent 60%)` }} />
+                </>}
+                <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
+                <div onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+                  style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 5, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,.9)' : 'rgba(255,255,255,.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.8rem', boxShadow: '0 2px 8px rgba(0,0,0,.3)' }}
+                  title={customImgUrl ? 'Remove photo' : 'Add a photo (optional)'}
+                >{customImgUrl ? '✕' : '📷'}</div>
               </div>
             </div>
+          ) : (
+            /* ── Classic / Casual cover ── */
+            <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
+              <img key={imgUrl} src={imgUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
+              <div onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+                style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s' }}
+                title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
+              >{customImgUrl ? '✕' : '📷'}</div>
+              <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
-            {/* Cover text + from line */}
-            <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
-              <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
-                {!cardMsg && (
-                  <div style={{
-                    position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
-                    lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
-                  }}>
-                    Add cover text…
-                  </div>
-                )}
-                <div
-                  ref={cardMsgRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  spellCheck={false}
-                  onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                  style={{
-                    outline: 'none', cursor: 'text', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
-                    lineHeight: 1.2, color: '#fff',
-                    textShadow: '0 3px 24px rgba(0,0,0,0.7)',
-                    caretColor: '#fff', wordBreak: 'break-word',
-                  }}
-                />
-                {/* From — uppercase label + editable team name (mirrors the TO / recipient pattern) */}
-                <div style={{ textAlign: 'center', marginTop: 10 }}>
-                  <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
-                  <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
-                    {!occasion && (
-                      <div style={{
-                        position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
-                        fontFamily: "'Nunito', sans-serif",
-                        fontSize: 'clamp(1rem, 3.5vw, 1.2rem)',
-                        lineHeight: 1.3, color: 'rgba(255,255,255,0.28)',
-                        fontWeight: 700,
-                      }}>
-                        the Under 12s team
-                      </div>
-                    )}
-                    <div
-                      ref={occasionRef}
-                      contentEditable
-                      suppressContentEditableWarning
-                      spellCheck={false}
-                      onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
-                      style={{
-                        outline: 'none', cursor: 'text', textAlign: 'center',
-                        fontFamily: "'Nunito', sans-serif",
-                        fontSize: 'clamp(1rem, 3.5vw, 1.2rem)',
-                        fontWeight: 700, lineHeight: 1.3,
-                        color: 'rgba(255,255,255,0.92)',
-                        textShadow: '0 2px 14px rgba(0,0,0,0.65)',
-                        caretColor: '#fff', wordBreak: 'break-word',
-                        minWidth: 40, padding: '3px 4px',
-                      }}
-                    />
+              {/* Recipient name */}
+              <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+                <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
+                <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
+                  <div contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
+                    onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
+                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
+                  />
+                </div>
+              </div>
+
+              {/* Cover text + from */}
+              <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
+                <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Add cover text…</div>}
+                  <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                    onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                  />
+                  <div style={{ textAlign: 'center', marginTop: 10 }}>
+                    <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
+                    <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
+                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the Under 12s team</div>}
+                      <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                        onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
+                        style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,0.92)', textShadow: '0 2px 14px rgba(0,0,0,0.65)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40, padding: '3px 4px' }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Messages preview — style-aware */}
           {cardStyle === 'casual' ? (
@@ -422,7 +407,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
                 <div
                   key={s.id}
-                  onClick={() => setCardStyle(s.id)}
+                  onClick={() => handleCardStyleChange(s.id)}
                   style={{
                     flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center',
                     border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0',
@@ -462,19 +447,35 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             {cardStyle === 'corporate' && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   {CORPORATE_PALETTES.map(p => (
-                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
                       <div style={{
-                        width: 42, height: 42, borderRadius: '50%',
+                        width: 38, height: 38, borderRadius: '50%',
                         background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
                         border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent',
                         boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
                         transition: 'all .2s',
                       }} />
-                      <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                      <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
                     </div>
                   ))}
+                  {/* Custom colour picker */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer', position: 'relative' }}>
+                    <div style={{
+                      width: 38, height: 38, borderRadius: '50%', position: 'relative', overflow: 'hidden',
+                      background: cardPalette?.startsWith('#') ? cardPalette : 'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)',
+                      border: cardPalette?.startsWith('#') ? '3px solid #E8724A' : '3px solid transparent',
+                      boxShadow: cardPalette?.startsWith('#') ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
+                    }}>
+                      <input type="color"
+                        value={cardPalette?.startsWith('#') ? cardPalette : '#1A2744'}
+                        onChange={e => setCardPalette(e.target.value)}
+                        style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }}
+                      />
+                    </div>
+                    <div style={{ fontSize: '.6rem', fontWeight: 800, color: cardPalette?.startsWith('#') ? '#E8724A' : '#7A7585' }}>Custom</div>
+                  </div>
                 </div>
               </div>
             )}
