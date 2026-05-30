@@ -55,7 +55,14 @@ function ManageContent() {
   const [refreshing, setRefreshing]       = useState(false);
   const [savingPalette, setSavingPalette] = useState(false);
   const [savingLogo, setSavingLogo]       = useState(false);
-  const logoUploadRef = useRef<HTMLInputElement>(null);
+  const [editMsg, setEditMsg]             = useState('');
+  const [editOccasion, setEditOccasion]   = useState('');
+  const [editImageUrl, setEditImageUrl]   = useState<string | null>(null);
+  const [savingCard, setSavingCard]       = useState(false);
+  const [cardSaved, setCardSaved]         = useState(false);
+  const [editImageUploading, setEditImageUploading] = useState(false);
+  const logoUploadRef      = useRef<HTMLInputElement>(null);
+  const editImageUploadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (slug && token) {
@@ -78,6 +85,14 @@ function ManageContent() {
       .catch(() => setError('Could not load campaign'))
       .finally(() => { setLoading(false); setRefreshing(false); });
   };
+
+  useEffect(() => {
+    if (campaign) {
+      setEditMsg(campaign.card_message ?? '');
+      setEditOccasion(campaign.occasion ?? '');
+      setEditImageUrl(campaign.card_image_url);
+    }
+  }, [campaign?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadData();
@@ -121,6 +136,40 @@ function ManageContent() {
       setCampaign(prev => prev ? { ...prev, card_palette: paletteId } : prev);
     } finally {
       setSavingPalette(false);
+    }
+  };
+
+  const saveCardDetails = async () => {
+    setSavingCard(true); setCardSaved(false);
+    try {
+      const res = await fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'update_card', card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl }),
+      });
+      if (res.ok) {
+        setCampaign(prev => prev ? { ...prev, card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl } : prev);
+        setCardSaved(true);
+        setTimeout(() => setCardSaved(false), 3000);
+      }
+    } finally {
+      setSavingCard(false);
+    }
+  };
+
+  const handleEditImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditImageUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) setEditImageUrl(json.url);
+    } finally {
+      setEditImageUploading(false);
+      if (editImageUploadRef.current) editImageUploadRef.current.value = '';
     }
   };
 
@@ -381,6 +430,58 @@ function ManageContent() {
           >
             Open full preview as recipient ↗
           </a>
+        </div>
+
+        {/* Edit card details */}
+        <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+          <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>✏️ Edit card</div>
+          <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>Changes are reflected in the preview above as soon as you save.</div>
+
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Card message</label>
+            <input value={editMsg} onChange={e => setEditMsg(e.target.value)} placeholder="e.g. Thank you for everything"
+              style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '10px 12px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '15px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
+              onFocus={e => (e.target.style.borderColor = '#E8724A')} onBlur={e => (e.target.style.borderColor = '#E8E2F0')} />
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>From</label>
+            <input value={editOccasion} onChange={e => setEditOccasion(e.target.value)} placeholder="e.g. the team"
+              style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '10px 12px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '15px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
+              onFocus={e => (e.target.style.borderColor = '#E8724A')} onBlur={e => (e.target.style.borderColor = '#E8E2F0')} />
+          </div>
+
+          {campaign.card_style !== 'corporate' && (
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Cover photo</label>
+              <input ref={editImageUploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditImageUpload} />
+              {editImageUrl ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <img src={editImageUrl} alt="" style={{ width: 64, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
+                      style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '7px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                      {editImageUploading ? '…' : 'Change'}
+                    </button>
+                    <button onClick={() => setEditImageUrl(null)}
+                      style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '5px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
+                  style={{ width: '100%', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '12px', background: '#FAFAFA', cursor: editImageUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 700, fontSize: '.82rem' }}>
+                  {editImageUploading ? 'Uploading…' : '+ Upload cover photo'}
+                </button>
+              )}
+            </div>
+          )}
+
+          <button onClick={saveCardDetails} disabled={savingCard}
+            style={{ width: '100%', background: cardSaved ? '#4CAF82' : '#3A8FA0', border: 'none', borderRadius: 10, padding: '11px', color: '#fff', fontWeight: 800, fontSize: '.9rem', cursor: savingCard ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", transition: 'background .3s' }}>
+            {savingCard ? 'Saving…' : cardSaved ? '✓ Saved' : 'Save changes'}
+          </button>
         </div>
 
         {/* Corporate colour picker */}

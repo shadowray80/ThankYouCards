@@ -337,13 +337,19 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
                   />
                 </div>
-                {/* Logo preview — pushed to bottom */}
-                {logoUrl && (
-                  <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain', opacity: 0.9 }} />
-                    <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-                  </div>
-                )}
+                {/* Logo — pushed to bottom; placeholder shows when none uploaded */}
+                <div style={{ marginTop: 'auto', paddingTop: 12 }}>
+                  {logoUrl ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src={logoUrl} alt="" style={{ maxHeight: 40, maxWidth: 120, objectFit: 'contain', objectPosition: 'left center', opacity: 0.9 }} />
+                      <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', height: 40, minWidth: 64, border: '1.5px dashed rgba(255,255,255,.3)', borderRadius: 6, padding: '0 14px' }}>
+                      <span style={{ fontSize: '.62rem', color: 'rgba(255,255,255,.4)', fontWeight: 800, fontFamily: "'Nunito', sans-serif", whiteSpace: 'nowrap' }}>Your logo</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Colour/photo side */}
