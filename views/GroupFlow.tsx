@@ -10,9 +10,10 @@ import { CorporateView } from '@/components/cards/CorporateView';
 
 const PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
-  { contributor_name: 'James',  message: null, photo_url: '/Henry.png', photo_label: 'Best season ever!' },
+  { contributor_name: 'James',  message: null, photo_url: '/Team_Lunch.png', photo_label: 'Team lunch 2024 🎉' },
   { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
   { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
+  { contributor_name: 'Emma',   message: "Working with you has been the highlight of my career — truly.", photo_url: null, photo_label: null },
 ];
 
 interface GroupFlowProps {
@@ -338,6 +339,13 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
               {/* Colour/photo side */}
               <div style={{ width: '42%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, ${corpPalette.headerTo}80, ${corpPalette.headerFrom}40)` }}>
+                {/* Placeholder image — faded to signal it's replaceable */}
+                {!customImgUrl && (
+                  <>
+                    <img src="/Henry.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25 }} />
+                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 25%, ${corpPalette.headerFrom}60 55%, transparent 80%)` }} />
+                  </>
+                )}
                 {customImgUrl && <>
                   <img src={customImgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 20%, transparent 60%)` }} />
