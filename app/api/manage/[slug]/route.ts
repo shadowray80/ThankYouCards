@@ -25,7 +25,7 @@ export async function GET(
 
   const { data: contributions } = await supabaseAdmin
     .from('contributions')
-    .select('id, contributor_name, message, amount, status, created_at')
+    .select('id, contributor_name, message, photo_url, photo_label, amount, status, created_at')
     .eq('campaign_id', campaign.id)
     .eq('status', 'paid')
     .order('created_at', { ascending: true });
