@@ -147,9 +147,9 @@ function ManageContent() {
       <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)' }}>
+            <a href="/" style={{ fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)', textDecoration: 'none' }}>
               thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
-            </div>
+            </a>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button onClick={() => loadData(true)} disabled={refreshing}
                 style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 20, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#fff', cursor: 'pointer', letterSpacing: '.04em' }}>
