@@ -215,28 +215,40 @@ function ManageContent() {
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>Card preview</div>
-            <a href={`/view/${slug}?preview=1`} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: '.72rem', fontWeight: 800, color: '#3A8FA0', textDecoration: 'none', letterSpacing: '.02em' }}>
-              Full preview ↗
-            </a>
           </div>
-          {campaign.card_style === 'casual' ? (
-            <CasualView
-              campaign={campaign}
-              contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
-              preview
-            />
-          ) : (
-            <CardScrollView
-              theme={theme}
-              imgIdx={0}
-              customImgUrl={campaign.card_image_url ?? undefined}
-              recipientName={recipientName}
-              fromText={campaign.occasion ?? undefined}
-              message={campaign.card_message ?? ''}
-              messages={messages}
-            />
-          )}
+          <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+            {campaign.card_style === 'casual' ? (
+              <CasualView
+                campaign={campaign}
+                contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
+                preview
+              />
+            ) : (
+              <CardScrollView
+                theme={theme}
+                imgIdx={0}
+                customImgUrl={campaign.card_image_url ?? undefined}
+                recipientName={recipientName}
+                fromText={campaign.occasion ?? undefined}
+                message={campaign.card_message ?? ''}
+                messages={messages}
+                landscapeCover
+              />
+            )}
+          </div>
+          <a
+            href={`/view/${slug}?preview=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block', textAlign: 'center', marginTop: 10,
+              background: '#fff', border: '2px solid #E8E2F0', borderRadius: 10,
+              padding: '10px', fontWeight: 800, fontSize: '.85rem',
+              color: '#3A8FA0', textDecoration: 'none',
+            }}
+          >
+            Open full preview as recipient ↗
+          </a>
         </div>
 
         {/* Contributor list */}

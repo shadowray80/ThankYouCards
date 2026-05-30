@@ -55,8 +55,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [campaignSlug, setCampaignSlug]     = useState('');
   const [organiserToken, setOrganiserToken] = useState('');
 
-  const uploadRef  = useRef<HTMLInputElement>(null);
-  const cardMsgRef = useRef<HTMLDivElement>(null);
+  const uploadRef    = useRef<HTMLInputElement>(null);
+  const cardMsgRef   = useRef<HTMLDivElement>(null);
+  const occasionRef  = useRef<HTMLDivElement>(null);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
@@ -64,6 +65,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     const el = cardMsgRef.current;
     if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
   }, [cardMsg]);
+
+  useEffect(() => {
+    const el = occasionRef.current;
+    if (el && el.textContent !== occasion) el.textContent = occasion;
+  }, [occasion]);
 
   const theme  = THEMES[themeIdx];
   const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
@@ -326,16 +332,45 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     caretColor: '#fff', wordBreak: 'break-word',
                   }}
                 />
-                <div style={{
-                  fontFamily: "'Nunito', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 'clamp(.85rem, 3.2vw, 1.1rem)',
-                  color: occasion ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.3)',
-                  lineHeight: 1.3, marginTop: 6,
-                  textShadow: '0 2px 12px rgba(0,0,0,0.65)',
-                  letterSpacing: '.01em',
-                }}>
-                  {occasion || 'From the team'}
+                {/* From — fixed label + editable team name */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8, gap: 5 }}>
+                  <span style={{
+                    fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+                    fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                    color: '#fff',
+                    textShadow: '0 2px 14px rgba(0,0,0,0.65)',
+                    flexShrink: 0,
+                  }}>From</span>
+                  <div style={{ position: 'relative' }}>
+                    {!occasion && (
+                      <div style={{
+                        position: 'absolute', inset: 0, pointerEvents: 'none',
+                        fontFamily: "'Nunito', sans-serif",
+                        fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                        lineHeight: 1.3, color: 'rgba(255,255,255,0.28)',
+                        fontWeight: 700, whiteSpace: 'nowrap',
+                      }}>
+                        the Under 12s team
+                      </div>
+                    )}
+                    <div
+                      ref={occasionRef}
+                      contentEditable
+                      suppressContentEditableWarning
+                      spellCheck={false}
+                      onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
+                      style={{
+                        outline: 'none', cursor: 'text',
+                        fontFamily: "'Nunito', sans-serif",
+                        fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                        fontWeight: 700, lineHeight: 1.3,
+                        color: 'rgba(255,255,255,0.92)',
+                        textShadow: '0 2px 14px rgba(0,0,0,0.65)',
+                        caretColor: '#fff', wordBreak: 'break-word',
+                        minWidth: 40, padding: '4px 4px',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -351,22 +386,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '.95rem', color: '#C8C0D0', lineHeight: 1.7 }}>
               Contributors&apos; messages will appear here…
             </div>
-          </div>
-
-          {/* From / occasion — editable inline at bottom of card */}
-          <div style={{ background: '#fff', padding: '12px 22px 14px', display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontSize: '1rem', color: '#B0A8BC', fontWeight: 700, marginRight: 6, fontFamily: "'Nunito',sans-serif", flexShrink: 0 }}>—</span>
-            <input
-              value={occasion}
-              onChange={e => setOccasion(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
-              placeholder="From the Under 12s — End of Season"
-              style={{
-                border: 'none', outline: 'none', background: 'transparent',
-                fontSize: '16px', color: occasion ? '#7A7585' : '#B0A8BC',
-                fontWeight: 700, fontFamily: "'Nunito',sans-serif",
-                flex: 1, caretColor: '#3A8FA0', width: '100%',
-              }}
-            />
           </div>
 
           {/* Card footer */}

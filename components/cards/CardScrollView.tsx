@@ -77,7 +77,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
   const t = theme || THEMES[0];
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
-  const from = fromText || 'From the Under 12s';
+  const from = fromText || 'the team';
   const msg = message ?? '';
   const isSolo = soloMessage !== undefined || soloPhotoData !== undefined;
 
@@ -137,7 +137,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
                 textShadow: '0 2px 12px rgba(0,0,0,0.65)',
                 letterSpacing: '.01em',
               }}>
-                {from}
+                From {from}
               </div>
             )}
           </div>
@@ -162,7 +162,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
         soloPhotoData ? (
           <div style={{ background: '#fff' }}>
             <img src={soloPhotoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', display: 'block' }} />
-            {from && <div style={{ padding: '12px 22px 18px', fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>- {from}</div>}
+            {from && <div style={{ padding: '12px 22px 18px', fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>}
           </div>
         ) : soloMessage ? (
           <div style={{ background: '#fff', padding: '22px 22px 24px' }}>
@@ -170,7 +170,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
               {soloMessage}
             </div>
             {from && (
-              <div style={{ marginTop: 14, fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>- {from}</div>
+              <div style={{ marginTop: 14, fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>
             )}
           </div>
         ) : (

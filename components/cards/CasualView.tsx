@@ -83,7 +83,7 @@ function PhotoCard({ c, index, palette }: { c: Contribution; index: number; pale
   );
 }
 
-function MessageCard({ c, index, palette }: { c: Contribution; index: number; palette: CasualPalette }) {
+function MessageCard({ c, index, palette, wide }: { c: Contribution; index: number; palette: CasualPalette; wide?: boolean }) {
   const type = index % 4;
   const deco = DECORATIONS[index % DECORATIONS.length];
   const bg   = palette.cardBgs[index % palette.cardBgs.length];
@@ -96,10 +96,32 @@ function MessageCard({ c, index, palette }: { c: Contribution; index: number; pa
     padding: '14px 13px',
     boxShadow: '0 2px 10px rgba(0,0,0,.07)',
     fontFamily: "'Nunito', sans-serif",
-    display: 'inline-block',
+    display: wide ? 'block' : 'inline-block',
     width: '100%',
     boxSizing: 'border-box',
+    ...(wide ? { columnSpan: 'all' } : {}),
   };
+
+  // Wide card — spans both columns, large featured quote
+  if (wide) {
+    return (
+      <div style={{ ...base, background: '#fff', padding: '20px 22px 22px', boxShadow: '0 4px 20px rgba(0,0,0,.09)' }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '6rem', lineHeight: 0.65, color: palette.accent, opacity: 0.9, marginBottom: 10, marginLeft: -4, userSelect: 'none' }}>&ldquo;</div>
+        <p style={{ fontSize: '1rem', color: '#1A1A1A', lineHeight: 1.7, fontWeight: 700, margin: '0 0 16px' }}>{msg}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+            background: palette.avatarColors[index % palette.avatarColors.length],
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 800, fontSize: '.75rem', color: '#fff',
+          }}>
+            {c.contributor_name.charAt(0).toUpperCase()}
+          </div>
+          <div style={{ fontSize: '.82rem', fontWeight: 800, color: '#2A2A2A' }}>{c.contributor_name}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (type === 0) {
     return (
@@ -157,12 +179,17 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
   const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
 
+  const hasEnoughForWide = contributions.length > 3;
   let textIdx  = 0;
   let photoIdx = 0;
   const tiles = contributions.flatMap((c, i) => {
     const result: React.ReactNode[] = [];
     if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} index={photoIdx++} palette={palette} />);
-    if (c.message)   result.push(<MessageCard key={`${i}-msg`}  c={c} index={textIdx++}  palette={palette} />);
+    if (c.message) {
+      const idx  = textIdx++;
+      const wide = hasEnoughForWide && (idx === 0 || idx % 5 === 4);
+      result.push(<MessageCard key={`${i}-msg`} c={c} index={idx} palette={palette} wide={wide} />);
+    }
     return result;
   });
 
@@ -192,7 +219,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
             </div>
           )}
           {campaign.occasion && (
-            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>— {campaign.occasion}</div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion}</div>
           )}
         </div>
       </div>
