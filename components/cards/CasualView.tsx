@@ -47,7 +47,8 @@ function PhotoCard({ c, index, palette }: { c: Contribution; index: number; pale
         {c.photo_label && (
           <div style={{
             position: 'absolute',
-            top: -11, right: 10,
+            top: 16,
+            ...(index % 2 === 0 ? { left: 12 } : { right: 12 }),
             background: palette.accent,
             color: '#fff',
             borderRadius: 20,
@@ -55,7 +56,7 @@ function PhotoCard({ c, index, palette }: { c: Contribution; index: number; pale
             fontSize: '.7rem',
             fontWeight: 800,
             transform: `rotate(${-deg * 0.4 + 2}deg)`,
-            boxShadow: '0 2px 8px rgba(0,0,0,.22)',
+            boxShadow: '0 2px 10px rgba(0,0,0,.28)',
             whiteSpace: 'nowrap',
           }}>
             {c.photo_label}
