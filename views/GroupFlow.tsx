@@ -8,12 +8,20 @@ import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/p
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 
-const PREVIEW_CONTRIBUTIONS = [
+const CORPORATE_PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
   { contributor_name: 'James',  message: null, photo_url: '/Team_Lunch.png', photo_label: 'Team lunch 2024 🎉' },
   { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
   { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
   { contributor_name: 'Emma',   message: "Working with you has been the highlight of my career — truly.", photo_url: null, photo_label: null },
+];
+
+const CASUAL_PREVIEW_CONTRIBUTIONS = [
+  { contributor_name: 'Rachel', message: "Half a century of absolute fabulousness! Here's to the next 50 🥂", photo_url: null, photo_label: null },
+  { contributor_name: 'Tom',    message: null, photo_url: '/Team_Lunch.png', photo_label: 'The big 5-0! 🎂' },
+  { contributor_name: 'Jess',   message: "50 looks INCREDIBLE on you. Still the life of every party 🎉", photo_url: null, photo_label: null },
+  { contributor_name: 'Mike',   message: "I can't believe you're 50 — you don't look a day over 49 😂 Love you to bits!", photo_url: null, photo_label: null },
+  { contributor_name: 'Ava',    message: "You've been an inspiration since the day I met you. Happy big birthday! ❤️", photo_url: null, photo_label: null },
 ];
 
 interface GroupFlowProps {
@@ -422,14 +430,14 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           {cardStyle === 'casual' ? (
             <CasualView
               campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette }}
-              contributions={PREVIEW_CONTRIBUTIONS}
+              contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
               preview
               noHeader
             />
           ) : cardStyle === 'corporate' ? (
             <CorporateView
               campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
-              contributions={PREVIEW_CONTRIBUTIONS}
+              contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
               preview
               noHeader
             />
