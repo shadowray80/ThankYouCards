@@ -24,7 +24,8 @@ const ROTATIONS   = [-4, 3, -2.5, 5, -3, 4.5, -5, 2, -3.5, 4, -2, 5.5];
 const MAX_AVATARS = 7;
 
 function PhotoCard({ c, index, palette }: { c: Contribution; index: number; palette: CasualPalette }) {
-  const deg = ROTATIONS[index % ROTATIONS.length];
+  const deg      = ROTATIONS[index % ROTATIONS.length];
+  const labelLeft = index % 2 === 0;
 
   return (
     <div style={{
@@ -33,38 +34,42 @@ function PhotoCard({ c, index, palette }: { c: Contribution; index: number; pale
       display: 'inline-block',
       width: '100%',
       boxSizing: 'border-box',
-      padding: '6px 2px',
+      padding: '5px 3px',
     }}>
+      {/* Outer white frame — rounded corners, polaroid bottom strip */}
       <div style={{
         transform: `rotate(${deg}deg)`,
         background: '#fff',
-        padding: '7px 7px 26px',
-        boxShadow: '0 6px 28px rgba(0,0,0,.2)',
-        borderRadius: 3,
-        position: 'relative',
+        borderRadius: 20,
+        padding: '5px 5px 22px',
+        boxShadow: '0 8px 32px rgba(0,0,0,.18)',
       }}>
-        <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
-        {c.photo_label && (
-          <div style={{
-            position: 'absolute',
-            top: 16,
-            ...(index % 2 === 0 ? { left: 12 } : { right: 12 }),
-            background: palette.accent,
-            color: '#fff',
-            borderRadius: 20,
-            padding: '5px 12px',
-            fontSize: '.7rem',
-            fontWeight: 800,
-            transform: `rotate(${-deg * 0.4 + 2}deg)`,
-            boxShadow: '0 2px 10px rgba(0,0,0,.28)',
-            whiteSpace: 'nowrap',
-          }}>
-            {c.photo_label}
-          </div>
-        )}
+        {/* Inner clip — rounds the image corners to match frame */}
+        <div style={{ borderRadius: 15, overflow: 'hidden', position: 'relative' }}>
+          <img src={c.photo_url!} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+          {c.photo_label && (
+            <div style={{
+              position: 'absolute',
+              top: 10,
+              ...(labelLeft ? { left: 10 } : { right: 10 }),
+              background: palette.accent,
+              color: '#fff',
+              borderRadius: 20,
+              padding: '5px 12px',
+              fontSize: '.7rem',
+              fontWeight: 800,
+              transform: `rotate(${-deg * 0.4 + 2}deg)`,
+              boxShadow: '0 2px 10px rgba(0,0,0,.3)',
+              whiteSpace: 'nowrap',
+            }}>
+              {c.photo_label}
+            </div>
+          )}
+        </div>
+        {/* Name in the white polaroid strip */}
         <div style={{
           textAlign: 'center',
-          marginTop: 7,
+          paddingTop: 8,
           fontSize: '.73rem',
           fontWeight: 700,
           color: '#9A9090',
