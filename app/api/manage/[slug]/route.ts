@@ -42,7 +42,7 @@ export async function PATCH(
   const { token, action } = body;
 
   if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
-  if (action !== 'mark_sent') return Response.json({ error: 'Unknown action' }, { status: 400 });
+  if (!['mark_sent', 'update_palette'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
@@ -52,6 +52,18 @@ export async function PATCH(
     .single();
 
   if (error || !campaign) return Response.json({ error: 'Not found or invalid token' }, { status: 404 });
+
+  if (action === 'update_palette') {
+    const { card_palette } = body;
+    if (!card_palette) return Response.json({ error: 'Missing card_palette' }, { status: 400 });
+    const { error: updateError } = await supabaseAdmin
+      .from('campaigns')
+      .update({ card_palette })
+      .eq('id', campaign.id);
+    if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+    return Response.json({ ok: true });
+  }
+
   if (campaign.status === 'sent') return Response.json({ ok: true });
 
   const { error: updateError } = await supabaseAdmin

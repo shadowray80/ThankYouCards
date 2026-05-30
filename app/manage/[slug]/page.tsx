@@ -5,6 +5,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
+import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -51,6 +52,7 @@ function ManageContent() {
   const [copiedManage, setCopiedManage]   = useState(false);
   const [paying, setPaying]               = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
+  const [savingPalette, setSavingPalette] = useState(false);
 
   useEffect(() => {
     if (slug && token) {
@@ -103,6 +105,20 @@ function ManageContent() {
     navigator.clipboard.writeText(`${origin}/manage/${slug}?token=${token}`);
     setCopiedManage(true);
     setTimeout(() => setCopiedManage(false), 2000);
+  };
+
+  const savePalette = async (paletteId: string) => {
+    setSavingPalette(true);
+    try {
+      await fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'update_palette', card_palette: paletteId }),
+      });
+      setCampaign(prev => prev ? { ...prev, card_palette: paletteId } : prev);
+    } finally {
+      setSavingPalette(false);
+    }
   };
 
   const handlePay = async () => {
@@ -333,6 +349,28 @@ function ManageContent() {
             Open full preview as recipient ↗
           </a>
         </div>
+
+        {/* Corporate colour picker */}
+        {campaign.card_style === 'corporate' && (
+          <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🎨 Header colour</div>
+            <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Change the colour of your card header anytime before sending.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {CORPORATE_PALETTES.map(p => (
+                <div key={p.id} onClick={() => !savingPalette && savePalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: savingPalette ? 'default' : 'pointer' }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
+                    border: (campaign.card_palette ?? 'navy') === p.id ? '3px solid #E8724A' : '3px solid transparent',
+                    boxShadow: (campaign.card_palette ?? 'navy') === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
+                    transition: 'all .2s', opacity: savingPalette ? 0.6 : 1,
+                  }} />
+                  <div style={{ fontSize: '.6rem', fontWeight: 800, color: (campaign.card_palette ?? 'navy') === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Contributor list */}
         <div style={{ marginBottom: 24 }}>

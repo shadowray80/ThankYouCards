@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { CORPORATE_PALETTES, CorporatePalette } from '@/lib/palettes';
 
 interface Campaign {
   slug: string;
@@ -18,13 +19,9 @@ interface Contribution {
   photo_label?: string | null;
 }
 
-const NAVY  = '#1A2744';
-const GOLD  = '#C4903A';
-const LGOLD = '#FFF8EE';
-const LGREY = '#F4F4F6';
 const MAX_AVATARS = 7;
 
-function PhotoCard({ c, index }: { c: Contribution; index: number }) {
+function PhotoCard({ c, index, palette }: { c: Contribution; index: number; palette: CorporatePalette }) {
   const labelLeft = index % 2 === 0;
   return (
     <div style={{ breakInside: 'avoid', marginBottom: 14, display: 'inline-block', width: '100%', boxSizing: 'border-box', padding: '4px 2px' }}>
@@ -36,7 +33,7 @@ function PhotoCard({ c, index }: { c: Contribution; index: number }) {
           <div style={{
             position: 'absolute', top: -8,
             ...(labelLeft ? { left: -6 } : { right: -6 }),
-            background: NAVY, color: '#fff', borderRadius: 20,
+            background: palette.headerFrom, color: '#fff', borderRadius: 20,
             padding: '4px 10px', fontSize: '.65rem', fontWeight: 800,
             boxShadow: '0 2px 8px rgba(0,0,0,.2)', whiteSpace: 'nowrap', zIndex: 5,
           }}>
@@ -51,7 +48,7 @@ function PhotoCard({ c, index }: { c: Contribution; index: number }) {
   );
 }
 
-function MessageCard({ c, index, wide }: { c: Contribution; index: number; wide?: boolean }) {
+function MessageCard({ c, index, wide, palette }: { c: Contribution; index: number; wide?: boolean; palette: CorporatePalette }) {
   const type = index % 4;
   const msg  = c.message || '';
 
@@ -71,10 +68,10 @@ function MessageCard({ c, index, wide }: { c: Contribution; index: number; wide?
   if (wide) {
     return (
       <div style={{ ...base, background: '#fff', padding: '20px 20px 18px', boxShadow: '0 4px 18px rgba(0,0,0,.08)' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '5rem', lineHeight: 0.6, color: GOLD, opacity: 0.7, marginBottom: 12, marginLeft: -3 }}>&ldquo;</div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '5rem', lineHeight: 0.6, color: palette.accent, opacity: 0.7, marginBottom: 12, marginLeft: -3 }}>&ldquo;</div>
         <p style={{ fontSize: '.95rem', color: '#1A1A2E', lineHeight: 1.75, fontWeight: 600, margin: '0 0 14px', fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>{msg}</p>
-        <div style={{ borderTop: `1.5px solid ${GOLD}`, paddingTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: NAVY, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.7rem', color: '#fff', flexShrink: 0 }}>
+        <div style={{ borderTop: `1.5px solid ${palette.accent}`, paddingTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: palette.headerFrom, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.7rem', color: '#fff', flexShrink: 0 }}>
             {c.contributor_name.charAt(0).toUpperCase()}
           </div>
           <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#1A1A2E' }}>{c.contributor_name}</div>
@@ -83,12 +80,12 @@ function MessageCard({ c, index, wide }: { c: Contribution; index: number; wide?
     );
   }
 
-  // Type 0 — gold left-border quote
+  // Type 0 — accent left-border quote
   if (type === 0) {
     return (
-      <div style={{ ...base, background: '#fff', borderLeft: `3px solid ${GOLD}`, borderRadius: '0 12px 12px 0', padding: '13px 12px 13px 14px' }}>
+      <div style={{ ...base, background: '#fff', borderLeft: `3px solid ${palette.accent}`, borderRadius: '0 12px 12px 0', padding: '13px 12px 13px 14px' }}>
         <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px', fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>{msg}</p>
-        <div style={{ fontSize: '.72rem', fontWeight: 800, color: GOLD }}>— {c.contributor_name}</div>
+        <div style={{ fontSize: '.72rem', fontWeight: 800, color: palette.accent }}>— {c.contributor_name}</div>
       </div>
     );
   }
@@ -96,29 +93,29 @@ function MessageCard({ c, index, wide }: { c: Contribution; index: number; wide?
   // Type 1 — handwritten (Dancing Script)
   if (type === 1) {
     return (
-      <div style={{ ...base, background: LGOLD, padding: '14px 13px' }}>
-        <p style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.15rem', color: NAVY, lineHeight: 1.6, margin: '0 0 8px', fontWeight: 400 }}>{msg}</p>
-        <div style={{ fontSize: '.7rem', fontWeight: 800, color: '#9A8060', fontFamily: "'Nunito', sans-serif" }}>— {c.contributor_name}</div>
+      <div style={{ ...base, background: palette.accentLight, padding: '14px 13px' }}>
+        <p style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.15rem', color: palette.headerFrom, lineHeight: 1.6, margin: '0 0 8px', fontWeight: 400 }}>{msg}</p>
+        <div style={{ fontSize: '.7rem', fontWeight: 800, color: palette.accent, fontFamily: "'Nunito', sans-serif" }}>— {c.contributor_name}</div>
       </div>
     );
   }
 
-  // Type 2 — clean grey card
+  // Type 2 — clean light card
   if (type === 2) {
     return (
-      <div style={{ ...base, background: LGREY, padding: '13px 12px' }}>
+      <div style={{ ...base, background: palette.cardLight, padding: '13px 12px' }}>
         <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
-        <div style={{ fontSize: '.72rem', fontWeight: 800, color: NAVY }}>— {c.contributor_name}</div>
+        <div style={{ fontSize: '.72rem', fontWeight: 800, color: palette.headerFrom }}>— {c.contributor_name}</div>
       </div>
     );
   }
 
-  // Type 3 — subtle gold quotemark, white bg
+  // Type 3 — subtle accent quotemark, white bg
   return (
     <div style={{ ...base, background: '#fff', padding: '13px 12px' }}>
-      <div style={{ fontFamily: 'Georgia, serif', fontSize: '2.8rem', lineHeight: 0.7, color: GOLD, opacity: 0.22, marginBottom: 6, marginLeft: -2 }}>&ldquo;</div>
+      <div style={{ fontFamily: 'Georgia, serif', fontSize: '2.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.22, marginBottom: 6, marginLeft: -2 }}>&ldquo;</div>
       <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
-      <div style={{ fontSize: '.72rem', fontWeight: 800, color: GOLD }}>— {c.contributor_name}</div>
+      <div style={{ fontSize: '.72rem', fontWeight: 800, color: palette.accent }}>— {c.contributor_name}</div>
     </div>
   );
 }
@@ -134,6 +131,7 @@ export function CorporateView({
   preview?: boolean;
   noHeader?: boolean;
 }) {
+  const palette        = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy')) ?? CORPORATE_PALETTES[0];
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasImage       = !!campaign.card_image_url;
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
@@ -144,11 +142,11 @@ export function CorporateView({
   let photoIdx = 0;
   const tiles = contributions.flatMap((c, i) => {
     const result: React.ReactNode[] = [];
-    if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} index={photoIdx++} />);
+    if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} index={photoIdx++} palette={palette} />);
     if (c.message) {
       const idx  = textIdx++;
       const wide = hasEnoughForWide && (idx === 0 || idx % 5 === 4);
-      result.push(<MessageCard key={`${i}-msg`} c={c} index={idx} wide={wide} />);
+      result.push(<MessageCard key={`${i}-msg`} c={c} index={idx} wide={wide} palette={palette} />);
     }
     return result;
   });
@@ -158,7 +156,7 @@ export function CorporateView({
 
       {/* ── Cover ── */}
       {!noHeader && (
-        <div style={{ position: 'relative', background: NAVY, minHeight: 280, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, minHeight: 280, display: 'flex', overflow: 'hidden' }}>
           {/* Text side */}
           <div style={{ flex: 1, padding: '40px 24px 32px', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
             <div style={{ fontSize: '.55rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 10 }}>TO</div>
@@ -166,7 +164,7 @@ export function CorporateView({
               {recipientName}
             </div>
             {campaign.card_message && (
-              <div style={{ color: GOLD, fontSize: 'clamp(.85rem, 3.5vw, 1.15rem)', fontWeight: 700, lineHeight: 1.4, marginBottom: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+              <div style={{ color: palette.accent, fontSize: 'clamp(.85rem, 3.5vw, 1.15rem)', fontWeight: 700, lineHeight: 1.4, marginBottom: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
                 {campaign.card_message}
               </div>
             )}
@@ -180,7 +178,7 @@ export function CorporateView({
           {hasImage && (
             <div style={{ width: '45%', flexShrink: 0, position: 'relative' }}>
               <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${NAVY} 0%, transparent 45%)` }} />
+              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${palette.headerFrom} 0%, transparent 50%)` }} />
             </div>
           )}
         </div>
@@ -191,12 +189,12 @@ export function CorporateView({
         <div style={{ background: '#fff', borderBottom: '1px solid #EAEAEA', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: '.85rem' }}>👥</span>
           <span style={{ fontWeight: 700, fontSize: '.78rem', color: '#1A1A2E' }}>
-            <strong style={{ color: NAVY }}>{contributions.length}</strong>{' '}
+            <strong style={{ color: palette.headerFrom }}>{contributions.length}</strong>{' '}
             {contributions.length === 1 ? 'colleague' : 'colleagues'} contributed
           </span>
           <div style={{ marginLeft: 'auto', display: 'flex' }}>
             {visibleAvatars.map((c, i) => (
-              <div key={i} style={{ width: 26, height: 26, borderRadius: '50%', background: NAVY, border: '2px solid #fff', marginLeft: i > 0 ? -6 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.6rem', color: '#fff', position: 'relative', zIndex: visibleAvatars.length - i }}>
+              <div key={i} style={{ width: 26, height: 26, borderRadius: '50%', background: palette.headerFrom, border: '2px solid #fff', marginLeft: i > 0 ? -6 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.6rem', color: '#fff', position: 'relative', zIndex: visibleAvatars.length - i }}>
                 {c.contributor_name.charAt(0).toUpperCase()}
               </div>
             ))}
@@ -220,7 +218,7 @@ export function CorporateView({
 
       {/* ── Footer ── */}
       {!preview && !noHeader && (
-        <div style={{ margin: '8px 12px 24px', borderRadius: 16, background: NAVY, padding: '28px 20px', textAlign: 'center' }}>
+        <div style={{ margin: '8px 12px 24px', borderRadius: 16, background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, padding: '28px 20px', textAlign: 'center' }}>
           {campaign.card_message && (
             <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.6rem, 7vw, 2.4rem)', color: '#fff', lineHeight: 1.35, marginBottom: 4 }}>
               {campaign.card_message}
@@ -229,7 +227,7 @@ export function CorporateView({
           {campaign.occasion && (
             <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
-          <a href="/" style={{ display: 'inline-block', background: GOLD, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
+          <a href="/" style={{ display: 'inline-block', background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
             Create your own card →
           </a>
           <div style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>

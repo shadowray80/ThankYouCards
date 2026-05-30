@@ -11,6 +11,70 @@ export interface CasualPalette {
   avatarColors: string[];
 }
 
+export interface CorporatePalette {
+  id: string;
+  name: string;
+  swatch: string;
+  headerFrom: string;
+  headerTo: string;
+  accent: string;      // gold/highlight colour
+  accentLight: string; // light version for card backgrounds
+  cardLight: string;   // alternate card background
+}
+
+export const CORPORATE_PALETTES: CorporatePalette[] = [
+  {
+    id: 'navy',
+    name: 'Navy',
+    swatch: '#1A2744',
+    headerFrom: '#1A2744',
+    headerTo: '#2E4080',
+    accent: '#C4903A',
+    accentLight: '#FFF8EE',
+    cardLight: '#F4F4F6',
+  },
+  {
+    id: 'charcoal',
+    name: 'Charcoal',
+    swatch: '#2A2A2A',
+    headerFrom: '#222222',
+    headerTo: '#404040',
+    accent: '#C4903A',
+    accentLight: '#FFF8EE',
+    cardLight: '#F5F5F5',
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    swatch: '#1A3A28',
+    headerFrom: '#1A3428',
+    headerTo: '#2A5A40',
+    accent: '#8FBF6A',
+    accentLight: '#F0F8EE',
+    cardLight: '#F4F6F4',
+  },
+  {
+    id: 'burgundy',
+    name: 'Burgundy',
+    swatch: '#5A1828',
+    headerFrom: '#4A1520',
+    headerTo: '#7A2A38',
+    accent: '#C4903A',
+    accentLight: '#FFF8EE',
+    cardLight: '#F6F4F4',
+  },
+  {
+    id: 'slate',
+    name: 'Slate',
+    swatch: '#2A3A52',
+    headerFrom: '#243448',
+    headerTo: '#3A5070',
+    accent: '#7AB8C8',
+    accentLight: '#EEF6F8',
+    cardLight: '#F4F5F6',
+  },
+];
+
 export const CASUAL_PALETTES: CasualPalette[] = [
   {
     id: 'sky',

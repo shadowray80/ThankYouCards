@@ -4,13 +4,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { THEMES } from '@/lib/themes';
-import { CASUAL_PALETTES } from '@/lib/palettes';
+import { CASUAL_PALETTES, CORPORATE_PALETTES } from '@/lib/palettes';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 
 const PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
-  { contributor_name: 'James',  message: "Working with you has been an absolute pleasure. All the best!", photo_url: null, photo_label: null },
+  { contributor_name: 'James',  message: null, photo_url: '/hero-coach.jpg', photo_label: 'Best season ever!' },
   { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
   { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
 ];
@@ -437,19 +437,34 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               ))}
             </div>
 
-            {/* Palette swatches — only for casual style */}
+            {/* Palette swatches — casual */}
             {cardStyle === 'casual' && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Colour palette</div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   {CASUAL_PALETTES.map(p => (
-                    <div
-                      key={p.id}
-                      onClick={() => setCardPalette(p.id)}
-                      style={{
-                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer',
-                      }}
-                    >
+                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                      <div style={{
+                        width: 42, height: 42, borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
+                        border: cardPalette === p.id ? '3px solid #E8724A' : '3px solid transparent',
+                        boxShadow: cardPalette === p.id ? '0 0 0 2px rgba(232,114,74,.3)' : '0 2px 6px rgba(0,0,0,.12)',
+                        transition: 'all .2s',
+                      }} />
+                      <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Palette swatches — corporate */}
+            {cardStyle === 'corporate' && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {CORPORATE_PALETTES.map(p => (
+                    <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                       <div style={{
                         width: 42, height: 42, borderRadius: '50%',
                         background: `linear-gradient(135deg, ${p.headerFrom}, ${p.headerTo})`,
