@@ -249,10 +249,14 @@ function ManageContent() {
                   <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
                     {c.contributor_name.charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ minWidth: 0 }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
                     {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.message}"</div>}
+                    {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>📷 Photo</div>}
                   </div>
+                  {c.photo_url && (
+                    <img src={c.photo_url} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -275,18 +279,24 @@ function ManageContent() {
               </button>
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <a href={`https://wa.me/?text=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`} target="_blank" rel="noopener noreferrer"
-                style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                💬 WhatsApp
-              </a>
-              <a href={`sms:?body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
-                style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                💬 SMS
-              </a>
-              <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(`I made you a card — open it here: ${origin}/view/${slug}`)}`}
-                style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                ✉️ Email
-              </a>
+              {(() => {
+                const from = campaign.occasion ?? 'Your team';
+                const msg = `Hey ${recipientName}! ${from} made you a card 🎉 Open it here: ${origin}/view/${slug}`;
+                return (<>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
+                    style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                    💬 WhatsApp
+                  </a>
+                  <a href={`sms:?body=${encodeURIComponent(msg)}`}
+                    style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                    💬 SMS
+                  </a>
+                  <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(msg)}`}
+                    style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                    ✉️ Email
+                  </a>
+                </>);
+              })()}
             </div>
             <a href={`/view/${slug}`} target="_blank"
               style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
