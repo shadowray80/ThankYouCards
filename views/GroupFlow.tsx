@@ -332,23 +332,17 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     caretColor: '#fff', wordBreak: 'break-word',
                   }}
                 />
-                {/* From — fixed label + editable team name */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8, gap: 5 }}>
-                  <span style={{
-                    fontFamily: "'Nunito', sans-serif", fontWeight: 700,
-                    fontSize: 'clamp(1rem, 4vw, 1.35rem)',
-                    color: '#fff',
-                    textShadow: '0 2px 14px rgba(0,0,0,0.65)',
-                    flexShrink: 0,
-                  }}>From</span>
-                  <div style={{ position: 'relative' }}>
+                {/* From — uppercase label + editable team name (mirrors the TO / recipient pattern) */}
+                <div style={{ textAlign: 'center', marginTop: 10 }}>
+                  <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
+                  <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
                     {!occasion && (
                       <div style={{
-                        position: 'absolute', inset: 0, pointerEvents: 'none',
+                        position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                         fontFamily: "'Nunito', sans-serif",
-                        fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                        fontSize: 'clamp(1rem, 3.5vw, 1.2rem)',
                         lineHeight: 1.3, color: 'rgba(255,255,255,0.28)',
-                        fontWeight: 700, whiteSpace: 'nowrap',
+                        fontWeight: 700,
                       }}>
                         the Under 12s team
                       </div>
@@ -360,14 +354,14 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                       spellCheck={false}
                       onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
                       style={{
-                        outline: 'none', cursor: 'text',
+                        outline: 'none', cursor: 'text', textAlign: 'center',
                         fontFamily: "'Nunito', sans-serif",
-                        fontSize: 'clamp(1rem, 4vw, 1.35rem)',
+                        fontSize: 'clamp(1rem, 3.5vw, 1.2rem)',
                         fontWeight: 700, lineHeight: 1.3,
                         color: 'rgba(255,255,255,0.92)',
                         textShadow: '0 2px 14px rgba(0,0,0,0.65)',
                         caretColor: '#fff', wordBreak: 'break-word',
-                        minWidth: 40, padding: '4px 4px',
+                        minWidth: 40, padding: '3px 4px',
                       }}
                     />
                   </div>

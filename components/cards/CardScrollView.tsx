@@ -77,7 +77,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
   const t = theme || THEMES[0];
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
-  const from = fromText || 'the team';
+  const from = (fromText || 'the team').replace(/^From\s+/i, '');
   const msg = message ?? '';
   const isSolo = soloMessage !== undefined || soloPhotoData !== undefined;
 

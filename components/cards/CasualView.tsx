@@ -219,7 +219,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
             </div>
           )}
           {campaign.occasion && (
-            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion}</div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
       </div>
@@ -276,7 +276,7 @@ export function CasualView({ campaign, contributions, preview }: { campaign: Cam
             {campaign.card_message || 'Thanks for everything!'}
           </div>
           {campaign.occasion && (
-            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.65)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion}</div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.65)', fontWeight: 600, marginBottom: 18 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
           <a href="/" style={{ display: 'inline-block', background: '#fff', color: palette.accent, borderRadius: 12, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
             Create your own card →
