@@ -101,7 +101,9 @@ function ManageContent() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, action: 'mark_sent' }),
-      }).catch(err => console.error('mark_sent failed:', err));
+      })
+      .then(() => loadData()) // reload so DB status is 'sent' before user clicks recipient link
+      .catch(err => console.error('mark_sent failed:', err));
     }
   }, [slug, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
