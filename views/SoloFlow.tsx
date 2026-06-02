@@ -75,6 +75,14 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       });
       const contribData = await contribRes.json();
       if (!contribRes.ok) throw new Error(contribData.error ?? `HTTP ${contribRes.status}`);
+
+      // Solo cards are free — mark as sent immediately so recipient can open the link
+      await fetch(`/api/manage/${campaign.slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: campaign.organiser_token, action: 'mark_sent' }),
+      });
+
       setSlug(campaign.slug);
       setShowDone(true);
       window.scrollTo({ top: 0, behavior: 'instant' });

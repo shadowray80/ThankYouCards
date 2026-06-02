@@ -205,22 +205,22 @@ function ManageContent() {
     }
   };
 
-  const handleSend = async () => {
+  const handlePay = async () => {
     setPaying(true);
     try {
-      await fetch(`/api/manage/${slug}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/checkout/send-card', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'mark_sent' }),
+        body: JSON.stringify({ slug, token }),
       });
-      await loadData();
-    } finally {
+      const json = await res.json();
+      if (json.error) { alert(json.error); setPaying(false); return; }
+      window.location.href = json.url;
+    } catch {
+      alert('Something went wrong — please try again.');
       setPaying(false);
     }
   };
-
-  /* handlePay kept for future gift-fund / paid tier flow
-  const handlePay = async () => { ... }; */
 
   if (loading) return (
     <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Nunito',sans-serif", fontWeight: 700, color: '#7A7585' }}>
@@ -583,16 +583,19 @@ function ManageContent() {
         {/* Send card section — only shown before sending; sent state is at top */}
         {!isSent && (
           <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Ready to send?</div>
-            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 16, lineHeight: 1.5 }}>
-              Once everyone has signed, send the card to get the link you can share with {recipientName}. Contributors can still sign after you send.
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Happy with the card?</div>
+            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
+              Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
+            </div>
+            <div style={{ fontSize: '.75rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
+              Contributors can still sign after you pay.
             </div>
             <button
-              onClick={handleSend}
+              onClick={handlePay}
               disabled={paying}
               style={{ width: '100%', background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
             >
-              {paying ? 'Sending…' : `Send the card →`}
+              {paying ? 'Redirecting…' : `Send the card — $15 →`}
             </button>
           </div>
         )}
