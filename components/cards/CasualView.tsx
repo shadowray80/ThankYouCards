@@ -10,6 +10,7 @@ interface Campaign {
   card_message: string | null;
   card_image_url: string | null;
   card_palette: string | null;
+  card_text_on_image?: boolean | null;
 }
 
 interface Contribution {
@@ -182,6 +183,7 @@ export function CasualView({ campaign, contributions, preview, noHeader }: { cam
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
   const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
+  const showCoverText  = campaign.card_text_on_image ?? true;
 
   const hasEnoughForWide = contributions.length > 3;
   let textIdx  = 0;
@@ -213,20 +215,36 @@ export function CasualView({ campaign, contributions, preview, noHeader }: { cam
           padding: '48px 24px 28px',
           background: hasImage ? 'linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,.62) 100%)' : 'none',
         }}>
-          <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4 }}>TO</div>
-          <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.35)', marginBottom: 8 }}>
-            {recipientName}
-          </div>
-          {campaign.card_message && (
-            <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 1px 12px rgba(0,0,0,.35)', marginBottom: 6 }}>
-              {campaign.card_message}
-            </div>
+          {showCoverText && (
+            <>
+              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4 }}>TO</div>
+              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.35)', marginBottom: 8 }}>
+                {recipientName}
+              </div>
+              {campaign.card_message && (
+                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 1px 12px rgba(0,0,0,.35)', marginBottom: 6 }}>
+                  {campaign.card_message}
+                </div>
+              )}
+            </>
           )}
           {campaign.occasion && (
             <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
       </div>}
+
+      {/* Recipient name — always shown here, on top of the cover overlay when that's on */}
+      <div style={{ background: '#fff', padding: '14px 18px 0' }}>
+        <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#B0A8BC' }}>
+          To {recipientName}
+        </div>
+        {!showCoverText && campaign.card_message && (
+          <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.5rem', color: palette.accent, lineHeight: 1.2, marginTop: 4 }}>
+            {campaign.card_message}
+          </div>
+        )}
+      </div>
 
       {/* ── Contributor bar ── */}
       {contributions.length > 0 && (

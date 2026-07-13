@@ -21,6 +21,7 @@ interface Campaign {
   card_style: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_text_on_image?: boolean | null;
   funded_amount: number;
   target_amount: number | null;
   deadline: string | null;
@@ -286,6 +287,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             message={campaign.card_message ?? ''}
             messages={previewMsgs}
             giftAmount={displayFunded > 0 ? displayFunded : undefined}
+            showCoverText={campaign.card_text_on_image ?? true}
           />
         </div>
       )}
@@ -436,6 +438,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
                   message={campaign.card_message ?? ''}
                   messages={previewContribs.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
                   landscapeCover
+                  showCoverText={campaign.card_text_on_image ?? true}
                 />
               </div>
             )}

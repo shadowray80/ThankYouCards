@@ -24,6 +24,7 @@ interface Campaign {
   card_style: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_text_on_image: boolean | null;
 }
 
 interface Contribution {
@@ -58,6 +59,7 @@ function ManageContent() {
   const [editMsg, setEditMsg]             = useState('');
   const [editOccasion, setEditOccasion]   = useState('');
   const [editImageUrl, setEditImageUrl]   = useState<string | null>(null);
+  const [editShowCoverText, setEditShowCoverText] = useState(true);
   const [savingCard, setSavingCard]       = useState(false);
   const [cardSaved, setCardSaved]         = useState(false);
   const [editImageUploading, setEditImageUploading] = useState(false);
@@ -91,6 +93,7 @@ function ManageContent() {
       setEditMsg(campaign.card_message ?? '');
       setEditOccasion(campaign.occasion ?? '');
       setEditImageUrl(campaign.card_image_url);
+      setEditShowCoverText(campaign.card_text_on_image ?? true);
     }
   }, [campaign?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -147,10 +150,10 @@ function ManageContent() {
       const res = await fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'update_card', card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl }),
+        body: JSON.stringify({ token, action: 'update_card', card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText }),
       });
       if (res.ok) {
-        setCampaign(prev => prev ? { ...prev, card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl } : prev);
+        setCampaign(prev => prev ? { ...prev, card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText } : prev);
         setCardSaved(true);
         setTimeout(() => setCardSaved(false), 3000);
       }
@@ -416,6 +419,7 @@ function ManageContent() {
                 message={campaign.card_message ?? ''}
                 messages={messages}
                 landscapeCover
+                showCoverText={campaign.card_text_on_image ?? true}
               />
             )}
           </div>
@@ -477,6 +481,21 @@ function ManageContent() {
                   {editImageUploading ? 'Uploading…' : '+ Upload cover photo'}
                 </button>
               )}
+            </div>
+          )}
+
+          {campaign.card_style !== 'corporate' && (
+            <div
+              onClick={() => setEditShowCoverText(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, cursor: 'pointer' }}
+            >
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A' }}>Show name &amp; text on photo</div>
+                <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginTop: 1 }}>Turn off if the photo is busy — name &amp; text move below it instead</div>
+              </div>
+              <div style={{ width: 38, height: 22, borderRadius: 14, position: 'relative', flexShrink: 0, background: editShowCoverText ? '#4CAF82' : '#D1C8DC', transition: 'background .2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: editShowCoverText ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)', transition: 'left .2s' }} />
+              </div>
             </div>
           )}
 

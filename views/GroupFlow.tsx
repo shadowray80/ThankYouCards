@@ -62,6 +62,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [cardMsg, setCardMsg]   = useState(THEMES[11].frontMsg);
 
   const [giftType, setGiftType]             = useState('collect');
+  const [showCoverText, setShowCoverText]   = useState(true);
   const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('classic');
   const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
@@ -75,18 +76,28 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const logoUploadRef = useRef<HTMLInputElement>(null);
   const cardMsgRef   = useRef<HTMLDivElement>(null);
   const occasionRef  = useRef<HTMLDivElement>(null);
+  const recipRef     = useRef<HTMLDivElement>(null);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
+  // Re-sync whenever the overlay remounts too (style switch, or the text-on-photo toggle)
   useEffect(() => {
     const el = cardMsgRef.current;
     if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
-  }, [cardMsg]);
+  }, [cardMsg, cardStyle, showCoverText]);
 
   useEffect(() => {
     const el = occasionRef.current;
     if (el && el.textContent !== occasion) el.textContent = occasion;
-  }, [occasion]);
+  }, [occasion, cardStyle]);
+
+  useEffect(() => {
+    // Only restore text into a freshly (re)mounted, empty field — never while the
+    // user is actively typing, since the DOM already reflects their keystrokes and
+    // forcing textContent mid-edit resets the caret to the start.
+    const el = recipRef.current;
+    if (el && !el.textContent && recip) el.textContent = recip;
+  }, [recip, cardStyle, showCoverText]);
 
   const theme  = THEMES[themeIdx];
   const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
@@ -156,6 +167,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_style: cardStyle,
           card_palette: cardPalette,
           card_logo_url: logoUrl,
+          card_text_on_image: showCoverText,
         }),
       });
       const json = await res.json();
@@ -321,7 +333,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 {/* Recipient */}
                 <div style={{ position: 'relative', marginBottom: 10 }}>
                   {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>The legend</div>}
-                  <div contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
+                  <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
                   />
@@ -391,26 +403,57 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               >{customImgUrl ? '✕' : '📷'}</div>
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
-              {/* Recipient name */}
-              <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-                <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
-                <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
-                  <div contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
-                    onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
-                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
-                  />
+              {/* Text-on-photo toggle */}
+              <div
+                onClick={() => setShowCoverText(v => !v)}
+                style={{
+                  position: 'absolute', top: 14, left: 14, zIndex: 5,
+                  display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+                  background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+                  borderRadius: 20, padding: '6px 10px 6px 8px',
+                }}
+                title={showCoverText ? 'Hide name & text from the photo' : 'Show name & text on the photo'}
+              >
+                <div style={{
+                  width: 28, height: 16, borderRadius: 10, position: 'relative', flexShrink: 0,
+                  background: showCoverText ? '#4CAF82' : 'rgba(255,255,255,.35)', transition: 'background .2s',
+                }}>
+                  <div style={{
+                    position: 'absolute', top: 2, left: showCoverText ? 14 : 2, width: 12, height: 12,
+                    borderRadius: '50%', background: '#fff', transition: 'left .2s',
+                  }} />
                 </div>
+                <span style={{ fontSize: '.66rem', fontWeight: 800, color: '#fff', fontFamily: "'Nunito',sans-serif" }}>
+                  Text on photo
+                </span>
               </div>
+
+              {/* Recipient name */}
+              {showCoverText && (
+                <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+                  <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
+                  <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
+                    {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
+                    <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
+                      onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
+                      style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Cover text + from */}
               <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
                 <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Add cover text…</div>}
-                  <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
-                    onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
-                  />
+                  {showCoverText && (
+                    <>
+                      {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Add cover text…</div>}
+                      <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                        onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                        style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                      />
+                    </>
+                  )}
                   <div style={{ textAlign: 'center', marginTop: 10 }}>
                     <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
                     <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
@@ -426,10 +469,31 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           )}
 
+          {/* Recipient name + cover text — shown here instead of on the photo when the toggle is off */}
+          {cardStyle !== 'corporate' && !showCoverText && (
+            <div style={{ background: '#fff', padding: '18px 22px 4px' }}>
+              <label style={{ display: 'block', fontSize: '.66rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>Recipient&apos;s name</label>
+              <input
+                value={recip}
+                onChange={e => setRecip(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
+                placeholder="Their name"
+                autoCapitalize="words"
+                style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.1rem', color: recip ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0', marginBottom: 10, boxSizing: 'border-box' }}
+              />
+              <label style={{ display: 'block', fontSize: '.66rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>Cover text</label>
+              <input
+                value={cardMsg}
+                onChange={e => setCardMsg(e.target.value)}
+                placeholder="e.g. Cheers Buddy"
+                style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-dancing), cursive', fontSize: '1.3rem', color: cardMsg ? '#3A8FA0' : '#B0A8BC', caretColor: '#3A8FA0', boxSizing: 'border-box' }}
+              />
+            </div>
+          )}
+
           {/* Messages preview — style-aware */}
           {cardStyle === 'casual' ? (
             <CasualView
-              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette }}
+              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_text_on_image: showCoverText }}
               contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
               preview
               noHeader

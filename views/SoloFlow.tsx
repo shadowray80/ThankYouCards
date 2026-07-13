@@ -13,6 +13,34 @@ interface SoloFlowProps {
   onNav: (view: string) => void;
 }
 
+function PreviewToggle({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        position: 'absolute', top: 14, left: 14, zIndex: 5,
+        display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+        borderRadius: 20, padding: '6px 10px 6px 8px',
+      }}
+      title={active ? 'Back to editing' : 'Preview how your recipient will see this'}
+    >
+      <div style={{
+        width: 28, height: 16, borderRadius: 10, position: 'relative', flexShrink: 0,
+        background: active ? '#4CAF82' : 'rgba(255,255,255,.35)', transition: 'background .2s',
+      }}>
+        <div style={{
+          position: 'absolute', top: 2, left: active ? 14 : 2, width: 12, height: 12,
+          borderRadius: '50%', background: '#fff', transition: 'left .2s',
+        }} />
+      </div>
+      <span style={{ fontSize: '.66rem', fontWeight: 800, color: '#fff', fontFamily: "'Nunito',sans-serif" }}>
+        👀 Preview
+      </span>
+    </div>
+  );
+}
+
 export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [themeIdx, setThemeIdx] = useState(7);
   const [imgIdx, setImgIdx] = useState(0);
@@ -21,7 +49,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
-  const [cardMsg, setCardMsg] = useState(THEMES[7].frontMsg);
+  const [cardMsg, setCardMsg] = useState('');
+  // Message-area-only name — used only when the on-photo name is left blank, so someone
+  // can fill in the recipient's name without ever putting text on the photo.
+  const [msgAreaTo, setMsgAreaTo] = useState('');
   const [msg, setMsg] = useState('');
   const [photoData, setPhotoData] = useState<string | null>(null);
 
@@ -30,6 +61,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [giftCustom, setGiftCustom] = useState('');
 
   const [showDone, setShowDone] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -39,7 +71,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
   const cardMsgRef = useRef<HTMLDivElement>(null);
 
-  // Sync cover text DOM when theme changes (not triggered by user typing)
+  // Sync cover text DOM when the theme changes (not triggered by user typing)
   useEffect(() => {
     const el = cardMsgRef.current;
     if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
@@ -53,12 +85,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipient_name: to.trim(),
+          recipient_name: effectiveTo.trim(),
           occasion: theme.name,
           target_amount: 0,
           card_theme: theme.id,
           card_message: cardMsg.trim(),
           card_image_url: imageUrl,
+          card_text_on_image: to.trim() !== '' || cardMsg.trim() !== '',
         }),
       });
       const campaignData = await campaignRes.json();
@@ -95,7 +128,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
   const theme = THEMES[themeIdx];
   const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
-  const canContinue = to.trim().length > 0 && (msg.trim().length > 0 || photoData !== null);
+  const effectiveTo = to || msgAreaTo;
+  const canContinue = effectiveTo.trim().length > 0;
   const giftAmount = includeGift ? Number(giftSel || giftCustom) || 0 : 0;
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +149,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   };
 
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
-  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setCardMsg(THEMES[i].frontMsg); setFailedImgs(new Set()); };
+  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setFailedImgs(new Set()); };
 
   // ── Done screen ──────────────────────────────────────────────
   if (showDone && slug) {
@@ -129,11 +163,11 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.6rem', color: '#2A2A2A' }}>🎉 Card ready! 🎊</div>
             <div style={{ color: '#7A7585', fontSize: '.9rem', lineHeight: 1.6, fontWeight: 600, marginTop: 4 }}>
-              Share this link with {to} to deliver their card.
+              Share this link with {effectiveTo} to deliver their card.
             </div>
           </div>
           <div style={{ background: '#F0ECFB', border: '2px solid rgba(124,92,191,.2)', borderRadius: 14, padding: '16px', marginBottom: 16 }}>
-            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with {to}</div>
+            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 8 }}>🔗 Share with {effectiveTo}</div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
               <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
                 {recipientUrl}
@@ -154,7 +188,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 💬 SMS
               </a>
-              <a href={`mailto:?subject=A card for you, ${to}&body=${encodeURIComponent(shareText)}`}
+              <a href={`mailto:?subject=A card for you, ${effectiveTo}&body=${encodeURIComponent(shareText)}`}
                 style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 ✉️ Email
               </a>
@@ -167,6 +201,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             recipientName={to}
             fromText={from || 'From a friend'}
             message={cardMsg}
+            messageAreaName={effectiveTo}
             soloMessage={photoData === null ? msg : undefined}
             soloPhotoData={photoData ?? undefined}
             messages={[]}
@@ -184,6 +219,27 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     <div>
       <Nav onHome={onBack} onNav={onNav} badge="solo" />
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
+
+        {showPreview ? (
+          <div style={{ padding: '16px 18px 0', position: 'relative' }}>
+            <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
+            <CardScrollView
+              theme={theme}
+              imgIdx={imgIdx < 0 ? 0 : imgIdx}
+              customImgUrl={customImgUrl ?? undefined}
+              recipientName={to}
+              fromText={from || 'From a friend'}
+              message={cardMsg}
+              messageAreaName={effectiveTo}
+              soloMessage={photoData === null ? msg : undefined}
+              soloPhotoData={photoData ?? undefined}
+              messages={[]}
+              landscapeCover
+              giftAmount={giftAmount}
+            />
+          </div>
+        ) : (
+        <>
 
         {/* ── Occasion film strip ── */}
         <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
@@ -273,6 +329,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             </div>
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
+            <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
+
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
             <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
@@ -310,7 +368,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </div>
             </div>
 
-            {/* Cover text — floating on image, wraps to two lines if long */}
+            {/* Cover text — floating on image, wraps to two lines if long. Dimmed while it's
+                It starts empty — nothing is sent unless you type something here. */}
             <div style={{
               position: 'absolute', bottom: '12%', left: 0, right: 0, zIndex: 3,
               textAlign: 'center', padding: '0 16px',
@@ -323,7 +382,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
                     lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
                   }}>
-                    Add cover text…
+                    Cover Message
                   </div>
                 )}
                 <div
@@ -360,6 +419,28 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
           {/* Message panel */}
           <div style={{ background: '#fff', padding: '20px 22px 8px' }}>
+            {/* Recap — mirrors the on-photo name so it's never typed twice. If the name is
+                still blank on the photo, it becomes a real input right here instead — that way,
+                someone who doesn't want text on the photo can fill in the name down here, and
+                it stays down here only (typing here never puts anything on the photo). */}
+            <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
+              <span style={{ flexShrink: 0 }}>To</span>
+              {to ? (
+                <span>{to}</span>
+              ) : (
+                <input
+                  value={msgAreaTo}
+                  onChange={e => setMsgAreaTo(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
+                  placeholder="The Legend's Name"
+                  autoCapitalize="words"
+                  style={{
+                    flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent',
+                    font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit',
+                    color: msgAreaTo ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0',
+                  }}
+                />
+              )}
+            </div>
             {photoData ? (
               <img src={photoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
             ) : (
@@ -367,12 +448,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 ref={msgTextareaRef}
                 value={msg}
                 onChange={e => {
-                  setMsg(e.target.value);
+                  const v = e.target.value;
+                  setMsg(v.charAt(0).toUpperCase() + v.slice(1));
                   const el = e.target;
                   el.style.height = 'auto';
                   el.style.height = el.scrollHeight + 'px';
                 }}
-                placeholder="Write your message here…"
+                placeholder="Card message"
                 rows={2}
                 style={{
                   width: '100%',
@@ -380,6 +462,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   outline: 'none',
                   resize: 'none',
                   overflow: 'hidden',
+                  textAlign: 'center',
                   fontFamily: "'Lora',serif",
                   fontStyle: 'italic',
                   fontSize: '16px',
@@ -465,6 +548,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             </div>
           </div>
         </div>
+
+        </>
+        )}
 
         {/* ── Sticky continue button ── */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>

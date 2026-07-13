@@ -18,6 +18,7 @@ interface Campaign {
   card_style: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_text_on_image: boolean | null;
   funded_amount: number;
   target_amount: number | null;
   status: string;
@@ -125,10 +126,12 @@ export function ViewContent() {
   const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasGift = campaign.funded_amount > 0;
 
-  const fromText = campaign.occasion ?? undefined;
-
   const isSolo = contributions.length <= 1;
-  const soloMessage = isSolo && contributions.length === 1 ? contributions[0].message ?? undefined : undefined;
+  // Solo cards store the occasion/theme label in `occasion`, not the sender — the
+  // signature comes from the contributor's own name instead. Fall back to '' (not
+  // undefined) so a blank message still routes to the solo branch below.
+  const soloMessage = isSolo && contributions.length === 1 ? contributions[0].message ?? '' : undefined;
+  const fromText = isSolo && contributions.length === 1 ? contributions[0].contributor_name : (campaign.occasion ?? undefined);
   const groupMessages = isSolo ? [] : contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
 
   return (
@@ -147,6 +150,7 @@ export function ViewContent() {
           soloMessage={soloMessage}
           giftAmount={hasGift ? campaign.funded_amount : undefined}
           landscapeCover
+          showCoverText={campaign.card_text_on_image ?? true}
         />
       </div>
 

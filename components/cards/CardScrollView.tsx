@@ -16,6 +16,8 @@ interface CardScrollViewProps {
   onAddMessage?: () => void;
   customImgUrl?: string;
   landscapeCover?: boolean; // show full landscape image, height follows image ratio
+  showCoverText?: boolean; // false = keep the photo clean, name/message move below instead
+  messageAreaName?: string; // overrides recipientName just for the recap panel below the cover
 }
 
 const AVATAR_COLORS = ['#3A8FA0', '#E8724A', '#7C5CBF', '#5A9070', '#C9933A', '#D94E7A', '#4A7CBF', '#8F5A3A'];
@@ -73,7 +75,7 @@ function MessageBubble({ m, index }: { m: CardMessage; index: number }) {
   );
 }
 
-export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover }: CardScrollViewProps) {
+export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover, showCoverText = true, messageAreaName }: CardScrollViewProps) {
   const t = theme || THEMES[0];
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
@@ -96,23 +98,26 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
         {/* Thin inset border */}
         <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
 
-        {/* "To" label + recipient name — top centre */}
-        <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-          <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
-          <div style={{
-            fontFamily: 'var(--font-dancing), cursive',
-            fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-            lineHeight: 1.1,
-            letterSpacing: '.01em',
-            color: name ? '#fff' : 'rgba(255,255,255,0.28)',
-            textShadow: name ? '0 2px 20px rgba(0,0,0,0.55)' : 'none',
-          }}>
-            {name || 'The Absolute Legend'}
+        {/* "To" label + recipient name — top centre. Nothing renders here at all if the
+            name hasn't been filled in — a clean, unfinished card shows a clean photo. */}
+        {showCoverText && name && (
+          <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+            <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
+            <div style={{
+              fontFamily: 'var(--font-dancing), cursive',
+              fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
+              lineHeight: 1.1,
+              letterSpacing: '.01em',
+              color: '#fff',
+              textShadow: '0 2px 20px rgba(0,0,0,0.55)',
+            }}>
+              {name}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Cover text + optional from line for group cards */}
-        {(msg || (from && !isSolo)) ? (
+        {showCoverText && (msg || (from && !isSolo)) ? (
           <div style={{
             position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3,
             textAlign: 'center', padding: '0 16px',
@@ -156,6 +161,26 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
         )}
       </div>
 
+      {/* Recipient name — always shown here, on top of the cover overlay when that's on.
+          Cover message recaps here too when it's hidden from the photo. */}
+      {(() => {
+        const panelName = messageAreaName ?? name;
+        return (panelName || (!showCoverText && msg)) && (
+          <div style={{ background: '#fff', padding: '18px 22px 0' }}>
+            {panelName && (
+              <div style={{ fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
+                To {panelName}
+              </div>
+            )}
+            {!showCoverText && msg && (
+              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.7rem', color: '#3A8FA0', lineHeight: 1.2, marginTop: 6 }}>
+                {msg}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ── Solo message panel OR team messages ── */}
       {(soloMessage !== undefined || soloPhotoData !== undefined) ? (
         /* Solo card: show the personal message as a clean panel */
@@ -166,21 +191,19 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
           </div>
         ) : soloMessage ? (
           <div style={{ background: '#fff', padding: '22px 22px 24px' }}>
-            <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1.08rem', lineHeight: 1.75, color: '#2A2A2A', whiteSpace: 'pre-wrap' }}>
+            <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1.08rem', lineHeight: 1.75, color: '#2A2A2A', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
               {soloMessage}
             </div>
             {from && (
               <div style={{ marginTop: 14, fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>
             )}
           </div>
-        ) : (
-          /* Placeholder when no message yet */
-          <div style={{ background: '#FAFAF8', padding: '22px 22px 24px', borderTop: '1px solid #F0EDF5' }}>
-            <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1rem', color: '#C8C0D0', lineHeight: 1.7 }}>
-              Your message will appear here…
-            </div>
+        ) : from ? (
+          /* No written message — just the signature, if there is one */
+          <div style={{ background: '#fff', padding: '18px 22px 22px' }}>
+            <div style={{ fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>
           </div>
-        )
+        ) : null
       ) : (
         /* Group card: team messages */
         <>
