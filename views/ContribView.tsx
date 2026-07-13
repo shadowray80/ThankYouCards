@@ -288,6 +288,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             messages={previewMsgs}
             giftAmount={displayFunded > 0 ? displayFunded : undefined}
             showCoverText={campaign.card_text_on_image ?? true}
+            alwaysShowCoverMessage
           />
         </div>
       )}
@@ -439,6 +440,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
                   messages={previewContribs.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
                   landscapeCover
                   showCoverText={campaign.card_text_on_image ?? true}
+                  alwaysShowCoverMessage
                 />
               </div>
             )}

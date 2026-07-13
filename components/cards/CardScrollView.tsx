@@ -18,6 +18,8 @@ interface CardScrollViewProps {
   landscapeCover?: boolean; // show full landscape image, height follows image ratio
   showCoverText?: boolean; // false = keep the photo clean, name/message move below instead
   messageAreaName?: string; // overrides recipientName just for the recap panel below the cover
+  alwaysShowCoverMessage?: boolean; // always recap the cover message below, even when it's also shown on the photo
+  messageAreaCoverMessage?: string; // overrides message just for the recap panel below the cover
 }
 
 const AVATAR_COLORS = ['#3A8FA0', '#E8724A', '#7C5CBF', '#5A9070', '#C9933A', '#D94E7A', '#4A7CBF', '#8F5A3A'];
@@ -75,7 +77,7 @@ function MessageBubble({ m, index }: { m: CardMessage; index: number }) {
   );
 }
 
-export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover, showCoverText = true, messageAreaName }: CardScrollViewProps) {
+export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover, showCoverText = true, messageAreaName, alwaysShowCoverMessage = false, messageAreaCoverMessage }: CardScrollViewProps) {
   const t = theme || THEMES[0];
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
@@ -162,19 +164,22 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
       </div>
 
       {/* Recipient name — always shown here, on top of the cover overlay when that's on.
-          Cover message recaps here too when it's hidden from the photo. */}
+          Cover message recaps here too, either because it's hidden from the photo, or
+          because this card always duplicates it below (alwaysShowCoverMessage). */}
       {(() => {
         const panelName = messageAreaName ?? name;
-        return (panelName || (!showCoverText && msg)) && (
+        const panelMsg = messageAreaCoverMessage ?? msg;
+        const showMsgInPanel = alwaysShowCoverMessage || !showCoverText;
+        return (panelName || (showMsgInPanel && panelMsg)) && (
           <div style={{ background: '#fff', padding: '18px 22px 0' }}>
             {panelName && (
               <div style={{ fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
                 To {panelName}
               </div>
             )}
-            {!showCoverText && msg && (
+            {showMsgInPanel && panelMsg && (
               <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.7rem', color: '#3A8FA0', lineHeight: 1.2, marginTop: 6 }}>
-                {msg}
+                {panelMsg}
               </div>
             )}
           </div>

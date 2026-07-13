@@ -177,9 +177,9 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
   );
 }
 
-export function CasualView({ campaign, contributions, preview, noHeader }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean; noHeader?: boolean }) {
+export function CasualView({ campaign, contributions, preview, noHeader, messageAreaName, messageAreaCoverMessage, messageAreaOccasion }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean; noHeader?: boolean; messageAreaName?: string; messageAreaCoverMessage?: string; messageAreaOccasion?: string }) {
   const palette        = CASUAL_PALETTES.find(p => p.id === (campaign.card_palette ?? 'sky')) ?? CASUAL_PALETTES[0];
-  const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
+  const recipientName  = campaign.recipient_name ? campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1) : '';
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
   const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
@@ -215,7 +215,7 @@ export function CasualView({ campaign, contributions, preview, noHeader }: { cam
           padding: '48px 24px 28px',
           background: hasImage ? 'linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,.62) 100%)' : 'none',
         }}>
-          {showCoverText && (
+          {showCoverText && recipientName && (
             <>
               <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4 }}>TO</div>
               <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.35)', marginBottom: 8 }}>
@@ -234,17 +234,33 @@ export function CasualView({ campaign, contributions, preview, noHeader }: { cam
         </div>
       </div>}
 
-      {/* Recipient name — always shown here, on top of the cover overlay when that's on */}
-      <div style={{ background: '#fff', padding: '14px 18px 0' }}>
-        <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#B0A8BC' }}>
-          To {recipientName}
-        </div>
-        {!showCoverText && campaign.card_message && (
-          <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.5rem', color: palette.accent, lineHeight: 1.2, marginTop: 4 }}>
-            {campaign.card_message}
+      {/* Recipient name — always shown here, on top of the cover overlay when that's on.
+          Suppressed when noHeader, since the embedding page (GroupFlow's builder) shows
+          its own editable recap right below its own hand-drawn cover in that case. */}
+      {!noHeader && (() => {
+        const panelName = messageAreaName ?? recipientName;
+        const panelMsg = messageAreaCoverMessage ?? campaign.card_message;
+        const panelOccasion = messageAreaOccasion ?? campaign.occasion;
+        return (panelName || panelMsg || panelOccasion) && (
+          <div style={{ background: '#fff', padding: '14px 18px 0' }}>
+            {panelName && (
+              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#B0A8BC' }}>
+                To {panelName}
+              </div>
+            )}
+            {panelMsg && (
+              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '2rem', color: palette.accent, lineHeight: 1.2, marginTop: 6 }}>
+                {panelMsg}
+              </div>
+            )}
+            {panelOccasion && (
+              <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 700, marginTop: panelMsg ? 6 : 2 }}>
+                From {panelOccasion.replace(/^From\s+/i, '')}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* ── Contributor bar ── */}
       {contributions.length > 0 && (

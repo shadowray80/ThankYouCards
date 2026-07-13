@@ -3,8 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
+import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { THEMES } from '@/lib/themes';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
+import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 
@@ -57,12 +59,17 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [failedImgs, setFailedImgs]     = useState<Set<number>>(new Set());
 
   const [recip, setRecip]       = useState('');
+  // Message-area-only versions — used only when the matching on-photo field is left blank,
+  // so someone can fill in the name/cover message/from without ever putting text on the photo.
+  const [msgAreaRecip, setMsgAreaRecip] = useState('');
+  const [msgAreaCardMsg, setMsgAreaCardMsg] = useState('');
+  const [msgAreaOccasion, setMsgAreaOccasion] = useState('');
   const [occasion, setOccasion] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [cardMsg, setCardMsg]   = useState(THEMES[11].frontMsg);
+  const [cardMsg, setCardMsg]   = useState('');
 
   const [giftType, setGiftType]             = useState('collect');
-  const [showCoverText, setShowCoverText]   = useState(true);
+  const [showPreview, setShowPreview]       = useState(false);
   const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('classic');
   const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
@@ -80,16 +87,18 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
-  // Re-sync whenever the overlay remounts too (style switch, or the text-on-photo toggle)
+  // Re-sync whenever the overlay remounts too — a style switch swaps in a different DOM
+  // node, and so does leaving Preview mode (the whole editable cover unmounts while
+  // previewing, so it comes back as a fresh, empty node that needs its text restored).
   useEffect(() => {
     const el = cardMsgRef.current;
     if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
-  }, [cardMsg, cardStyle, showCoverText]);
+  }, [cardMsg, cardStyle, showPreview]);
 
   useEffect(() => {
     const el = occasionRef.current;
     if (el && el.textContent !== occasion) el.textContent = occasion;
-  }, [occasion, cardStyle]);
+  }, [occasion, cardStyle, showPreview]);
 
   useEffect(() => {
     // Only restore text into a freshly (re)mounted, empty field — never while the
@@ -97,11 +106,14 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     // forcing textContent mid-edit resets the caret to the start.
     const el = recipRef.current;
     if (el && !el.textContent && recip) el.textContent = recip;
-  }, [recip, cardStyle, showCoverText]);
+  }, [recip, cardStyle, showPreview]);
 
   const theme  = THEMES[themeIdx];
   const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
-  const canCreate = recip.trim() && occasion.trim() && deadline && organiserEmail.trim();
+  const effectiveRecip = recip || msgAreaRecip;
+  const effectiveCardMsg = cardMsg || msgAreaCardMsg;
+  const effectiveOccasion = occasion || msgAreaOccasion;
+  const canCreate = effectiveRecip.trim() && effectiveOccasion.trim() && deadline && organiserEmail.trim();
 
   const corpPalette = CORPORATE_PALETTES.find(p => p.id === cardPalette)
     ?? (cardPalette?.startsWith('#') ? buildCustomPalette(cardPalette) : CORPORATE_PALETTES[0]);
@@ -120,8 +132,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   };
 
   const selectTheme = (i: number) => {
-    setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null);
-    setCardMsg(THEMES[i].frontMsg); setFailedImgs(new Set());
+    setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setFailedImgs(new Set());
   };
   const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
 
@@ -156,18 +167,18 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipient_name: recip.trim(),
-          occasion: occasion.trim() || null,
+          recipient_name: effectiveRecip.trim(),
+          occasion: effectiveOccasion.trim() || null,
           target_amount: 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
           card_theme: theme.id,
-          card_message: cardMsg,
+          card_message: effectiveCardMsg,
           card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
           card_style: cardStyle,
           card_palette: cardPalette,
           card_logo_url: logoUrl,
-          card_text_on_image: showCoverText,
+          card_text_on_image: recip.trim() !== '' || cardMsg.trim() !== '',
         }),
       });
       const json = await res.json();
@@ -193,6 +204,40 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ fontSize: '.76rem', color: '#9A7A6A', fontWeight: 600, lineHeight: 1.5 }}>Just fill in the basics — you can tweak the design, colours, and photo any time from your organiser dashboard before you send it.</div>
           </div>
         </div>
+
+        {showPreview && cardStyle !== 'corporate' ? (
+          <div style={{ padding: '16px 18px 0', position: 'relative' }}>
+            <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
+            {cardStyle === 'casual' ? (
+              <CasualView
+                campaign={{
+                  slug: '', recipient_name: recip, occasion, card_message: cardMsg,
+                  card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
+                  card_palette: cardPalette,
+                }}
+                contributions={[]}
+                messageAreaName={effectiveRecip}
+                messageAreaCoverMessage={effectiveCardMsg}
+                messageAreaOccasion={effectiveOccasion}
+              />
+            ) : (
+              <CardScrollView
+                theme={theme}
+                imgIdx={imgIdx < 0 ? 0 : imgIdx}
+                customImgUrl={customImgUrl ?? undefined}
+                recipientName={recip}
+                fromText={occasion}
+                message={cardMsg}
+                messageAreaName={effectiveRecip}
+                alwaysShowCoverMessage
+                messageAreaCoverMessage={effectiveCardMsg}
+                messages={[]}
+                landscapeCover
+              />
+            )}
+          </div>
+        ) : (
+        <>
 
         {/* Occasion film strip */}
         <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
@@ -403,57 +448,28 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               >{customImgUrl ? '✕' : '📷'}</div>
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
-              {/* Text-on-photo toggle */}
-              <div
-                onClick={() => setShowCoverText(v => !v)}
-                style={{
-                  position: 'absolute', top: 14, left: 14, zIndex: 5,
-                  display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
-                  background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
-                  borderRadius: 20, padding: '6px 10px 6px 8px',
-                }}
-                title={showCoverText ? 'Hide name & text from the photo' : 'Show name & text on the photo'}
-              >
-                <div style={{
-                  width: 28, height: 16, borderRadius: 10, position: 'relative', flexShrink: 0,
-                  background: showCoverText ? '#4CAF82' : 'rgba(255,255,255,.35)', transition: 'background .2s',
-                }}>
-                  <div style={{
-                    position: 'absolute', top: 2, left: showCoverText ? 14 : 2, width: 12, height: 12,
-                    borderRadius: '50%', background: '#fff', transition: 'left .2s',
-                  }} />
-                </div>
-                <span style={{ fontSize: '.66rem', fontWeight: 800, color: '#fff', fontFamily: "'Nunito',sans-serif" }}>
-                  Text on photo
-                </span>
-              </div>
+              <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
 
               {/* Recipient name */}
-              {showCoverText && (
-                <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-                  <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
-                  <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
-                    {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
-                    <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
-                      onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
-                      style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
-                    />
-                  </div>
+              <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+                <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
+                <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
+                  <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
+                    onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
+                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
+                  />
                 </div>
-              )}
+              </div>
 
               {/* Cover text + from */}
               <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
                 <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
-                  {showCoverText && (
-                    <>
-                      {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Add cover text…</div>}
-                      <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
-                        onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                        style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
-                      />
-                    </>
-                  )}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Cover Message</div>}
+                  <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                    onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                  />
                   <div style={{ textAlign: 'center', marginTop: 10 }}>
                     <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
                     <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
@@ -469,32 +485,77 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           )}
 
-          {/* Recipient name + cover text — shown here instead of on the photo when the toggle is off */}
-          {cardStyle !== 'corporate' && !showCoverText && (
-            <div style={{ background: '#fff', padding: '18px 22px 4px' }}>
-              <label style={{ display: 'block', fontSize: '.66rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>Recipient&apos;s name</label>
-              <input
-                value={recip}
-                onChange={e => setRecip(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
-                placeholder="Their name"
-                autoCapitalize="words"
-                style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.1rem', color: recip ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0', marginBottom: 10, boxSizing: 'border-box' }}
-              />
-              <label style={{ display: 'block', fontSize: '.66rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>Cover text</label>
-              <input
-                value={cardMsg}
-                onChange={e => setCardMsg(e.target.value)}
-                placeholder="e.g. Cheers Buddy"
-                style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-dancing), cursive', fontSize: '1.3rem', color: cardMsg ? '#3A8FA0' : '#B0A8BC', caretColor: '#3A8FA0', boxSizing: 'border-box' }}
-              />
+          {/* Recap — mirrors the on-photo name & cover message so they're never typed twice. If a
+              field is still blank on the photo, it becomes a real input right here instead — that
+              way, someone who doesn't want text on the photo can fill it in down here, and it
+              stays down here only (typing here never puts anything on the photo). This is also
+              a unified place to see both, if the photo isn't the right spot for the text at all.
+              CasualView has its own equivalent recap, but it's suppressed here (noHeader) in
+              favour of this one, so there's a single editable source, not two displays. */}
+          {cardStyle !== 'corporate' && (
+            <div style={{ background: '#fff', padding: '18px 22px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
+                <span style={{ flexShrink: 0 }}>To</span>
+                {recip ? (
+                  <span>{recip}</span>
+                ) : (
+                  <input
+                    value={msgAreaRecip}
+                    onChange={e => setMsgAreaRecip(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
+                    placeholder="The Legend's Name"
+                    autoCapitalize="words"
+                    style={{
+                      flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent',
+                      font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit',
+                      color: msgAreaRecip ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0',
+                    }}
+                  />
+                )}
+              </div>
+              {cardMsg ? (
+                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '2rem', color: '#3A8FA0', lineHeight: 1.2, marginTop: 6 }}>
+                  {cardMsg}
+                </div>
+              ) : (
+                <input
+                  value={msgAreaCardMsg}
+                  onChange={e => setMsgAreaCardMsg(e.target.value)}
+                  placeholder="Cover Message"
+                  style={{
+                    width: '100%', border: 'none', outline: 'none', background: 'transparent',
+                    fontFamily: 'var(--font-dancing), cursive', fontSize: '2rem',
+                    color: msgAreaCardMsg ? '#3A8FA0' : '#B0A8BC', caretColor: '#3A8FA0',
+                    marginTop: 6, boxSizing: 'border-box',
+                  }}
+                />
+              )}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.78rem', color: '#7A7585', fontWeight: 700, marginTop: 6 }}>
+                <span style={{ flexShrink: 0 }}>From</span>
+                {occasion ? (
+                  <span>{occasion.replace(/^From\s+/i, '')}</span>
+                ) : (
+                  <input
+                    value={msgAreaOccasion}
+                    onChange={e => setMsgAreaOccasion(e.target.value)}
+                    placeholder="the team"
+                    style={{
+                      flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent',
+                      font: 'inherit', color: msgAreaOccasion ? '#7A7585' : '#B0A8BC', caretColor: '#3A8FA0',
+                    }}
+                  />
+                )}
+              </div>
             </div>
           )}
 
           {/* Messages preview — style-aware */}
           {cardStyle === 'casual' ? (
             <CasualView
-              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_text_on_image: showCoverText }}
+              campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette }}
               contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
+              messageAreaName={effectiveRecip}
+              messageAreaCoverMessage={effectiveCardMsg}
+              messageAreaOccasion={effectiveOccasion}
               preview
               noHeader
             />
@@ -524,6 +585,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </>
           )}
         </div>
+
+        </>
+        )}
 
         {/* Deadline — same width as card */}
         <div

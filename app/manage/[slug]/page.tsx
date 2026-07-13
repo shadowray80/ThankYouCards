@@ -420,6 +420,7 @@ function ManageContent() {
                 messages={messages}
                 landscapeCover
                 showCoverText={campaign.card_text_on_image ?? true}
+                alwaysShowCoverMessage
               />
             )}
           </div>

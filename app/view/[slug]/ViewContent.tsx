@@ -151,6 +151,7 @@ export function ViewContent() {
           giftAmount={hasGift ? campaign.funded_amount : undefined}
           landscapeCover
           showCoverText={campaign.card_text_on_image ?? true}
+          alwaysShowCoverMessage={!isSolo}
         />
       </div>
 
