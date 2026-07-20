@@ -15,6 +15,7 @@ interface Campaign {
   occasion: string | null;
   card_theme: string | null;
   card_message: string | null;
+  card_note: string | null;
   card_image_url: string | null;
   funded_amount: number;
   target_amount: number;
@@ -57,6 +58,7 @@ function ManageContent() {
   const [savingPalette, setSavingPalette] = useState(false);
   const [savingLogo, setSavingLogo]       = useState(false);
   const [editMsg, setEditMsg]             = useState('');
+  const [editNote, setEditNote]           = useState('');
   const [editOccasion, setEditOccasion]   = useState('');
   const [editImageUrl, setEditImageUrl]   = useState<string | null>(null);
   const [editShowCoverText, setEditShowCoverText] = useState(true);
@@ -91,6 +93,7 @@ function ManageContent() {
   useEffect(() => {
     if (campaign) {
       setEditMsg(campaign.card_message ?? '');
+      setEditNote(campaign.card_note ?? '');
       setEditOccasion(campaign.occasion ?? '');
       setEditImageUrl(campaign.card_image_url);
       setEditShowCoverText(campaign.card_text_on_image ?? true);
@@ -150,10 +153,10 @@ function ManageContent() {
       const res = await fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'update_card', card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText }),
+        body: JSON.stringify({ token, action: 'update_card', card_message: editMsg || null, card_note: editNote || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText }),
       });
       if (res.ok) {
-        setCampaign(prev => prev ? { ...prev, card_message: editMsg || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText } : prev);
+        setCampaign(prev => prev ? { ...prev, card_message: editMsg || null, card_note: editNote || null, occasion: editOccasion || null, card_image_url: editImageUrl, card_text_on_image: editShowCoverText } : prev);
         setCardSaved(true);
         setTimeout(() => setCardSaved(false), 3000);
       }
@@ -445,11 +448,20 @@ function ManageContent() {
           <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>Changes are reflected in the preview above as soon as you save.</div>
 
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Card message</label>
+            <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Cover message</label>
             <input value={editMsg} onChange={e => setEditMsg(e.target.value)} placeholder="e.g. Thank you for everything"
               style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '10px 12px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '15px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box' }}
               onFocus={e => (e.target.style.borderColor = '#E8724A')} onBlur={e => (e.target.style.borderColor = '#E8E2F0')} />
           </div>
+
+          {campaign.card_style === 'casual' && (
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Card message</label>
+              <textarea value={editNote} onChange={e => setEditNote(e.target.value)} placeholder="A longer personal note (optional)" rows={3}
+                style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '10px 12px', fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '15px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+                onFocus={e => (e.target.style.borderColor = '#E8724A')} onBlur={e => (e.target.style.borderColor = '#E8E2F0')} />
+            </div>
+          )}
 
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>From</label>

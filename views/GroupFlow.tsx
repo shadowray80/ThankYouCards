@@ -67,10 +67,15 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [occasion, setOccasion] = useState('');
   const [deadline, setDeadline] = useState('');
   const [cardMsg, setCardMsg]   = useState('');
+  // Longer-form personal note from the organiser — casual style only, lives purely in the
+  // message area (no on-photo counterpart), like the "Card message" on a solo card.
+  const [cardNote, setCardNote] = useState('');
 
   const [giftType, setGiftType]             = useState('collect');
   const [showPreview, setShowPreview]       = useState(false);
-  const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('classic');
+  // Default is 'casual' (shown to users as "Classic") since the original 'classic' style
+  // is currently hidden from the picker — see the Card style section below.
+  const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('casual');
   const [cardPalette, setCardPalette]       = useState('sky');
   const [organiserEmail, setOrganiserEmail] = useState('');
   const [saving, setSaving]                 = useState(false);
@@ -174,6 +179,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           organiser_email: organiserEmail.trim(),
           card_theme: theme.id,
           card_message: effectiveCardMsg,
+          card_note: cardStyle === 'casual' ? (cardNote.trim() || null) : null,
           card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
           card_style: cardStyle,
           card_palette: cardPalette,
@@ -211,7 +217,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             {cardStyle === 'casual' ? (
               <CasualView
                 campaign={{
-                  slug: '', recipient_name: recip, occasion, card_message: cardMsg,
+                  slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote,
                   card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
                   card_palette: cardPalette,
                 }}
@@ -299,8 +305,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>Card style</label>
           <div style={{ display: 'flex', gap: 10 }}>
             {([
-              { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
-              { id: 'casual'     as const, label: 'Casual',     emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
+              // 'classic' (the original scroll-with-cover-photo style, "Classic OG") is
+              // hidden from the picker for now — not deleted, just not offered. Un-comment
+              // to bring it back.
+              // { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
+              { id: 'casual'     as const, label: 'Classic',    emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
               { id: 'corporate'  as const, label: 'Corporate',  emoji: '🏢', desc: 'Polished navy & gold, clean typography' },
             ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
               <div key={s.id} onClick={() => handleCardStyleChange(s.id)} style={{ flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center', border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0', background: cardStyle === s.id ? '#FDF0E8' : '#fff', transition: 'all .2s' }}>
@@ -529,6 +538,26 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   }}
                 />
               )}
+              {cardStyle === 'casual' && (
+                <textarea
+                  value={cardNote}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setCardNote(v.charAt(0).toUpperCase() + v.slice(1));
+                    const el = e.target;
+                    el.style.height = 'auto';
+                    el.style.height = el.scrollHeight + 'px';
+                  }}
+                  placeholder="Card message"
+                  rows={2}
+                  style={{
+                    width: '100%', border: 'none', outline: 'none', resize: 'none', overflow: 'hidden',
+                    textAlign: 'center', fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1rem',
+                    lineHeight: 1.7, color: '#2A2A2A', background: 'transparent', caretColor: '#3A8FA0',
+                    marginTop: 10, boxSizing: 'border-box',
+                  }}
+                />
+              )}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.78rem', color: '#7A7585', fontWeight: 700, marginTop: 6 }}>
                 <span style={{ flexShrink: 0 }}>From</span>
                 {occasion ? (
@@ -551,7 +580,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           {/* Messages preview — style-aware */}
           {cardStyle === 'casual' ? (
             <CasualView
-              campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette }}
+              campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote, card_image_url: null, card_palette: cardPalette }}
               contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
               messageAreaName={effectiveRecip}
               messageAreaCoverMessage={effectiveCardMsg}

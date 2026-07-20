@@ -14,6 +14,7 @@ interface Campaign {
   occasion: string | null;
   card_theme: string | null;
   card_message: string | null;
+  card_note: string | null;
   card_image_url: string | null;
   card_style: string | null;
   card_palette: string | null;

@@ -8,6 +8,7 @@ interface Campaign {
   recipient_name: string;
   occasion: string | null;
   card_message: string | null;
+  card_note?: string | null;
   card_image_url: string | null;
   card_palette: string | null;
   card_text_on_image?: boolean | null;
@@ -241,7 +242,8 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
         const panelName = messageAreaName ?? recipientName;
         const panelMsg = messageAreaCoverMessage ?? campaign.card_message;
         const panelOccasion = messageAreaOccasion ?? campaign.occasion;
-        return (panelName || panelMsg || panelOccasion) && (
+        const panelNote = campaign.card_note;
+        return (panelName || panelMsg || panelNote || panelOccasion) && (
           <div style={{ background: '#fff', padding: '14px 18px 0' }}>
             {panelName && (
               <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: '#B0A8BC' }}>
@@ -253,8 +255,13 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
                 {panelMsg}
               </div>
             )}
+            {panelNote && (
+              <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1rem', color: '#2A2A2A', lineHeight: 1.7, whiteSpace: 'pre-wrap', textAlign: 'center', marginTop: 10 }}>
+                {panelNote}
+              </div>
+            )}
             {panelOccasion && (
-              <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 700, marginTop: panelMsg ? 6 : 2 }}>
+              <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 700, marginTop: (panelMsg || panelNote) ? 6 : 2 }}>
                 From {panelOccasion.replace(/^From\s+/i, '')}
               </div>
             )}

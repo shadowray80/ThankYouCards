@@ -54,10 +54,10 @@ export async function PATCH(
   if (error || !campaign) return Response.json({ error: 'Not found or invalid token' }, { status: 404 });
 
   if (action === 'update_card') {
-    const { card_message, occasion, card_image_url, card_text_on_image } = body;
+    const { card_message, card_note, occasion, card_image_url, card_text_on_image } = body;
     const { error: updateError } = await supabaseAdmin
       .from('campaigns')
-      .update({ card_message: card_message ?? null, occasion: occasion ?? null, card_image_url: card_image_url ?? null, card_text_on_image: card_text_on_image ?? true })
+      .update({ card_message: card_message ?? null, card_note: card_note ?? null, occasion: occasion ?? null, card_image_url: card_image_url ?? null, card_text_on_image: card_text_on_image ?? true })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true });
