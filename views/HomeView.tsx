@@ -139,7 +139,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
                 }}
               >
                 {showcase.map(c => (
-                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 660, overflow: 'hidden' }}>
+                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 750, overflow: 'hidden' }}>
                     <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
                       {c.kind === 'group' && c.group_style === 'corporate' ? (
                         <CorporateView
