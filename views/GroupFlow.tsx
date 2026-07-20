@@ -246,57 +246,53 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         <>
 
         {/* Occasion film strip */}
-        <div style={{ background: '#B8DCEA', padding: '10px 0 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#1F6B7A', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
+        <div style={{ background: '#fff', padding: '14px 0 16px' }}>
+          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
           <div style={{ position: 'relative' }}>
-            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
               {THEMES.map((t, i) => {
                 const isSelected = themeIdx === i;
                 return (
                   <div key={t.id} onClick={() => selectTheme(i)} style={{
-                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                    border: isSelected ? '3px solid #3A8FA0' : '3px solid rgba(58,143,160,.2)',
-                    boxShadow: isSelected ? '0 0 0 2px rgba(58,143,160,.3)' : 'none',
+                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', position: 'relative',
+                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
                     background: t.color, transition: 'all .2s',
                   }}>
                     <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 60%)' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 5px 5px', textAlign: 'center', fontSize: '.57rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
-                    {isSelected && <div style={{ position: 'absolute', top: 5, right: 5, background: '#3A8FA0', color: '#fff', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.6rem', fontWeight: 800 }}>✓</div>}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.05) 55%)' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 6px 6px', textAlign: 'center', fontSize: '.62rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
+                    {isSelected && <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>}
                   </div>
                 );
               })}
             </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #B8DCEA)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #fff)', pointerEvents: 'none' }} />
           </div>
         </div>
 
         {/* Image film strip — hidden for corporate (colour is the header, photo optional via card) */}
-        {cardStyle !== 'corporate' && <div style={{ background: '#2A7E8F', padding: '10px 0 12px' }}>
-          <div style={{ fontSize: '.68rem', fontWeight: 800, color: 'rgba(255,255,255,.7)', marginBottom: 8, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
+        {cardStyle !== 'corporate' && <div style={{ background: '#F5F4F8', padding: '14px 0 16px' }}>
+          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
           <div style={{ position: 'relative' }}>
-            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
               {theme.imgs.map((url, j) => {
                 if (failedImgs.has(j)) return null;
                 const isSelected = !customImgUrl && imgIdx === j;
                 return (
                   <div key={j} onClick={() => selectThemeImg(j)} style={{
-                    flexShrink: 0, width: 80, height: 60, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
-                    border: isSelected ? '3px solid #fff' : '3px solid rgba(255,255,255,.2)',
-                    boxShadow: isSelected ? '0 0 0 2px rgba(255,255,255,.4)' : 'none',
-                    transition: 'all .2s', position: 'relative', background: 'rgba(255,255,255,.1)',
+                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
+                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
+                    transition: 'all .2s', position: 'relative', background: '#fff',
                   }}>
                     <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
                     {isSelected && (
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.15)' }}>
-                        <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.65rem', color: '#2A7E8F', fontWeight: 800 }}>✓</div>
-                      </div>
+                      <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>
                     )}
                   </div>
                 );
               })}
             </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #2A7E8F)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #F5F4F8)', pointerEvents: 'none' }} />
           </div>
         </div>}
 
