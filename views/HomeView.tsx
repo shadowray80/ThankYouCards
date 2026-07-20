@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Btn } from '@/components/ui/Button';
 import { LoginMenu } from '@/components/ui/LoginMenu';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -41,6 +41,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
   const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const heroMsgs = [
     { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
     { name: "Michael (Jack's Dad)", msg: "We couldn't have done it without you! ⭐", timestamp: '2 hours ago' },
@@ -52,6 +53,17 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
       .then(json => { if (Array.isArray(json.cards)) setShowcase(json.cards); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (showcase.length <= 1) return;
+    const id = setInterval(() => {
+      const el = carouselRef.current;
+      if (!el) return;
+      const nextIdx = (Math.round(el.scrollLeft / el.clientWidth) + 1) % showcase.length;
+      el.scrollTo({ left: nextIdx * el.clientWidth, behavior: 'smooth' });
+    }, 4500);
+    return () => clearInterval(id);
+  }, [showcase.length]);
 
   async function goToCard() {
     const raw = code.trim();
@@ -114,38 +126,41 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           {showcase.length > 0 ? (
             <div>
               <div
-                style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', marginBottom: -24 }}
+                ref={carouselRef}
+                style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', marginBottom: -24, scrollbarWidth: 'none' }}
                 onScroll={e => {
                   const el = e.currentTarget;
                   setActiveIdx(Math.round(el.scrollLeft / el.clientWidth));
                 }}
               >
                 {showcase.map(c => (
-                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', transform: 'scale(0.88)', transformOrigin: 'top center' }}>
-                    {c.kind === 'group' && c.group_style === 'corporate' ? (
-                      <CorporateView
-                        campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_image_url: c.card_image_url, card_palette: c.card_palette, card_logo_url: c.card_logo_url }}
-                        contributions={c.sample_messages}
-                        preview
-                      />
-                    ) : c.kind === 'group' ? (
-                      <CasualView
-                        campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_note: c.card_note, card_image_url: c.card_image_url, card_palette: c.card_palette }}
-                        contributions={c.sample_messages}
-                        preview
-                      />
-                    ) : (
-                      <CardScrollView
-                        theme={THEMES.find(t => t.id === 'coach')!}
-                        customImgUrl={c.card_image_url || undefined}
-                        recipientName={c.recipient_name}
-                        fromText={c.sender_name || undefined}
-                        message={c.card_message ?? undefined}
-                        soloMessage={c.solo_message ?? undefined}
-                        messages={[]}
-                        landscapeCover
-                      />
-                    )}
+                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 540, overflow: 'hidden' }}>
+                    <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
+                      {c.kind === 'group' && c.group_style === 'corporate' ? (
+                        <CorporateView
+                          campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_image_url: c.card_image_url, card_palette: c.card_palette, card_logo_url: c.card_logo_url }}
+                          contributions={c.sample_messages}
+                          preview
+                        />
+                      ) : c.kind === 'group' ? (
+                        <CasualView
+                          campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_note: c.card_note, card_image_url: c.card_image_url, card_palette: c.card_palette }}
+                          contributions={c.sample_messages}
+                          preview
+                        />
+                      ) : (
+                        <CardScrollView
+                          theme={THEMES.find(t => t.id === 'coach')!}
+                          customImgUrl={c.card_image_url || undefined}
+                          recipientName={c.recipient_name}
+                          fromText={c.sender_name || undefined}
+                          message={c.card_message ?? undefined}
+                          soloMessage={c.solo_message ?? undefined}
+                          messages={[]}
+                          landscapeCover
+                        />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
