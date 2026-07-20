@@ -10,13 +10,29 @@ export interface OrganiserSession {
   session_token: string;
 }
 
+// Cache the parsed result so repeated reads return the same object reference
+// when the underlying localStorage value hasn't changed — useSyncExternalStore
+// needs a stable snapshot, otherwise a new object every call triggers an
+// infinite re-render loop ("Maximum update depth exceeded").
+let cachedRaw: string | null = null;
+let cachedSession: OrganiserSession | null = null;
+
 function readSession(): OrganiserSession | null {
+  let raw: string | null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    raw = localStorage.getItem(STORAGE_KEY);
   } catch {
-    return null;
+    raw = null;
   }
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    try {
+      cachedSession = raw ? JSON.parse(raw) : null;
+    } catch {
+      cachedSession = null;
+    }
+  }
+  return cachedSession;
 }
 
 function subscribe(callback: () => void) {
