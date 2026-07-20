@@ -313,8 +313,10 @@ function ManageContent() {
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               {(() => {
-                const from = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'Your team';
-                const msg = `Hey ${recipientName}! ${from} made you a card 🎉 Open it here: ${origin}/view/${slug}`;
+                // Just the bare link, deliberately — a link with surrounding text is more likely
+                // to be flagged "unverified"/suspicious by SMS carriers, and it also lets
+                // WhatsApp/iMessage render their own clean link preview instead of raw text.
+                const msg = `${origin}/view/${slug}`;
                 return (<>
                   <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
                     style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>

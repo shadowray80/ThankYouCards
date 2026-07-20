@@ -205,14 +205,19 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
 
       {/* ── Cover ── */}
       {!noHeader && <div style={{
-        position: 'relative', overflow: 'hidden', minHeight: 300,
+        position: 'relative', overflow: 'hidden',
         background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`,
       }}>
-        {hasImage && (
-          <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* Image sets the cover's height at its own natural aspect ratio — shown in full
+            (not cropped), same as the classic card — so a portrait photo isn't chopped down
+            to a landscape-ish box. Falls back to a plain gradient block when there's no photo. */}
+        {hasImage ? (
+          <img src={campaign.card_image_url!} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        ) : (
+          <div style={{ minHeight: 300 }} />
         )}
         <div style={{
-          position: 'relative', zIndex: 2, minHeight: 300, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          position: 'absolute', inset: 0, zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           padding: '48px 24px 28px',
           background: hasImage ? 'linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,.62) 100%)' : 'none',
         }}>

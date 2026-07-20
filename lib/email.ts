@@ -56,3 +56,51 @@ export async function sendOrganiserLink({
 
   if (error) console.error('Resend error:', error);
 }
+
+export async function sendLoginLink({
+  to,
+  loginUrl,
+}: {
+  to: string;
+  loginUrl: string;
+}) {
+  const { error } = await resend.emails.send({
+    from: `thankyoucards.au <${FROM}>`,
+    to,
+    subject: `Your thankyoucards.au login link`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#FFFDF8;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;padding:32px 24px;">
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <span style="font-size:1.3rem;font-weight:900;color:#3A8FA0;">thank<span style="color:#E8724A">you</span>cards<span style="color:#B0CCDC">.au</span></span>
+    </div>
+
+    <h1 style="font-size:1.4rem;font-weight:800;color:#2A2A2A;margin:0 0 8px;">
+      Log in to your brand kit
+    </h1>
+    <p style="color:#7A7585;font-size:.95rem;line-height:1.6;margin:0 0 24px;">
+      Click below to log in and pick up your saved colours and logo — this link works for 15 minutes and can only be used once.
+    </p>
+
+    <a href="${loginUrl}" style="display:block;background:#3A8FA0;color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin-bottom:24px;">
+      Log in →
+    </a>
+
+    <p style="font-size:.78rem;color:#B0A8BC;text-align:center;margin:0;">
+      Didn't request this? You can safely ignore this email.
+    </p>
+  </div>
+</body>
+</html>`,
+  });
+
+  if (error) {
+    console.error('Resend error:', error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}

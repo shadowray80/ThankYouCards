@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Btn } from '@/components/ui/Button';
+import { LoginMenu } from '@/components/ui/LoginMenu';
 import { CardScrollView } from '@/components/cards/CardScrollView';
+import { CasualView } from '@/components/cards/CasualView';
+import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 
 interface HomeViewProps {
@@ -11,12 +14,44 @@ interface HomeViewProps {
   onNav: (view: string) => void;
 }
 
+interface ShowcaseSampleMessage {
+  contributor_name: string;
+  message: string | null;
+  photo_url: string | null;
+  photo_label: string | null;
+}
+
+interface ShowcaseCard {
+  id: string;
+  kind: 'solo' | 'group';
+  group_style: 'casual' | 'corporate' | null;
+  recipient_name: string;
+  occasion: string | null;
+  card_message: string | null;
+  card_note: string | null;
+  card_image_url: string | null;
+  card_palette: string | null;
+  card_logo_url: string | null;
+  sender_name: string | null;
+  solo_message: string | null;
+  sample_messages: ShowcaseSampleMessage[];
+}
+
 export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
+  const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
   const heroMsgs = [
     { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
     { name: "Michael (Jack's Dad)", msg: "We couldn't have done it without you! ⭐", timestamp: '2 hours ago' },
   ];
+
+  useEffect(() => {
+    fetch('/api/showcase')
+      .then(r => r.json())
+      .then(json => { if (Array.isArray(json.cards)) setShowcase(json.cards); })
+      .catch(() => {});
+  }, []);
 
   async function goToCard() {
     const raw = code.trim();
@@ -54,7 +89,10 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#3A8FA0' }}>
             thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
           </div>
-          <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LoginMenu />
+            <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
+          </div>
         </div>
       </div>
 
@@ -72,18 +110,66 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
             Beautiful, personalised thank you cards - sent instantly, anywhere in the world.
           </p>
 
-          {/* Hero card mockup */}
-          <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -24, pointerEvents: 'none' }}>
-            <CardScrollView
-              theme={THEMES.find(t => t.id === 'coach')!}
-              customImgUrl="/hero-coach.jpg"
-              recipientName="Coach Dave"
-              fromText="From the Under 12s"
-              message="Thank you for an incredible season!"
-              messages={heroMsgs}
-              landscapeCover
-            />
-          </div>
+          {/* Hero card mockup — live showcase examples, falls back to a static mockup */}
+          {showcase.length > 0 ? (
+            <div>
+              <div
+                style={{ display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', marginBottom: -24 }}
+                onScroll={e => {
+                  const el = e.currentTarget;
+                  setActiveIdx(Math.round(el.scrollLeft / el.clientWidth));
+                }}
+              >
+                {showcase.map(c => (
+                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', transform: 'scale(0.88)', transformOrigin: 'top center' }}>
+                    {c.kind === 'group' && c.group_style === 'corporate' ? (
+                      <CorporateView
+                        campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_image_url: c.card_image_url, card_palette: c.card_palette, card_logo_url: c.card_logo_url }}
+                        contributions={c.sample_messages}
+                        preview
+                      />
+                    ) : c.kind === 'group' ? (
+                      <CasualView
+                        campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_note: c.card_note, card_image_url: c.card_image_url, card_palette: c.card_palette }}
+                        contributions={c.sample_messages}
+                        preview
+                      />
+                    ) : (
+                      <CardScrollView
+                        theme={THEMES.find(t => t.id === 'coach')!}
+                        customImgUrl={c.card_image_url || undefined}
+                        recipientName={c.recipient_name}
+                        fromText={c.sender_name || undefined}
+                        message={c.card_message ?? undefined}
+                        soloMessage={c.solo_message ?? undefined}
+                        messages={[]}
+                        landscapeCover
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {showcase.length > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '10px 0 8px' }}>
+                  {showcase.map((_, i) => (
+                    <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === activeIdx ? '#3A8FA0' : '#D8D2E4' }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center', marginBottom: -24, pointerEvents: 'none' }}>
+              <CardScrollView
+                theme={THEMES.find(t => t.id === 'coach')!}
+                customImgUrl="/hero-coach.jpg"
+                recipientName="Coach Dave"
+                fromText="From the Under 12s"
+                message="Thank you for an incredible season!"
+                messages={heroMsgs}
+                landscapeCover
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -27,8 +27,21 @@ const dancing = Dancing_Script({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://thankyoucards.au"),
   title: "thankyoucards.au",
   description: "Beautiful, personalised thank you cards sent instantly",
+  openGraph: {
+    title: "thankyoucards.au",
+    description: "Beautiful, personalised thank you cards sent instantly",
+    siteName: "thankyoucards.au",
+    images: [{ url: "/og-image.png", width: 630, height: 630, alt: "thankyoucards.au" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "thankyoucards.au",
+    description: "Beautiful, personalised thank you cards sent instantly",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({

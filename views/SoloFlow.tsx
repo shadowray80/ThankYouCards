@@ -15,7 +15,7 @@ interface SoloFlowProps {
 }
 
 export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
-  const [themeIdx, setThemeIdx] = useState(7);
+  const [themeIdx, setThemeIdx] = useState(9); // "mates" — index shifted when new themes were added
   const [imgIdx, setImgIdx] = useState(0);
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
   const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
@@ -140,7 +140,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   if (showDone && slug) {
     const recipientUrl = `thankyoucards.au/view/${slug}`;
     const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au'}/view/${slug}`;
-    const shareText = `I made you a card - open it here: ${fullUrl}`;
+    // Just the bare link, deliberately — a link with surrounding text is more likely to be
+    // flagged "unverified"/suspicious by SMS carriers, and it also lets WhatsApp/iMessage
+    // render their own clean link preview (using the Open Graph image) instead of raw text.
+    const shareText = fullUrl;
     return (
       <div>
         <Nav onHome={onBack} onNav={onNav} badge="solo" />

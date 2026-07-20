@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
+import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
 import { THEMES } from '@/lib/themes';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -53,7 +54,7 @@ const GIFT_TYPES = [
 ];
 
 export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) {
-  const [themeIdx, setThemeIdx]         = useState(11);
+  const [themeIdx, setThemeIdx]         = useState(14); // "coach" — index shifted when new themes were added
   const [imgIdx, setImgIdx]             = useState(0);
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
   const [failedImgs, setFailedImgs]     = useState<Set<number>>(new Set());
@@ -211,7 +212,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           </div>
         </div>
 
-        {showPreview && cardStyle !== 'corporate' ? (
+        {showPreview ? (
           <div style={{ padding: '16px 18px 0', position: 'relative' }}>
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
             {cardStyle === 'casual' ? (
@@ -225,6 +226,14 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 messageAreaName={effectiveRecip}
                 messageAreaCoverMessage={effectiveCardMsg}
                 messageAreaOccasion={effectiveOccasion}
+              />
+            ) : cardStyle === 'corporate' ? (
+              <CorporateView
+                campaign={{
+                  slug: '', recipient_name: recip, occasion, card_message: cardMsg,
+                  card_image_url: customImgUrl, card_palette: cardPalette, card_logo_url: logoUrl,
+                }}
+                contributions={[]}
               />
             ) : (
               <CardScrollView
@@ -245,8 +254,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         ) : (
         <>
 
-        {/* Occasion film strip */}
-        <div style={{ background: '#fff', padding: '14px 0 16px' }}>
+        {/* Occasion film strip — hidden for corporate (they upload their own photo, no themed cover) */}
+        {cardStyle !== 'corporate' && <div style={{ background: '#fff', padding: '14px 0 16px' }}>
           <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
           <div style={{ position: 'relative' }}>
             <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
@@ -268,7 +277,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
             <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #fff)', pointerEvents: 'none' }} />
           </div>
-        </div>
+        </div>}
 
         {/* Image film strip — hidden for corporate (colour is the header, photo optional via card) */}
         {cardStyle !== 'corporate' && <div style={{ background: '#F5F4F8', padding: '14px 0 16px' }}>
@@ -331,11 +340,16 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           )}
 
-          {/* Palette + logo — corporate */}
+          {/* Palette + logo — corporate. Both live inside the Brand kit box, along with
+              the save/load-a-saved-scheme controls, so it's all one self-contained unit. */}
           {cardStyle === 'corporate' && (
-            <>
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
+            <BrandKitPanel
+              cardPalette={cardPalette}
+              logoUrl={logoUrl}
+              onApply={(palette, kitLogoUrl) => { setCardPalette(palette); setLogoUrl(kitLogoUrl); }}
+            >
+              <div>
+                <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {CORPORATE_PALETTES.map(p => (
                     <div key={p.id} onClick={() => setCardPalette(p.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
@@ -352,10 +366,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 </div>
               </div>
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
+                <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
                 <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
                 {logoUrl ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 10, padding: '8px 12px' }}>
                     <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
                     <button onClick={() => setLogoUrl(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
                   </div>
@@ -365,7 +379,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   </button>
                 )}
               </div>
-            </>
+            </BrandKitPanel>
           )}
         </div>
 
@@ -375,7 +389,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           {/* Cover — corporate shows split header; classic/casual shows full-width image */}
           {cardStyle === 'corporate' ? (
             /* ── Corporate header ── */
-            <div style={{ display: 'flex', minHeight: 240, background: `linear-gradient(135deg, ${corpPalette.headerFrom}, ${corpPalette.headerTo})` }}>
+            <div style={{ display: 'flex', minHeight: 240, position: 'relative', background: `linear-gradient(135deg, ${corpPalette.headerFrom}, ${corpPalette.headerTo})` }}>
+              <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
               {/* Text side */}
               <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 2 }}>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 8 }}>To</div>
