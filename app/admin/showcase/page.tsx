@@ -134,6 +134,8 @@ export default function AdminShowcasePage() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [error, setError] = useState('');
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [carouselSeconds, setCarouselSeconds] = useState('5');
+  const [savingSpeed, setSavingSpeed] = useState(false);
 
   useEffect(() => {
     if (!session) return;
@@ -142,7 +144,30 @@ export default function AdminShowcasePage() {
       .then(r => r.json())
       .then(json => { if (json.error) setError(json.error); else setCards(json.cards ?? []); })
       .finally(() => setLoading(false));
+    fetch('/api/site-settings')
+      .then(r => r.json())
+      .then(json => { if (json.carousel_interval_seconds) setCarouselSeconds(String(json.carousel_interval_seconds)); })
+      .catch(() => {});
   }, [session]);
+
+  async function saveCarouselSpeed() {
+    if (!session) return;
+    setSavingSpeed(true); setError('');
+    try {
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...session, carousel_interval_seconds: Number(carouselSeconds) }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Something went wrong');
+      setCarouselSeconds(String(json.carousel_interval_seconds));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setSavingSpeed(false);
+    }
+  }
 
   function reload() {
     if (!session) return;
@@ -241,6 +266,22 @@ export default function AdminShowcasePage() {
         <p style={{ color: '#7A7585', fontSize: '.85rem', marginBottom: 20 }}>
           Create and manage the example cards shown on the home page. Only ones marked <strong>Live</strong> appear there.
         </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', marginBottom: 20, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A' }}>⏱ Carousel speed</span>
+          <input
+            type="number" min={2} max={30} value={carouselSeconds}
+            onChange={e => setCarouselSeconds(e.target.value)}
+            style={{ width: 70, border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 9px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.85rem', color: '#2A2A2A', background: '#fff', outline: 'none' }}
+          />
+          <span style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>seconds between cards</span>
+          <button
+            onClick={saveCarouselSpeed} disabled={savingSpeed}
+            style={{ marginLeft: 'auto', background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '7px 14px', color: '#fff', fontWeight: 800, fontSize: '.78rem', cursor: savingSpeed ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+          >
+            {savingSpeed ? 'Saving…' : 'Save'}
+          </button>
+        </div>
 
         {error && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginBottom: 12 }}>{error}</div>}
 

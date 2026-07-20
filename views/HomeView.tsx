@@ -41,6 +41,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
   const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [carouselSeconds, setCarouselSeconds] = useState(5);
   const carouselRef = useRef<HTMLDivElement>(null);
   const heroMsgs = [
     { name: "Sarah (Liam's Mum)", msg: "Thanks for believing in Liam this season! He's loved every game. 🏆", timestamp: '5 mins ago' },
@@ -52,6 +53,10 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
       .then(r => r.json())
       .then(json => { if (Array.isArray(json.cards)) setShowcase(json.cards); })
       .catch(() => {});
+    fetch('/api/site-settings')
+      .then(r => r.json())
+      .then(json => { if (json.carousel_interval_seconds) setCarouselSeconds(json.carousel_interval_seconds); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -61,9 +66,9 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
       if (!el) return;
       const nextIdx = (Math.round(el.scrollLeft / el.clientWidth) + 1) % showcase.length;
       el.scrollTo({ left: nextIdx * el.clientWidth, behavior: 'smooth' });
-    }, 4500);
+    }, carouselSeconds * 1000);
     return () => clearInterval(id);
-  }, [showcase.length]);
+  }, [showcase.length, carouselSeconds]);
 
   async function goToCard() {
     const raw = code.trim();
@@ -134,7 +139,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
                 }}
               >
                 {showcase.map(c => (
-                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 540, overflow: 'hidden' }}>
+                  <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 660, overflow: 'hidden' }}>
                     <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
                       {c.kind === 'group' && c.group_style === 'corporate' ? (
                         <CorporateView
