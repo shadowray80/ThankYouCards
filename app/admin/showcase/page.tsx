@@ -52,15 +52,87 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 5,
 };
 
+function PhotoPicker({
+  value, onChange, label, allowLibrary = true,
+}: { value: string; onChange: (url: string) => void; label: string; allowLibrary?: boolean }) {
+  const [mode, setMode] = useState<'closed' | 'library'>('closed');
+  const [themeId, setThemeId] = useState(THEMES[0].id);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) onChange(json.url);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  const activeTheme = THEMES.find(t => t.id === themeId) ?? THEMES[0];
+
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <label style={labelStyle}>{label}</label>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+      {value ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px' }}>
+          <img src={value} alt="" style={{ maxHeight: 40, borderRadius: 6, objectFit: 'cover' }} />
+          <button type="button" onClick={() => onChange('')} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+        </div>
+      ) : mode === 'closed' ? (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+            style={{ flex: 1, background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.78rem', color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+            {uploading ? 'Uploading…' : '⬆ Upload'}
+          </button>
+          {allowLibrary && (
+            <button type="button" onClick={() => setMode('library')}
+              style={{ flex: 1, background: '#fff', border: '2px dashed #D4C8EE', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.78rem', color: '#7C5CBF', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+              🖼 From library
+            </button>
+          )}
+        </div>
+      ) : (
+        <div style={{ border: '2px solid #E8E2F0', borderRadius: 10, padding: 10 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <select value={themeId} onChange={e => setThemeId(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }}>
+              {THEMES.map(t => <option key={t.id} value={t.id}>{t.emoji} {t.name}</option>)}
+            </select>
+            <button type="button" onClick={() => setMode('closed')} style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '0 12px', fontWeight: 800, fontSize: '.78rem', color: '#7A7585', cursor: 'pointer' }}>✕</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', maxHeight: 180, overflowY: 'auto' }}>
+            {activeTheme.imgs.map((url, i) => (
+              <img
+                key={i} src={url} alt=""
+                onClick={() => { onChange(url); setMode('closed'); }}
+                style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, cursor: 'pointer', border: '2px solid transparent' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLImageElement).style.border = '2px solid #E8724A'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLImageElement).style.border = '2px solid transparent'; }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminShowcasePage() {
   const { session } = useOrganiserSession();
   const [cards, setCards] = useState<ShowcaseCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<'image' | 'logo' | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [error, setError] = useState('');
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -120,18 +192,18 @@ export default function AdminShowcasePage() {
     reload();
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>, field: 'card_image_url' | 'card_logo_url') {
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f || !editing) return;
-    setUploading(field === 'card_image_url' ? 'image' : 'logo');
+    setLogoUploading(true);
     try {
       const fd = new FormData();
       fd.append('file', f);
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
-      if (json.url) setEditing({ ...editing, [field]: json.url });
+      if (json.url) setEditing({ ...editing, card_logo_url: json.url });
     } finally {
-      setUploading(null);
+      setLogoUploading(false);
       e.target.value = '';
     }
   }
@@ -259,18 +331,11 @@ export default function AdminShowcasePage() {
                 </>
               )}
 
-              <label style={labelStyle}>Cover photo</label>
-              <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleUpload(e, 'card_image_url')} />
-              {editing.card_image_url ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
-                  <img src={editing.card_image_url} alt="" style={{ maxHeight: 40, borderRadius: 6, objectFit: 'cover' }} />
-                  <button onClick={() => setEditing({ ...editing, card_image_url: '' })} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer' }}>Remove</button>
-                </div>
-              ) : (
-                <button onClick={() => imageInputRef.current?.click()} disabled={uploading === 'image'} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.8rem', color: '#7A7585', cursor: 'pointer', marginBottom: 10, fontFamily: "'Nunito',sans-serif" }}>
-                  {uploading === 'image' ? 'Uploading…' : '⬆ Upload photo'}
-                </button>
-              )}
+              <PhotoPicker
+                label="Cover photo"
+                value={editing.card_image_url}
+                onChange={url => setEditing({ ...editing, card_image_url: url })}
+              />
 
               {editing.kind === 'group' && (
                 <>
@@ -289,15 +354,15 @@ export default function AdminShowcasePage() {
               {editing.kind === 'group' && editing.group_style === 'corporate' && (
                 <>
                   <label style={labelStyle}>Logo (optional)</label>
-                  <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleUpload(e, 'card_logo_url')} />
+                  <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
                   {editing.card_logo_url ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
                       <img src={editing.card_logo_url} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
                       <button onClick={() => setEditing({ ...editing, card_logo_url: '' })} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer' }}>Remove</button>
                     </div>
                   ) : (
-                    <button onClick={() => logoInputRef.current?.click()} disabled={uploading === 'logo'} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.8rem', color: '#7A7585', cursor: 'pointer', marginBottom: 10, fontFamily: "'Nunito',sans-serif" }}>
-                      {uploading === 'logo' ? 'Uploading…' : '⬆ Upload logo'}
+                    <button onClick={() => logoInputRef.current?.click()} disabled={logoUploading} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.8rem', color: '#7A7585', cursor: 'pointer', marginBottom: 10, fontFamily: "'Nunito',sans-serif" }}>
+                      {logoUploading ? 'Uploading…' : '⬆ Upload logo'}
                     </button>
                   )}
                 </>
@@ -310,6 +375,19 @@ export default function AdminShowcasePage() {
                     <div key={i} style={{ border: '1.5px solid #E8E2F0', borderRadius: 10, padding: 10, marginBottom: 8 }}>
                       <input style={{ ...inputStyle, marginBottom: 6 }} value={m.contributor_name} onChange={e => updateSampleMessage(i, { contributor_name: e.target.value })} placeholder="Name" />
                       <textarea style={{ ...inputStyle, minHeight: 50, marginBottom: 6 }} value={m.message} onChange={e => updateSampleMessage(i, { message: e.target.value })} placeholder="Message" />
+                      <PhotoPicker
+                        label="Photo (optional)"
+                        value={m.photo_url ?? ''}
+                        onChange={url => updateSampleMessage(i, { photo_url: url || null })}
+                      />
+                      {m.photo_url && (
+                        <input
+                          style={{ ...inputStyle, marginBottom: 6 }}
+                          value={m.photo_label ?? ''}
+                          onChange={e => updateSampleMessage(i, { photo_label: e.target.value || null })}
+                          placeholder="Photo caption (optional)"
+                        />
+                      )}
                       <button onClick={() => removeSampleMessage(i)} style={{ background: 'none', border: 'none', color: '#E8724A', fontWeight: 800, fontSize: '.75rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
                     </div>
                   ))}
