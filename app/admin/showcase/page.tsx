@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
+import { useIsAdmin } from '@/lib/useIsAdmin';
+import { NotFound } from '@/components/ui/NotFound';
 import { Nav } from '@/components/ui/Nav';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
@@ -128,6 +130,7 @@ function PhotoPicker({
 
 export default function AdminShowcasePage() {
   const { session } = useOrganiserSession();
+  const adminStatus = useIsAdmin();
   const [cards, setCards] = useState<ShowcaseCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Draft | null>(null);
@@ -268,16 +271,7 @@ export default function AdminShowcasePage() {
     setEditing({ ...editing, sample_messages: editing.sample_messages.filter((_, idx) => idx !== i) });
   }
 
-  if (!session) {
-    return (
-      <div>
-        <Nav onHome={() => { window.location.href = '/'; }} badge={null} />
-        <div style={{ padding: '60px 24px', textAlign: 'center', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 700 }}>
-          Log in as admin from the menu above to manage homepage examples.
-        </div>
-      </div>
-    );
-  }
+  if (adminStatus !== 'admin') return <NotFound />;
 
   return (
     <div>
