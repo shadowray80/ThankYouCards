@@ -312,7 +312,7 @@ export default function AdminShowcasePage() {
                     <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.78rem', fontWeight: 800, color: c.is_live ? '#4CAF82' : '#B0A8BC', cursor: 'pointer' }}>
                       <input type="checkbox" checked={c.is_live} onChange={() => toggleLive(c)} /> Live
                     </label>
-                    <button onClick={() => setEditing(c)} style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', fontWeight: 800, fontSize: '.78rem', color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Edit</button>
+                    <button onClick={() => setEditing({ ...c, card_logo_scale: c.card_logo_scale ?? 1 })} style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', fontWeight: 800, fontSize: '.78rem', color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Edit</button>
                     <button onClick={() => remove(c)} style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', fontWeight: 800, fontSize: '.78rem', color: '#E8724A', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Delete</button>
                   </div>
                 ))}
@@ -407,11 +407,11 @@ export default function AdminShowcasePage() {
                         <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
                         <input
                           type="range" min={0.5} max={3} step={0.1}
-                          value={editing.card_logo_scale}
+                          value={editing.card_logo_scale ?? 1}
                           onChange={e => setEditing({ ...editing, card_logo_scale: Number(e.target.value) })}
                           style={{ flex: 1 }}
                         />
-                        <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{editing.card_logo_scale.toFixed(1)}×</span>
+                        <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{(editing.card_logo_scale ?? 1).toFixed(1)}×</span>
                       </div>
                     </>
                   ) : (
