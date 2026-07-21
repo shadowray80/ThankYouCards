@@ -41,6 +41,7 @@ interface ShowcaseCard {
 export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
   const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
+  const [showcaseReady, setShowcaseReady] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [carouselSeconds, setCarouselSeconds] = useState(5);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -53,7 +54,8 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
     fetch('/api/showcase')
       .then(r => r.json())
       .then(json => { if (Array.isArray(json.cards)) setShowcase(json.cards); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setShowcaseReady(true));
     fetch('/api/site-settings')
       .then(r => r.json())
       .then(json => { if (json.carousel_interval_seconds) setCarouselSeconds(json.carousel_interval_seconds); })
@@ -129,7 +131,9 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           </p>
 
           {/* Hero card mockup — live showcase examples, falls back to a static mockup */}
-          {showcase.length > 0 ? (
+          {!showcaseReady ? (
+            <div style={{ height: 480, borderRadius: 20, background: '#EDE9F5' }} />
+          ) : showcase.length > 0 ? (
             <div>
               <div
                 ref={carouselRef}
