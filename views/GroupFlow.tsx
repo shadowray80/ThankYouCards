@@ -496,7 +496,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   <div style={{ textAlign: 'center', marginTop: 10 }}>
                     <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
                     <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
-                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the Under 12s team</div>}
+                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the team</div>}
                       <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
                         onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
                         style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,0.92)', textShadow: '0 2px 14px rgba(0,0,0,0.65)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40, padding: '3px 4px' }}
