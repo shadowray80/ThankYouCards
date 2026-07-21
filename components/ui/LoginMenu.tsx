@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 
 export function LoginMenu() {
@@ -66,6 +67,13 @@ export function LoginMenu() {
                 <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginBottom: 12, lineHeight: 1.5 }}>
                   Signed in as <strong style={{ color: '#2A2A2A' }}>{session.email}</strong>
                 </div>
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 10, padding: '9px', color: '#7A7585', fontWeight: 800, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", textDecoration: 'none', textAlign: 'center', marginBottom: 8 }}
+                >
+                  ⚙ Admin
+                </Link>
                 <button
                   onClick={logOut}
                   style={{ width: '100%', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 10, padding: '9px', color: '#7A7585', fontWeight: 800, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
