@@ -111,9 +111,8 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
             thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <MoreMenu code={code} onCodeChange={setCode} onSubmit={goToCard} />
             <LoginMenu />
-            <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
+            <MoreMenu code={code} onCodeChange={setCode} onSubmit={goToCard} />
           </div>
         </div>
       </div>
