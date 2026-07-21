@@ -137,6 +137,8 @@ export default function AdminShowcasePage() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [carouselSeconds, setCarouselSeconds] = useState('5');
   const [savingSpeed, setSavingSpeed] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -216,6 +218,24 @@ export default function AdminShowcasePage() {
       body: JSON.stringify(session),
     });
     reload();
+  }
+
+  function handleDrop(targetIndex: number) {
+    setDragOverIndex(null);
+    if (dragIndex === null || dragIndex === targetIndex) { setDragIndex(null); return; }
+    const next = [...cards];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(targetIndex, 0, moved);
+    setDragIndex(null);
+    setCards(next);
+    if (!session) return;
+    Promise.all(next.map((c, i) =>
+      fetch(`/api/admin/showcase/${c.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...session, display_order: i }),
+      })
+    ));
   }
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -299,8 +319,28 @@ export default function AdminShowcasePage() {
               <div style={{ marginTop: 20, color: '#B0A8BC', fontWeight: 700 }}>Loading…</div>
             ) : (
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {cards.map(c => (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', flexWrap: 'wrap' }}>
+                {cards.map((c, i) => (
+                  <div
+                    key={c.id}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={() => handleDrop(i)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12, background: '#fff',
+                      border: dragOverIndex === i ? '2px solid #3A8FA0' : '2px solid #E8E2F0',
+                      borderRadius: 12, padding: '12px 14px', flexWrap: 'wrap',
+                      opacity: dragIndex === i ? 0.4 : 1,
+                    }}
+                  >
+                    <div
+                      draggable
+                      onDragStart={() => setDragIndex(i)}
+                      onDragEnter={() => setDragOverIndex(i)}
+                      onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
+                      title="Drag to reorder"
+                      style={{ cursor: 'grab', color: '#B0A8BC', fontSize: '1.1rem', lineHeight: 1, padding: '0 4px', userSelect: 'none' }}
+                    >
+                      ⠿
+                    </div>
                     <div style={{ flex: 1, minWidth: 160 }}>
                       <div style={{ fontWeight: 800, color: '#2A2A2A' }}>
                         {c.recipient_name || '(untitled)'}{' '}
