@@ -16,7 +16,7 @@ export async function PATCH(
 
   const allowed = [
     'kind', 'group_style', 'recipient_name', 'occasion', 'card_message', 'card_note',
-    'card_image_url', 'card_palette', 'card_logo_url', 'sender_name', 'solo_message',
+    'card_image_url', 'card_palette', 'card_logo_url', 'card_logo_scale', 'sender_name', 'solo_message',
     'sample_messages', 'display_order', 'is_live',
   ];
   const update: Record<string, unknown> = {};

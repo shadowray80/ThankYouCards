@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       card_image_url: fields.card_image_url ?? null,
       card_palette: fields.card_palette ?? null,
       card_logo_url: fields.card_logo_url ?? null,
+      card_logo_scale: fields.card_logo_scale ?? 1,
       sender_name: fields.sender_name ?? null,
       solo_message: fields.solo_message ?? null,
       sample_messages: fields.sample_messages ?? [],

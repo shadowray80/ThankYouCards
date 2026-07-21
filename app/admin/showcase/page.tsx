@@ -27,6 +27,7 @@ interface ShowcaseCard {
   card_image_url: string;
   card_palette: string;
   card_logo_url: string;
+  card_logo_scale: number;
   sender_name: string;
   solo_message: string;
   sample_messages: SampleMessage[];
@@ -38,7 +39,7 @@ type Draft = Omit<ShowcaseCard, 'id'> & { id?: string };
 
 const BLANK: Draft = {
   kind: 'solo', group_style: null, recipient_name: '', occasion: '', card_message: '',
-  card_note: '', card_image_url: '', card_palette: 'sky', card_logo_url: '',
+  card_note: '', card_image_url: '', card_palette: 'sky', card_logo_url: '', card_logo_scale: 1,
   sender_name: '', solo_message: '', sample_messages: [], display_order: 0, is_live: false,
 };
 
@@ -397,10 +398,22 @@ export default function AdminShowcasePage() {
                   <label style={labelStyle}>Logo (optional)</label>
                   <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
                   {editing.card_logo_url ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
-                      <img src={editing.card_logo_url} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
-                      <button onClick={() => setEditing({ ...editing, card_logo_url: '' })} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer' }}>Remove</button>
-                    </div>
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#F7F5FB', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
+                        <img src={editing.card_logo_url} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
+                        <button onClick={() => setEditing({ ...editing, card_logo_url: '', card_logo_scale: 1 })} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer' }}>Remove</button>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                        <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
+                        <input
+                          type="range" min={0.5} max={3} step={0.1}
+                          value={editing.card_logo_scale}
+                          onChange={e => setEditing({ ...editing, card_logo_scale: Number(e.target.value) })}
+                          style={{ flex: 1 }}
+                        />
+                        <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{editing.card_logo_scale.toFixed(1)}×</span>
+                      </div>
+                    </>
                   ) : (
                     <button onClick={() => logoInputRef.current?.click()} disabled={logoUploading} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '10px', fontWeight: 700, fontSize: '.8rem', color: '#7A7585', cursor: 'pointer', marginBottom: 10, fontFamily: "'Nunito',sans-serif" }}>
                       {logoUploading ? 'Uploading…' : '⬆ Upload logo'}
@@ -475,6 +488,7 @@ export default function AdminShowcasePage() {
                       card_palette: editing.card_palette, card_logo_url: editing.card_logo_url || null,
                     }}
                     contributions={editing.sample_messages.map(m => ({ contributor_name: m.contributor_name || 'Someone', message: m.message || null, photo_url: m.photo_url, photo_label: m.photo_label }))}
+                    logoScale={editing.card_logo_scale}
                     preview
                   />
                 )}

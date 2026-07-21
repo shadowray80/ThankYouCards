@@ -126,11 +126,13 @@ export function CorporateView({
   contributions,
   preview,
   noHeader,
+  logoScale = 1,
 }: {
   campaign: Campaign;
   contributions: Contribution[];
   preview?: boolean;
   noHeader?: boolean;
+  logoScale?: number;
 }) {
   const palette        = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy'))
     ?? (campaign.card_palette?.startsWith('#') ? buildCustomPalette(campaign.card_palette) : CORPORATE_PALETTES[0]);
@@ -172,11 +174,11 @@ export function CorporateView({
             )}
             {campaign.occasion && (
               <div style={{ fontSize: '.76rem', color: 'rgba(255,255,255,.5)', fontWeight: 700 }}>
-                — {campaign.occasion.replace(/^From\s+/i, '')}
+                {campaign.occasion.replace(/^From\s+/i, '')}
               </div>
             )}
             {campaign.card_logo_url ? (
-              <img src={campaign.card_logo_url} alt="" style={{ maxHeight: 40, maxWidth: 120, objectFit: 'contain', objectPosition: 'left center', marginTop: 14, opacity: 0.9 }} />
+              <img src={campaign.card_logo_url} alt="" style={{ maxHeight: 40 * logoScale, maxWidth: 120 * logoScale, objectFit: 'contain', objectPosition: 'left center', marginTop: 14, opacity: 0.9 }} />
             ) : preview && (
               <div style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', height: 40, minWidth: 64, border: '1.5px dashed rgba(255,255,255,.3)', borderRadius: 6, padding: '0 14px' }}>
                 <span style={{ fontSize: '.62rem', color: 'rgba(255,255,255,.4)', fontWeight: 800, fontFamily: "'Nunito', sans-serif", whiteSpace: 'nowrap' }}>Your logo</span>

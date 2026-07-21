@@ -32,6 +32,7 @@ interface ShowcaseCard {
   card_image_url: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_logo_scale: number | null;
   sender_name: string | null;
   solo_message: string | null;
   sample_messages: ShowcaseSampleMessage[];
@@ -145,6 +146,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
                         <CorporateView
                           campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_image_url: c.card_image_url, card_palette: c.card_palette, card_logo_url: c.card_logo_url }}
                           contributions={c.sample_messages}
+                          logoScale={c.card_logo_scale ?? 1}
                           preview
                         />
                       ) : c.kind === 'group' ? (
