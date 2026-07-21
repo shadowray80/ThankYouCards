@@ -7,6 +7,7 @@ import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { THEMES } from '@/lib/themes';
+import { useHorizontalScroll } from '@/lib/useHorizontalScroll';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -19,6 +20,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [imgIdx, setImgIdx] = useState(0);
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
   const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
+  const occasionStripRef = useHorizontalScroll<HTMLDivElement>();
+  const imageStripRef = useHorizontalScroll<HTMLDivElement>();
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
@@ -233,7 +236,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         <div style={{ background: '#fff', padding: '14px 0 16px' }}>
           <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
           <div style={{ position: 'relative' }}>
-            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div ref={occasionStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
               {THEMES.map((t, i) => {
                 const isSelected = themeIdx === i;
                 return (
@@ -258,7 +261,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         <div style={{ background: '#F5F4F8', padding: '14px 0 16px' }}>
           <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
           <div style={{ position: 'relative' }}>
-            <div onWheel={e => { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; }} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px' }}>
+            <div ref={imageStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
               {theme.imgs.map((url, j) => {
                 if (failedImgs.has(j)) return null;
                 const isSelected = !customImgUrl && imgIdx === j;
