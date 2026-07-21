@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Btn } from '@/components/ui/Button';
 import { LoginMenu } from '@/components/ui/LoginMenu';
+import { MoreMenu } from '@/components/ui/MoreMenu';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
@@ -110,6 +111,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
             thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: '.9rem' }}>.au</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <MoreMenu code={code} onCodeChange={setCode} onSubmit={goToCard} />
             <LoginMenu />
             <Btn variant="teal" sm onClick={onSolo}>Create a card</Btn>
           </div>
@@ -218,30 +220,6 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
               <div style={{ fontSize: '.78rem', color: '#7A7585', lineHeight: 1.4, fontWeight: 600 }}>{c.desc}</div>
             </div>
           ))}
-        </div>
-
-        {/* Got a code? */}
-        <div style={{ background: '#fff', border: '2.5px solid #E8E2F0', borderRadius: 18, padding: '18px 16px', marginBottom: 14 }}>
-          <div style={{ fontWeight: 800, fontSize: '.95rem', color: '#2A2A2A', marginBottom: 4 }}>📬 Got a card code?</div>
-          <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 12 }}>Someone shared a card with you - enter the code to add your message.</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && goToCard()}
-              placeholder="e.g. timbo-mpera"
-              style={{ flex: 1, border: '2px solid #E8E2F0', borderRadius: 10, padding: '11px 13px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.95rem', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', minWidth: 0 }}
-              onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
-              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
-            />
-            <button
-              onClick={goToCard}
-              disabled={!code.trim()}
-              style={{ background: code.trim() ? '#3A8FA0' : '#E8E2F0', color: code.trim() ? '#fff' : '#B0A8BC', border: 'none', borderRadius: 10, padding: '11px 16px', fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem', cursor: code.trim() ? 'pointer' : 'default', transition: 'all .2s', whiteSpace: 'nowrap' }}
-            >
-              Go →
-            </button>
-          </div>
         </div>
 
         <div style={{ height: 40 }} />
