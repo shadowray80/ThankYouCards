@@ -43,13 +43,15 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const cardMsgRef = useRef<HTMLDivElement>(null);
   const toRef = useRef<HTMLDivElement>(null);
 
-  // Re-sync whenever the overlay remounts too — leaving Preview mode unmounts the whole
-  // editable cover while previewing, so it comes back as a fresh, empty node that needs
-  // its text restored (state never changes on that transition, so a plain [cardMsg]
-  // dependency wouldn't catch it).
   useEffect(() => {
+    // Only restore text into a freshly (re)mounted, empty field — never while the
+    // user is actively typing, since the DOM already reflects their keystrokes and
+    // forcing textContent mid-edit resets the caret to the start. Leaving Preview mode
+    // unmounts the whole editable cover, so it comes back as a fresh, empty node that
+    // needs its text restored this way (state never changes on that transition, so a
+    // plain [cardMsg] dependency wouldn't catch it).
     const el = cardMsgRef.current;
-    if (el && el.textContent !== cardMsg) el.textContent = cardMsg;
+    if (el && !el.textContent && cardMsg) el.textContent = cardMsg;
   }, [cardMsg, showPreview]);
 
   useEffect(() => {
@@ -328,6 +330,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     lineHeight: 1.2, color: '#fff',
                     caretColor: '#fff',
                     wordBreak: 'break-word',
+                    textTransform: 'capitalize',
                   }}
                 />
               </div>
