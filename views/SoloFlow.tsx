@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
@@ -42,25 +42,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
   const cardMsgRef = useRef<HTMLDivElement>(null);
   const toRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Only restore text into a freshly (re)mounted, empty field — never while the
-    // user is actively typing, since the DOM already reflects their keystrokes and
-    // forcing textContent mid-edit resets the caret to the start. Leaving Preview mode
-    // unmounts the whole editable cover, so it comes back as a fresh, empty node that
-    // needs its text restored this way (state never changes on that transition, so a
-    // plain [cardMsg] dependency wouldn't catch it).
-    const el = cardMsgRef.current;
-    if (el && !el.textContent && cardMsg) el.textContent = cardMsg;
-  }, [cardMsg, showPreview]);
-
-  useEffect(() => {
-    // Only restore text into a freshly (re)mounted, empty field — never while the
-    // user is actively typing, since the DOM already reflects their keystrokes and
-    // forcing textContent mid-edit resets the caret to the start.
-    const el = toRef.current;
-    if (el && !el.textContent && to) el.textContent = to;
-  }, [to, showPreview]);
 
   async function handleSubmit() {
     setSaving(true);
@@ -272,7 +253,17 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   </div>
                 )}
                 <div
-                  ref={toRef}
+                  ref={el => {
+                    toRef.current = el;
+                    // Restore text only into a freshly mounted, empty node — e.g. leaving
+                    // and re-entering Preview mode unmounts this whole overlay, so it comes
+                    // back as a fresh node needing its text restored. A ref callback only
+                    // fires on actual mount/unmount, unlike a useEffect keyed on state,
+                    // which was firing mid-keystroke and breaking mobile predictive-text
+                    // word completion (it inserts via a delete-then-insert DOM sequence,
+                    // and a same-tick state-driven textContent overwrite stomped on it).
+                    if (el && !el.textContent && to) el.textContent = to;
+                  }}
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
@@ -315,7 +306,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   </div>
                 )}
                 <div
-                  ref={cardMsgRef}
+                  ref={el => {
+                    cardMsgRef.current = el;
+                    // See the "To" field's ref callback above for why this has to be a ref
+                    // callback (mount-only) rather than a useEffect keyed on state.
+                    if (el && !el.textContent && cardMsg) el.textContent = cardMsg;
+                  }}
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
