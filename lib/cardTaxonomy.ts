@@ -70,3 +70,31 @@ export function parseCardFileName(fileName: string): ParsedCardFileName | null {
 
   return { category, subcategory, style, index: parseInt(indexStr, 10) };
 }
+
+// Deterministic subcategory → tags mapping, matching the taxonomy `Define Cards` in the
+// n8n GenPrompts workflow actually generates against (e.g. every thank_you/mum card was
+// generated specifically to be a "for Mum" card, every sports/afl card is Australian).
+// This isn't recoverable from the filename alone (tags are deliberately left out of the
+// naming convention), so sync applies it once, on first insert only — re-syncing must
+// never use this to overwrite tags that have since been hand-edited in the manager.
+const AUTO_TAGS: Record<string, string[]> = {
+  'thank_you:mum': ['mum'],
+  'thank_you:dad': ['dad'],
+  'thank_you:mates': ['mates', 'australia'],
+  'thank_you:nature': ['nature'],
+  'thank_you:cars': ['cars'],
+  'thank_you:beach': ['beach', 'australia'],
+  'sports:afl': ['australia'],
+  'sports:kids_afl': ['australia'],
+  'sports:cricket': ['australia'],
+  'sports:nrl': ['australia'],
+  'sports:rugby_union': ['australia'],
+  'sports:swimming': ['australia'],
+  'sports:surfing': ['australia'],
+  'sports:netball': ['australia'],
+};
+
+export function autoTagsFor(category: string, subcategory: string | null): string[] {
+  if (!subcategory) return [];
+  return AUTO_TAGS[`${category}:${subcategory}`] ?? [];
+}

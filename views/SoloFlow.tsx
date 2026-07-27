@@ -5,9 +5,9 @@ import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
+import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { THEMES } from '@/lib/themes';
-import { useHorizontalScroll } from '@/lib/useHorizontalScroll';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -16,12 +16,8 @@ interface SoloFlowProps {
 }
 
 export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
-  const [themeIdx, setThemeIdx] = useState(9); // "mates" — index shifted when new themes were added
-  const [imgIdx, setImgIdx] = useState(0);
+  const [selectedUrl, setSelectedUrl] = useState(THEMES[9]?.imgs[0] ?? THEMES[0].imgs[0]);
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
-  const [failedImgs, setFailedImgs] = useState<Set<number>>(new Set());
-  const occasionStripRef = useHorizontalScroll<HTMLDivElement>();
-  const imageStripRef = useHorizontalScroll<HTMLDivElement>();
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
@@ -68,15 +64,15 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   async function handleSubmit() {
     setSaving(true);
     try {
-      const imageUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
+      const imageUrl = customImgUrl || selectedUrl;
       const campaignRes = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient_name: effectiveTo.trim(),
-          occasion: theme.name,
+          occasion: null,
           target_amount: 0,
-          card_theme: theme.id,
+          card_theme: null,
           card_message: cardMsg.trim(),
           card_image_url: imageUrl,
           card_text_on_image: to.trim() !== '' || cardMsg.trim() !== '',
@@ -114,8 +110,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     }
   }
 
-  const theme = THEMES[themeIdx];
-  const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
+  const imgUrl = customImgUrl || selectedUrl;
   const effectiveTo = to || msgAreaTo;
   const canContinue = effectiveTo.trim().length > 0;
   const giftAmount = includeGift ? Number(giftSel || giftCustom) || 0 : 0;
@@ -124,7 +119,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => { setCustomImgUrl(ev.target?.result as string); setImgIdx(-1); };
+    r.onload = ev => setCustomImgUrl(ev.target?.result as string);
     r.readAsDataURL(f);
   };
 
@@ -135,9 +130,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     r.onload = ev => setPhotoData(ev.target?.result as string);
     r.readAsDataURL(f);
   };
-
-  const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
-  const selectTheme = (i: number) => { setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setFailedImgs(new Set()); };
 
   // ── Done screen ──────────────────────────────────────────────
   if (showDone && slug) {
@@ -186,9 +178,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             </div>
           </div>
           <CardScrollView
-            theme={theme}
-            imgIdx={imgIdx < 0 ? 0 : imgIdx}
-            customImgUrl={customImgUrl ?? undefined}
+            customImgUrl={imgUrl}
             recipientName={to}
             fromText={from || 'From a friend'}
             message={cardMsg}
@@ -215,9 +205,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           <div style={{ padding: '16px 18px 0', position: 'relative' }}>
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
             <CardScrollView
-              theme={theme}
-              imgIdx={imgIdx < 0 ? 0 : imgIdx}
-              customImgUrl={customImgUrl ?? undefined}
+              customImgUrl={imgUrl}
               recipientName={to}
               fromText={from || 'From a friend'}
               message={cardMsg}
@@ -232,62 +220,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         ) : (
         <>
 
-        {/* ── Occasion film strip ── */}
-        <div style={{ background: '#fff', padding: '14px 0 16px' }}>
-          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
-          <div style={{ position: 'relative' }}>
-            <div ref={occasionStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
-              {THEMES.map((t, i) => {
-                const isSelected = themeIdx === i;
-                return (
-                  <div key={t.id} onClick={() => selectTheme(i)} style={{
-                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    background: t.color, transition: 'all .2s',
-                  }}>
-                    <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.05) 55%)' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 6px 6px', textAlign: 'center', fontSize: '.62rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
-                    {isSelected && <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #fff)', pointerEvents: 'none' }} />
-          </div>
-        </div>
-
-        {/* ── Image film strip ── */}
-        <div style={{ background: '#F5F4F8', padding: '14px 0 16px' }}>
-          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
-          <div style={{ position: 'relative' }}>
-            <div ref={imageStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
-              {theme.imgs.map((url, j) => {
-                if (failedImgs.has(j)) return null;
-                const isSelected = !customImgUrl && imgIdx === j;
-                return (
-                  <div key={j} onClick={() => selectThemeImg(j)} style={{
-                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
-                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    transition: 'all .2s', position: 'relative', background: '#fff',
-                  }}>
-                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
-                    {isSelected && (
-                      <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #F5F4F8)', pointerEvents: 'none' }} />
-          </div>
-        </div>
-
-        {/* ── Inline editable card ── */}
+        {/* ── Cover image — its own boxed card, so the picker below can sit flush
+            against its bottom edge instead of sharing a box with the message panel. ── */}
         <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
           {/* Cover image */}
-          <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
+          <div style={{ position: 'relative', overflow: 'hidden' }}>
             <img
               key={imgUrl}
               src={imgUrl} alt=""
@@ -300,7 +238,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
             {/* Upload own photo — corner button */}
             <div
-              onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+              onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
               style={{
                 position: 'absolute', top: 14, right: 14, zIndex: 5,
                 width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
@@ -404,6 +342,16 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* ── Card picker — sits in plain document flow immediately after the image, so
+             it's always anchored exactly to the image's bottom edge with no measuring,
+             and normal page scroll doubles as scrolling the picker. ── */}
+        <div style={{ margin: '0 18px' }}>
+          <CardPicker selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+        </div>
+
+        <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
           {/* Message panel */}
           <div style={{ background: '#fff', padding: '20px 22px 8px' }}>

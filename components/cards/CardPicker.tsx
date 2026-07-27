@@ -1,17 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { THEMES } from '@/lib/themes';
+import { useEffect, useState } from 'react';
 import { CATEGORIES, TAGS } from '@/lib/cardTaxonomy';
 
 const GREEN = '#3FAE6A';
 const ORANGE = '#E8724A';
-
-// ── Mock card data (stand-in for the real `cards` DB table + sync, not built yet) ──
-// Reuses today's live theme images so this can be exercised with real-looking
-// cards before the ComfyUI batch is uploaded to Supabase and synced. Category/tag
-// *vocabulary* now comes from lib/cardTaxonomy.ts (shared with the admin manager) —
-// only this reassignment of old theme images to that vocabulary is mock-specific.
 
 // Kept small enough that this first group reliably fits on one line at mobile widths —
 // the More/Less toggle rides along as the last pill in this same fixed row, so it never
@@ -19,32 +12,7 @@ const ORANGE = '#E8724A';
 const CATEGORIES_COLLAPSED_COUNT = 3;
 const TAGS_COLLAPSED_COUNT = 3;
 
-const CATEGORY_MAP: Record<string, string> = {
-  thankyou: 'thank_you', birthday: 'birthday', '18th-birthday': 'birthday', 'kids-birthday': 'birthday',
-  cars: 'thank_you', dad: 'thank_you', grandad: 'thank_you', mum: 'thank_you', grandmother: 'thank_you',
-  mates: 'thank_you', coach: 'thank_you', 'for-him': 'thank_you',
-  baby: 'congratulations', wedding: 'wedding', engagement: 'engagement', retirement: 'retirement',
-  leaving: 'leaving', 'get-well': 'get_well', sympathy: 'sympathy',
-  afl: 'sports', 'kids-afl': 'sports', nrl: 'sports', 'rugby-union': 'sports', soccer: 'sports',
-  basketball: 'sports', netball: 'sports', cricket: 'sports', tennis: 'sports', golf: 'sports',
-  swimming: 'sports', surfing: 'sports', cycling: 'sports', athletics: 'sports', boxing: 'sports',
-};
-const TAG_MAP: Record<string, string[]> = {
-  mum: ['mum'], dad: ['dad'], mates: ['mates', 'australia'], cars: ['cars'],
-  afl: ['australia'], nrl: ['australia'], cricket: ['australia'], swimming: ['australia'],
-  surfing: ['australia'], netball: ['australia'], 'rugby-union': ['australia'], 'kids-afl': ['australia'],
-};
-
-interface MockCard { id: string; category: string; tags: string[]; url: string }
-
-const MOCK_CARDS: MockCard[] = THEMES.flatMap(t =>
-  t.imgs.map((url, i) => ({
-    id: `${t.id}_${i}`,
-    category: CATEGORY_MAP[t.id] ?? 'thank_you',
-    tags: TAG_MAP[t.id] ?? [],
-    url,
-  }))
-);
+interface CardData { id: string; category: string; tags: string[]; url: string }
 
 interface CardPickerProps {
   selectedUrl: string;
@@ -57,6 +25,18 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
   const [showAllTags, setShowAllTags] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [cards, setCards] = useState<CardData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Real card library, synced from Supabase Storage via the admin manager at /admin/cards.
+  useEffect(() => {
+    fetch('/api/cards')
+      .then(r => r.json())
+      .then(json => setCards((json.cards ?? []).map((c: { id: string; category: string; tags: string[] | null; image_url: string }) => ({
+        id: c.id, category: c.category, tags: c.tags ?? [], url: c.image_url,
+      }))))
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggle = (set: Set<string>, setter: (s: Set<string>) => void, id: string) => {
     const next = new Set(set);
@@ -64,7 +44,7 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
     setter(next);
   };
 
-  const filteredCards = MOCK_CARDS.filter(c => {
+  const filteredCards = cards.filter(c => {
     const catOk = selectedCategories.size === 0 || selectedCategories.has(c.category);
     const tagOk = selectedTags.size === 0 || c.tags.some(t => selectedTags.has(t));
     return catOk && tagOk;
@@ -172,7 +152,11 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
                browsing cards doesn't require scrolling the page (and the main card preview
                above stays put and visible the whole time). ── */}
           <div style={{ maxHeight: 730, overflowY: 'auto', padding: '4px 18px 24px' }}>
-            {filteredCards.length === 0 ? (
+            {loading ? (
+              <div style={{ textAlign: 'center', color: '#B0A8BC', fontSize: '.85rem', padding: '32px 0' }}>
+                Loading cards…
+              </div>
+            ) : filteredCards.length === 0 ? (
               <div style={{ textAlign: 'center', color: '#B0A8BC', fontSize: '.85rem', padding: '32px 0' }}>
                 No cards match those filters yet.
               </div>

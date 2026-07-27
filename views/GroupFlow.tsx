@@ -6,11 +6,11 @@ import { Btn } from '@/components/ui/Button';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
 import { THEMES } from '@/lib/themes';
-import { useHorizontalScroll } from '@/lib/useHorizontalScroll';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
+import { CardPicker } from '@/components/cards/CardPicker';
 
 const CORPORATE_PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
@@ -55,12 +55,8 @@ const GIFT_TYPES = [
 ];
 
 export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) {
-  const [themeIdx, setThemeIdx]         = useState(14); // "coach" — index shifted when new themes were added
-  const [imgIdx, setImgIdx]             = useState(0);
+  const [selectedUrl, setSelectedUrl]   = useState(THEMES[14]?.imgs[0] ?? THEMES[0].imgs[0]); // was "coach"
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
-  const [failedImgs, setFailedImgs]     = useState<Set<number>>(new Set());
-  const occasionStripRef = useHorizontalScroll<HTMLDivElement>();
-  const imageStripRef = useHorizontalScroll<HTMLDivElement>();
 
   const [recip, setRecip]       = useState('');
   // Message-area-only versions — used only when the matching on-photo field is left blank,
@@ -118,8 +114,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     if (el && !el.textContent && recip) el.textContent = recip;
   }, [recip, cardStyle, showPreview]);
 
-  const theme  = THEMES[themeIdx];
-  const imgUrl = customImgUrl || theme.imgs[imgIdx < 0 ? 0 : imgIdx];
+  const imgUrl = customImgUrl || selectedUrl;
   const effectiveRecip = recip || msgAreaRecip;
   const effectiveCardMsg = cardMsg || msgAreaCardMsg;
   const effectiveOccasion = occasion || msgAreaOccasion;
@@ -141,16 +136,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     }
   };
 
-  const selectTheme = (i: number) => {
-    setThemeIdx(i); setImgIdx(0); setCustomImgUrl(null); setFailedImgs(new Set());
-  };
-  const selectThemeImg = (j: number) => { setImgIdx(j); setCustomImgUrl(null); };
-
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => { setCustomImgUrl(ev.target?.result as string); setImgIdx(-1); };
+    r.onload = ev => setCustomImgUrl(ev.target?.result as string);
     r.readAsDataURL(f);
   };
 
@@ -182,10 +172,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           target_amount: 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
-          card_theme: theme.id,
+          card_theme: null,
           card_message: effectiveCardMsg,
           card_note: cardStyle === 'casual' ? (cardNote.trim() || null) : null,
-          card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
+          card_image_url: customImgUrl || selectedUrl,
           card_style: cardStyle,
           card_palette: cardPalette,
           card_logo_url: logoUrl,
@@ -224,7 +214,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               <CasualView
                 campaign={{
                   slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote,
-                  card_image_url: customImgUrl || theme.imgs[imgIdx] || theme.imgs[0],
+                  card_image_url: imgUrl,
                   card_palette: cardPalette,
                 }}
                 contributions={[]}
@@ -243,9 +233,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               />
             ) : (
               <CardScrollView
-                theme={theme}
-                imgIdx={imgIdx < 0 ? 0 : imgIdx}
-                customImgUrl={customImgUrl ?? undefined}
+                customImgUrl={imgUrl}
                 recipientName={recip}
                 fromText={occasion}
                 message={cardMsg}
@@ -259,57 +247,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           </div>
         ) : (
         <>
-
-        {/* Occasion film strip — hidden for corporate (they upload their own photo, no themed cover) */}
-        {cardStyle !== 'corporate' && <div style={{ background: '#fff', padding: '14px 0 16px' }}>
-          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>What&apos;s the occasion?</div>
-          <div style={{ position: 'relative' }}>
-            <div ref={occasionStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
-              {THEMES.map((t, i) => {
-                const isSelected = themeIdx === i;
-                return (
-                  <div key={t.id} onClick={() => selectTheme(i)} style={{
-                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', position: 'relative',
-                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    background: t.color, transition: 'all .2s',
-                  }}>
-                    <img src={t.imgs[0]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.05) 55%)' }} />
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 6px 6px', textAlign: 'center', fontSize: '.62rem', fontWeight: 800, color: '#fff', letterSpacing: '.03em', textTransform: 'uppercase', lineHeight: 1.25 }}>{t.name}</div>
-                    {isSelected && <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #fff)', pointerEvents: 'none' }} />
-          </div>
-        </div>}
-
-        {/* Image film strip — hidden for corporate (colour is the header, photo optional via card) */}
-        {cardStyle !== 'corporate' && <div style={{ background: '#F5F4F8', padding: '14px 0 16px' }}>
-          <div style={{ fontSize: '.75rem', fontWeight: 800, color: '#7A7585', marginBottom: 10, letterSpacing: '.06em', textTransform: 'uppercase', padding: '0 14px' }}>Choose a vibe they&apos;ll love</div>
-          <div style={{ position: 'relative' }}>
-            <div ref={imageStripRef} style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none', padding: '0 14px', cursor: 'grab' }}>
-              {theme.imgs.map((url, j) => {
-                if (failedImgs.has(j)) return null;
-                const isSelected = !customImgUrl && imgIdx === j;
-                return (
-                  <div key={j} onClick={() => selectThemeImg(j)} style={{
-                    flexShrink: 0, width: 120, height: 90, borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
-                    border: isSelected ? '2px solid #E8724A' : '2px solid #E8E2F0',
-                    transition: 'all .2s', position: 'relative', background: '#fff',
-                  }}>
-                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setFailedImgs(prev => new Set([...prev, j]))} />
-                    {isSelected && (
-                      <div style={{ position: 'absolute', top: 6, right: 6, background: '#E8724A', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.62rem', fontWeight: 800 }}>✓</div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 48, background: 'linear-gradient(to right, transparent, #F5F4F8)', pointerEvents: 'none' }} />
-          </div>
-        </div>}
 
         {/* Card style + palette */}
         <div style={{ padding: '14px 18px 0' }}>
@@ -402,11 +339,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         </div>
 
         {/* Inline editable card */}
+        {cardStyle === 'corporate' ? (
         <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
-          {/* Cover — corporate shows split header; classic/casual shows full-width image */}
-          {cardStyle === 'corporate' ? (
-            /* ── Corporate header ── */
+          {/* Corporate header */}
             <div style={{ display: 'flex', minHeight: 240, position: 'relative', background: `linear-gradient(135deg, ${corpPalette.headerFrom}, ${corpPalette.headerTo})` }}>
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
               {/* Text side */}
@@ -469,18 +405,36 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 20%, transparent 60%)` }} />
                 </>}
                 <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
-                <div onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+                <div onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
                   style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 5, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,.9)' : 'rgba(255,255,255,.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.8rem', boxShadow: '0 2px 8px rgba(0,0,0,.3)' }}
                   title={customImgUrl ? 'Remove photo' : 'Add a photo (optional)'}
                 >{customImgUrl ? '✕' : '📷'}</div>
               </div>
             </div>
-          ) : (
-            /* ── Classic / Casual cover ── */
-            <div style={{ position: 'relative', overflow: 'hidden', background: theme.color }}>
+
+          {/* Messages preview — corporate */}
+          <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
+            💬 Example messages — your contributors&apos; real ones will appear here
+          </div>
+          <CorporateView
+            campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
+            logoScale={logoScale}
+            contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
+            preview
+            noHeader
+          />
+        </div>
+        ) : (
+        <>
+
+        {/* ── Cover image — its own boxed card, so the picker below can sit flush
+            against its bottom edge instead of sharing a box with the message panel. ── */}
+        <div style={{ margin: '16px 18px 0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
+            {/* ── Classic / Casual cover ── */}
+            <div style={{ position: 'relative', overflow: 'hidden' }}>
               <img key={imgUrl} src={imgUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
-              <div onClick={() => customImgUrl ? (setCustomImgUrl(null), setImgIdx(0)) : uploadRef.current?.click()}
+              <div onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
                 style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s' }}
                 title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
               >{customImgUrl ? '✕' : '📷'}</div>
@@ -519,7 +473,16 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 </div>
               </div>
             </div>
-          )}
+        </div>
+
+        {/* ── Card picker — sits in plain document flow immediately after the image, so
+             it's always anchored exactly to the image's bottom edge with no measuring,
+             and normal page scroll doubles as scrolling the picker. ── */}
+        <div style={{ margin: '0 18px' }}>
+          <CardPicker selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+        </div>
+
+        <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
 
           {/* Recap — mirrors the on-photo name & cover message so they're never typed twice. If a
               field is still blank on the photo, it becomes a real input right here instead — that
@@ -528,7 +491,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               a unified place to see both, if the photo isn't the right spot for the text at all.
               CasualView has its own equivalent recap, but it's suppressed here (noHeader) in
               favour of this one, so there's a single editable source, not two displays. */}
-          {cardStyle !== 'corporate' && (
             <div style={{ background: '#fff', padding: '18px 22px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
                 <span style={{ flexShrink: 0 }}>To</span>
@@ -602,11 +564,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 )}
               </div>
             </div>
-          )}
 
-          {/* Messages preview — style-aware. Casual/corporate show realistic-looking
-              example messages (real names, real-looking text) rather than a bare "will
-              appear here" placeholder, so the banner below is the only thing telling the
+          {/* Messages preview — style-aware. Casual shows realistic-looking example
+              messages (real names, real-looking text) rather than a bare "will appear
+              here" placeholder, so the banner below is the only thing telling the
               organiser these aren't actually theirs — needed precisely because they look
               real enough to otherwise be mistaken for it. */}
           {cardStyle === 'casual' ? (
@@ -620,19 +581,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 messageAreaName={effectiveRecip}
                 messageAreaCoverMessage={effectiveCardMsg}
                 messageAreaOccasion={effectiveOccasion}
-                preview
-                noHeader
-              />
-            </>
-          ) : cardStyle === 'corporate' ? (
-            <>
-              <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
-                💬 Example messages — your contributors&apos; real ones will appear here
-              </div>
-              <CorporateView
-                campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
-                logoScale={logoScale}
-                contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
                 preview
                 noHeader
               />
@@ -656,6 +604,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </>
           )}
         </div>
+
+        </>
+        )}
 
         </>
         )}

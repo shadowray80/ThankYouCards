@@ -43,7 +43,7 @@ export default function AdminCardsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<{ synced: number; skipped: string[] } | null>(null);
+  const [syncResult, setSyncResult] = useState<{ synced: number; inserted: number; backfilled: number; skipped: string[] } | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
 
@@ -69,7 +69,7 @@ export default function AdminCardsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Sync failed');
-      setSyncResult({ synced: json.synced, skipped: json.skipped ?? [] });
+      setSyncResult({ synced: json.synced, inserted: json.inserted ?? 0, backfilled: json.backfilled ?? 0, skipped: json.skipped ?? [] });
       reload();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -125,7 +125,7 @@ export default function AdminCardsPage() {
           </button>
           {syncResult && (
             <span style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600 }}>
-              Synced {syncResult.synced}{syncResult.skipped.length > 0 && `, skipped ${syncResult.skipped.length} (didn't match the naming convention)`}
+              Synced {syncResult.synced} ({syncResult.inserted} new, {syncResult.backfilled} auto-tagged){syncResult.skipped.length > 0 && `, skipped ${syncResult.skipped.length} (didn't match the naming convention)`}
             </span>
           )}
         </div>
