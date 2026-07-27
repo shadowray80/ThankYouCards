@@ -308,7 +308,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   <div style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
                   }}>
                     Cover Message
@@ -326,8 +326,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.2, color: '#fff',
+                    textShadow: '0 3px 24px rgba(0,0,0,0.7)',
                     caretColor: '#fff',
                     wordBreak: 'break-word',
                     textTransform: 'capitalize',

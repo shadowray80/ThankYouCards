@@ -127,9 +127,10 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
             {msg && (
               <div style={{
                 fontFamily: 'var(--font-dancing), cursive',
-                fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
+                fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                 color: '#fff',
                 lineHeight: 1.2,
+                textShadow: '0 3px 24px rgba(0,0,0,0.7)',
               }}>
                 {msg}
               </div>
