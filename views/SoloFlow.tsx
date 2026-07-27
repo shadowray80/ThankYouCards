@@ -7,7 +7,6 @@ import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
-import { THEMES } from '@/lib/themes';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -16,7 +15,7 @@ interface SoloFlowProps {
 }
 
 export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
-  const [selectedUrl, setSelectedUrl] = useState(THEMES[9]?.imgs[0] ?? THEMES[0].imgs[0]);
+  const [selectedUrl, setSelectedUrl] = useState('https://ofoboqojauitnmdbhcaz.supabase.co/storage/v1/object/public/cards/thank_you_beach_papercraft_04.png');
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
 
   const [to, setTo] = useState('');
