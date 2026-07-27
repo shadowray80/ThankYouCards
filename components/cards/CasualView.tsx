@@ -219,23 +219,22 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
         <div style={{
           position: 'absolute', inset: 0, zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           padding: '48px 24px 28px',
-          background: hasImage ? 'linear-gradient(to bottom, rgba(0,0,0,.05) 0%, rgba(0,0,0,.62) 100%)' : 'none',
         }}>
           {showCoverText && recipientName && (
             <>
-              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4 }}>TO</div>
-              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.35)', marginBottom: 8 }}>
+              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>TO</div>
+              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.55)', marginBottom: 8 }}>
                 {recipientName}
               </div>
               {campaign.card_message && (
-                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 1px 12px rgba(0,0,0,.35)', marginBottom: 6 }}>
+                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 3px 24px rgba(0,0,0,.7)', marginBottom: 6 }}>
                   {campaign.card_message}
                 </div>
               )}
             </>
           )}
           {campaign.occasion && (
-            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
       </div>}

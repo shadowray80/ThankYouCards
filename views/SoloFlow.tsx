@@ -319,8 +319,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
 
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
-            <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-              <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
+            <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+              <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
               <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
                 {!to && (
                   <div style={{
@@ -359,7 +359,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             {/* Cover text — floating on image, wraps to two lines if long. Dimmed while it's
                 It starts empty — nothing is sent unless you type something here. */}
             <div style={{
-              position: 'absolute', bottom: '12%', left: 0, right: 0, zIndex: 3,
+              position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3,
               textAlign: 'center', padding: '0 16px',
             }}>
               <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
@@ -528,7 +528,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   <div style={{ fontWeight: 800, fontSize: '.93rem', color: '#2A2A2A' }}>Add a gift card</div>
                   <div style={{ background: '#F09070', color: '#fff', fontSize: '.58rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', borderRadius: 6, padding: '2px 7px' }}>Coming soon</div>
                 </div>
-                <div style={{ fontSize: '.76rem', color: '#7A7585', marginTop: 1 }}>Spendable anywhere, any country</div>
               </div>
             </div>
             <div style={{ width: 42, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0, background: '#D1C8DC' }}>

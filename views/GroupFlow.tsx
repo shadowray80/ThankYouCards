@@ -21,11 +21,11 @@ const CORPORATE_PREVIEW_CONTRIBUTIONS = [
 ];
 
 const CASUAL_PREVIEW_CONTRIBUTIONS = [
-  { contributor_name: 'Rachel', message: "Half a century of absolute fabulousness! Here's to the next 50 🥂", photo_url: null, photo_label: null },
-  { contributor_name: 'Tom',    message: null, photo_url: '/Team_Lunch.png', photo_label: 'The big 5-0! 🎂' },
-  { contributor_name: 'Jess',   message: "50 looks INCREDIBLE on you. Still the life of every party 🎉", photo_url: null, photo_label: null },
-  { contributor_name: 'Mike',   message: "I can't believe you're 50 — you don't look a day over 49 😂 Love you to bits!", photo_url: null, photo_label: null },
-  { contributor_name: 'Ava',    message: "You've been an inspiration since the day I met you. Happy big birthday! ❤️", photo_url: null, photo_label: null },
+  { contributor_name: 'Sam',    message: "Great to catch up! 🙌", photo_url: null, photo_label: null },
+  { contributor_name: 'Priya',  message: null, photo_url: '/Team_Lunch.png', photo_label: 'Good times! 📸' },
+  { contributor_name: 'Jess',   message: "Cheers, big ears! 🍻", photo_url: null, photo_label: null },
+  { contributor_name: 'Mike',   message: "You're an absolute legend, mate 😊", photo_url: null, photo_label: null },
+  { contributor_name: 'Ava',    message: "So good seeing you the other day — always brightens my week catching up with you. Hope this little card makes you smile as much as you make everyone else smile ❤️", photo_url: null, photo_label: null },
 ];
 
 interface GroupFlowProps {
@@ -86,6 +86,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [saveError, setSaveError]           = useState('');
 
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
+  const [logoScale, setLogoScale]       = useState(1);
   const [logoUploading, setLogoUploading] = useState(false);
 
   const uploadRef    = useRef<HTMLInputElement>(null);
@@ -188,6 +189,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_style: cardStyle,
           card_palette: cardPalette,
           card_logo_url: logoUrl,
+          card_logo_scale: logoScale,
           card_text_on_image: recip.trim() !== '' || cardMsg.trim() !== '',
         }),
       });
@@ -236,6 +238,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   slug: '', recipient_name: recip, occasion, card_message: cardMsg,
                   card_image_url: customImgUrl, card_palette: cardPalette, card_logo_url: logoUrl,
                 }}
+                logoScale={logoScale}
                 contributions={[]}
               />
             ) : (
@@ -372,10 +375,22 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
                 <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
                 {logoUrl ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 10, padding: '8px 12px' }}>
-                    <img src={logoUrl} alt="" style={{ maxHeight: 28, maxWidth: 90, objectFit: 'contain' }} />
-                    <button onClick={() => setLogoUrl(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 10, padding: '8px 12px' }}>
+                      <img src={logoUrl} alt="" style={{ maxHeight: 28 * logoScale, maxWidth: 90 * logoScale, objectFit: 'contain' }} />
+                      <button onClick={() => { setLogoUrl(null); setLogoScale(1); }} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                      <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
+                      <input
+                        type="range" min={0.5} max={3} step={0.1}
+                        value={logoScale}
+                        onChange={e => setLogoScale(Number(e.target.value))}
+                        style={{ flex: 1 }}
+                      />
+                      <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{logoScale.toFixed(1)}×</span>
+                    </div>
+                  </>
                 ) : (
                   <button onClick={() => logoUploadRef.current?.click()} disabled={logoUploading} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '11px', fontWeight: 700, fontSize: '.82rem', color: logoUploading ? '#B0A8BC' : '#7A7585', cursor: logoUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
                     {logoUploading ? 'Uploading…' : '⬆ Upload your logo (PNG or SVG)'}
@@ -473,35 +488,33 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
 
-              {/* Recipient name */}
-              <div style={{ position: 'absolute', top: 10, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
-                <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 4 }}>To</div>
-                <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
+              {/* Name/message/from — positioned to match CasualView's actual cover exactly
+                  (bottom-anchored, left-aligned, stacked), so what you see while editing is
+                  what the recipient actually sees, not a different layout. */}
+              <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
+                <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>To</div>
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
                   <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
-                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40, textTransform: 'capitalize' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,.55)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
                   />
                 </div>
-              </div>
-
-              {/* Cover text + from */}
-              <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
-                <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>Cover Message</div>}
+                <div style={{ position: 'relative', marginBottom: 6 }}>
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)' }}>Cover Message</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2rem, 7.5vw, 2.8rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 3px 24px rgba(0,0,0,.7)', caretColor: '#fff', wordBreak: 'break-word' }}
                   />
-                  <div style={{ textAlign: 'center', marginTop: 10 }}>
-                    <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>From</div>
-                    <div style={{ position: 'relative', width: '80%', margin: '0 auto' }}>
-                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the team</div>}
-                      <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
-                        onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
-                        style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: "'Nunito', sans-serif", fontSize: 'clamp(1rem, 3.5vw, 1.2rem)', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,0.92)', textShadow: '0 2px 14px rgba(0,0,0,0.65)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40, padding: '3px 4px' }}
-                      />
-                    </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 2px 14px rgba(0,0,0,.55)', flexShrink: 0 }}>From</span>
+                  <div style={{ position: 'relative', flex: 1, minWidth: 30 }}>
+                    {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the team</div>}
+                    <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
+                      onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
+                      style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 2px 14px rgba(0,0,0,.55)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
+                    />
                   </div>
                 </div>
               </div>
@@ -591,24 +604,39 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             </div>
           )}
 
-          {/* Messages preview — style-aware */}
+          {/* Messages preview — style-aware. Casual/corporate show realistic-looking
+              example messages (real names, real-looking text) rather than a bare "will
+              appear here" placeholder, so the banner below is the only thing telling the
+              organiser these aren't actually theirs — needed precisely because they look
+              real enough to otherwise be mistaken for it. */}
           {cardStyle === 'casual' ? (
-            <CasualView
-              campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote, card_image_url: null, card_palette: cardPalette }}
-              contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
-              messageAreaName={effectiveRecip}
-              messageAreaCoverMessage={effectiveCardMsg}
-              messageAreaOccasion={effectiveOccasion}
-              preview
-              noHeader
-            />
+            <>
+              <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
+                💬 Example messages — your contributors&apos; real ones will appear here
+              </div>
+              <CasualView
+                campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote, card_image_url: null, card_palette: cardPalette }}
+                contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
+                messageAreaName={effectiveRecip}
+                messageAreaCoverMessage={effectiveCardMsg}
+                messageAreaOccasion={effectiveOccasion}
+                preview
+                noHeader
+              />
+            </>
           ) : cardStyle === 'corporate' ? (
-            <CorporateView
-              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
-              contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
-              preview
-              noHeader
-            />
+            <>
+              <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
+                💬 Example messages — your contributors&apos; real ones will appear here
+              </div>
+              <CorporateView
+                campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
+                logoScale={logoScale}
+                contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
+                preview
+                noHeader
+              />
+            </>
           ) : (
             <>
               <div style={{ background: '#3A8FA0', color: 'rgba(255,255,255,.9)', textAlign: 'center', padding: '10px 16px', fontSize: '.75rem', letterSpacing: '.07em', fontWeight: 700 }}>

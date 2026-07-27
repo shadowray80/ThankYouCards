@@ -64,10 +64,10 @@ export async function PATCH(
   }
 
   if (action === 'update_logo') {
-    const { card_logo_url } = body;
+    const { card_logo_url, card_logo_scale } = body;
     const { error: updateError } = await supabaseAdmin
       .from('campaigns')
-      .update({ card_logo_url: card_logo_url ?? null })
+      .update({ card_logo_url: card_logo_url ?? null, card_logo_scale: card_logo_scale ?? 1 })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true });

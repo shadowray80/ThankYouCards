@@ -22,6 +22,7 @@ interface Campaign {
   card_style: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_logo_scale?: number | null;
   card_text_on_image?: boolean | null;
   funded_amount: number;
   target_amount: number | null;
@@ -429,7 +430,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             {campaign.card_style === 'casual' ? (
               <CasualView campaign={campaign} contributions={previewContribs} preview />
             ) : campaign.card_style === 'corporate' ? (
-              <CorporateView campaign={campaign} contributions={previewContribs} preview />
+              <CorporateView campaign={campaign} contributions={previewContribs} preview logoScale={campaign.card_logo_scale ?? 1} />
             ) : (
               <div style={{ padding: '16px 16px 40px' }}>
                 <CardScrollView

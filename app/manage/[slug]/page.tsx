@@ -25,6 +25,7 @@ interface Campaign {
   card_style: string | null;
   card_palette: string | null;
   card_logo_url: string | null;
+  card_logo_scale: number | null;
   card_text_on_image: boolean | null;
 }
 
@@ -187,12 +188,23 @@ function ManageContent() {
       await fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: url }),
+        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: url, card_logo_scale: campaign?.card_logo_scale ?? 1 }),
       });
       setCampaign(prev => prev ? { ...prev, card_logo_url: url } : prev);
     } finally {
       setSavingLogo(false);
     }
+  };
+
+  // Range inputs fire onChange continuously while dragging — update the preview live on
+  // every tick, but only save to the server once, on release, so dragging the slider
+  // doesn't spam the API with a request per pixel of movement.
+  const saveLogoScale = async (scale: number) => {
+    await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: scale }),
+    });
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,6 +425,7 @@ function ManageContent() {
                 campaign={campaign}
                 contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
                 preview
+                logoScale={campaign.card_logo_scale ?? 1}
               />
             ) : (
               <CardScrollView
@@ -560,21 +573,38 @@ function ManageContent() {
             <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Upload a PNG logo to display in the card header. Transparent PNG works best.</div>
             <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp" style={{ display: 'none' }} onChange={handleLogoUpload} />
             {campaign.card_logo_url ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ background: '#1A2744', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                  <img src={campaign.card_logo_url} alt="Logo" style={{ maxHeight: 36, maxWidth: 120, objectFit: 'contain' }} />
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ background: '#1A2744', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                    <img src={campaign.card_logo_url} alt="Logo" style={{ maxHeight: 36 * (campaign.card_logo_scale ?? 1), maxWidth: 120 * (campaign.card_logo_scale ?? 1), objectFit: 'contain' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}
+                      style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", opacity: savingLogo ? 0.6 : 1 }}>
+                      {savingLogo ? '…' : 'Replace'}
+                    </button>
+                    <button onClick={() => saveLogo(null)} disabled={savingLogo}
+                      style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}
-                    style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", opacity: savingLogo ? 0.6 : 1 }}>
-                    {savingLogo ? '…' : 'Replace'}
-                  </button>
-                  <button onClick={() => saveLogo(null)} disabled={savingLogo}
-                    style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                    Remove
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+                  <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
+                  <input
+                    type="range" min={0.5} max={3} step={0.1}
+                    value={campaign.card_logo_scale ?? 1}
+                    onChange={e => {
+                      const scale = Number(e.target.value);
+                      setCampaign(prev => prev ? { ...prev, card_logo_scale: scale } : prev);
+                    }}
+                    onMouseUp={e => saveLogoScale(Number((e.target as HTMLInputElement).value))}
+                    onTouchEnd={e => saveLogoScale(Number((e.target as HTMLInputElement).value))}
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{(campaign.card_logo_scale ?? 1).toFixed(1)}×</span>
                 </div>
-              </div>
+              </>
             ) : (
               <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}
                 style={{ width: '100%', border: '2px dashed #C8D8F0', borderRadius: 10, padding: '16px', background: '#F7F9FC', cursor: savingLogo ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 800, fontSize: '.82rem' }}>
