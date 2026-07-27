@@ -69,9 +69,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipient_name: effectiveTo.trim(),
-          occasion: null,
+          occasion: '',
           target_amount: 0,
-          card_theme: null,
+          card_theme: '',
           card_message: cardMsg.trim(),
           card_image_url: imageUrl,
           card_text_on_image: to.trim() !== '' || cardMsg.trim() !== '',

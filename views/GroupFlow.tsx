@@ -172,7 +172,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           target_amount: 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
-          card_theme: null,
+          card_theme: '',
           card_message: effectiveCardMsg,
           card_note: cardStyle === 'casual' ? (cardNote.trim() || null) : null,
           card_image_url: customImgUrl || selectedUrl,
