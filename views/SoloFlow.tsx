@@ -258,13 +258,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
             <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
-              <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
+              <div style={{ position: 'relative' }}>
                 {!to && (
                   <div style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap',
+                    lineHeight: 1.1, letterSpacing: '.01em', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap',
                   }}>
                     The Legend&apos;s Name
                   </div>
@@ -283,9 +283,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, color: '#fff',
+                    lineHeight: 1.1, letterSpacing: '.01em', color: '#fff',
                     textShadow: '0 2px 20px rgba(0,0,0,0.55)',
-                    caretColor: '#fff', padding: '6px 4px',
+                    caretColor: '#fff',
                     minWidth: 40,
                     textTransform: 'capitalize',
                   }}
@@ -293,18 +293,20 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </div>
             </div>
 
-            {/* Cover text — floating on image, wraps to two lines if long. Dimmed while it's
-                It starts empty — nothing is sent unless you type something here. */}
+            {/* Cover text — floating on image, wraps to two lines if long. Font size and
+                position mirror CardScrollView's rendering exactly, so the preview never
+                looks different from what you were just typing. Dimmed while it's a
+                placeholder. It starts empty — nothing is sent unless you type here. */}
             <div style={{
               position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3,
               textAlign: 'center', padding: '0 16px',
             }}>
-              <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
+              <div style={{ position: 'relative' }}>
                 {!cardMsg && (
                   <div style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
+                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
                     lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
                   }}>
                     Cover Message
@@ -315,13 +317,15 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
-                  onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
+                  onInput={e => {
+                    const raw = e.currentTarget.textContent ?? '';
+                    setCardMsg(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase()));
+                  }}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(3.2rem, 12vw, 4.5rem)',
+                    fontSize: 'clamp(2rem, 7.5vw, 2.8rem)',
                     lineHeight: 1.2, color: '#fff',
-                    textShadow: '0 3px 24px rgba(0,0,0,0.7)',
                     caretColor: '#fff',
                     wordBreak: 'break-word',
                   }}
