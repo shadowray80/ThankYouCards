@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 const ADMIN_PAGES = [
   { href: '/admin/showcase', icon: '🖼', title: 'Homepage example cards', desc: 'Create, edit and toggle which example cards show in the homepage carousel.' },
+  { href: '/admin/cards', icon: '🃏', title: 'Card library', desc: 'Sync generated cards from Storage and tag them for the new card picker.' },
 ];
 
 export default function AdminIndexPage() {

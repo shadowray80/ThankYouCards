@@ -1,0 +1,72 @@
+// Shared category/tag vocabulary for the new card library — used by both the picker
+// (`components/cards/CardPicker.tsx`) and the admin card manager, so the two can't drift
+// apart the way the standalone dev-prototype pages briefly did from `GroupFlow.tsx`.
+//
+// Categories mirror what `Define Cards` in the n8n GenPrompts workflow actually produces
+// (see PROJECT.md / memory for the taxonomy history). Tags are the cross-cutting
+// recipient/theme labels — never derived from a filename, always set by hand in the
+// manager.
+
+export const CATEGORIES = [
+  { id: 'thank_you', label: 'Thank You' },
+  { id: 'birthday', label: 'Birthday' },
+  { id: 'sympathy', label: 'Sympathy' },
+  { id: 'get_well', label: 'Get Well' },
+  { id: 'wedding', label: 'Wedding' },
+  { id: 'engagement', label: 'Engagement' },
+  { id: 'anniversary', label: 'Anniversary' },
+  { id: 'leaving', label: 'Leaving' },
+  { id: 'congratulations', label: 'Congratulations' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'retirement', label: 'Retirement' },
+];
+
+export const TAGS = [
+  { id: 'mum', label: 'Mum' },
+  { id: 'dad', label: 'Dad' },
+  { id: 'mates', label: 'Mates' },
+  { id: 'nature', label: 'Nature' },
+  { id: 'cars', label: 'Cars' },
+  { id: 'beach', label: 'Beach' },
+  { id: 'australia', label: 'Australia' },
+];
+
+// Longest-id-first so a multi-word category (e.g. `get_well`, `thank_you`) is matched
+// before any shorter category could accidentally look like a prefix of it.
+const CATEGORY_IDS = [...CATEGORIES.map(c => c.id)].sort((a, b) => b.length - a.length);
+
+export interface ParsedCardFileName {
+  category: string;
+  subcategory: string | null;
+  style: string;
+  index: number;
+}
+
+/**
+ * Parses `{category}_{subcategory}_{style}_{index}.ext` (subcategory omitted when a
+ * category has none, e.g. `thank_you_watercolour_01.png`). Category/subcategory ids can
+ * themselves contain underscores (`get_well`, `rugby_union`), so this can't just split on
+ * `_` naively — it matches the category as a known prefix first, then reads the *last*
+ * remaining token as the index and the one before it as the style, treating everything
+ * else in between as the subcategory (however many underscore-joined words that is).
+ * Returns null for anything that doesn't fit the pattern, e.g. files uploaded manually
+ * without following the convention — those are left for a human to sort out rather than
+ * guessed at.
+ */
+export function parseCardFileName(fileName: string): ParsedCardFileName | null {
+  const stem = fileName.replace(/\.[^.]+$/, '');
+  const category = CATEGORY_IDS.find(id => stem === id || stem.startsWith(`${id}_`));
+  if (!category) return null;
+
+  const rest = stem.slice(category.length + 1);
+  const parts = rest.split('_').filter(Boolean);
+  if (parts.length < 2) return null;
+
+  const indexStr = parts[parts.length - 1];
+  if (!/^\d+$/.test(indexStr)) return null;
+
+  const style = parts[parts.length - 2];
+  const subcategory = parts.slice(0, parts.length - 2).join('_') || null;
+
+  return { category, subcategory, style, index: parseInt(indexStr, 10) };
+}
