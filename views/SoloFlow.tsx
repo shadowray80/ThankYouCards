@@ -17,6 +17,7 @@ interface SoloFlowProps {
 export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [selectedUrl, setSelectedUrl] = useState('https://ofoboqojauitnmdbhcaz.supabase.co/storage/v1/object/public/cards/thank_you_beach_papercraft_04.png');
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
@@ -97,12 +98,23 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const canContinue = effectiveTo.trim().length > 0;
   const giftAmount = includeGift ? Number(giftSel || giftCustom) || 0 : 0;
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => setCustomImgUrl(ev.target?.result as string);
-    r.readAsDataURL(f);
+    setUploadingImg(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) setCustomImgUrl(json.url);
+      else onToast(json.error ?? 'Upload failed — please try again');
+    } catch {
+      onToast('Upload failed — please try again');
+    } finally {
+      setUploadingImg(false);
+      if (uploadRef.current) uploadRef.current.value = '';
+    }
   };
 
   const handleMsgPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,19 +232,19 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
             {/* Upload own photo — corner button */}
             <div
-              onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
+              onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
               style={{
                 position: 'absolute', top: 14, right: 14, zIndex: 5,
-                width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+                width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer',
                 background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)',
                 backdropFilter: 'blur(4px)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
-                transition: 'background .2s',
+                fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+                transition: 'background .2s', color: '#fff', fontWeight: 800,
               }}
-              title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
+              title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
             >
-              {customImgUrl ? '✕' : '📷'}
+              {uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}
             </div>
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
