@@ -57,6 +57,7 @@ const GIFT_TYPES = [
 export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) {
   const [selectedUrl, setSelectedUrl]   = useState(THEMES[14]?.imgs[0] ?? THEMES[0].imgs[0]); // was "coach"
   const [customImgUrl, setCustomImgUrl] = useState<string | null>(null);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   const [recip, setRecip]       = useState('');
   // Message-area-only versions — used only when the matching on-photo field is left blank,
@@ -136,12 +137,23 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     }
   };
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => setCustomImgUrl(ev.target?.result as string);
-    r.readAsDataURL(f);
+    setUploadingImg(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) setCustomImgUrl(json.url);
+      else onToast(json.error ?? 'Upload failed — please try again');
+    } catch {
+      onToast('Upload failed — please try again');
+    } finally {
+      setUploadingImg(false);
+      if (uploadRef.current) uploadRef.current.value = '';
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -405,10 +417,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 20%, transparent 60%)` }} />
                 </>}
                 <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
-                <div onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
-                  style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 5, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,.9)' : 'rgba(255,255,255,.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.8rem', boxShadow: '0 2px 8px rgba(0,0,0,.3)' }}
-                  title={customImgUrl ? 'Remove photo' : 'Add a photo (optional)'}
-                >{customImgUrl ? '✕' : '📷'}</div>
+                <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
+                  style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 5, width: 30, height: 30, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer', background: customImgUrl ? 'rgba(232,114,74,.9)' : 'rgba(255,255,255,.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: uploadingImg ? '.65rem' : '.8rem', boxShadow: '0 2px 8px rgba(0,0,0,.3)', color: '#fff', fontWeight: 800 }}
+                  title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove photo' : 'Add a photo (optional)'}
+                >{uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}</div>
               </div>
             </div>
 
@@ -434,10 +446,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ position: 'relative', overflow: 'hidden' }}>
               <img key={imgUrl} src={imgUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
-              <div onClick={() => customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
-                style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s' }}
-                title={customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-              >{customImgUrl ? '✕' : '📷'}</div>
+              <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
+                style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s', color: '#fff', fontWeight: 800 }}
+                title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
+              >{uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}</div>
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
