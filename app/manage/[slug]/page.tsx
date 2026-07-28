@@ -272,19 +272,20 @@ function ManageContent() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
             <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)', fontFamily: "'Nunito',sans-serif" }}>
               thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
             </button>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button onClick={() => loadData(true)} disabled={refreshing}
-                style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 20, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#fff', cursor: 'pointer', letterSpacing: '.04em' }}>
-                {refreshing ? '…' : '↻ Refresh'}
-              </button>
-              <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
-                {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
-              </div>
+            <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
+              {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
             </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+            <button onClick={() => loadData(true)} disabled={refreshing}
+              style={{ background: '#E8724A', border: 'none', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', cursor: refreshing ? 'default' : 'pointer', letterSpacing: '.04em', fontFamily: "'Nunito',sans-serif" }}>
+              {refreshing ? 'Refreshing…' : 'Refresh ↻'}
+            </button>
           </div>
 
           <div style={{ fontWeight: 800, fontSize: '1.3rem', color: '#fff', marginBottom: 4 }}>
