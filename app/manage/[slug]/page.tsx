@@ -26,6 +26,8 @@ interface Campaign {
   card_palette: string | null;
   card_logo_url: string | null;
   card_logo_scale: number | null;
+  card_logo_position: 'left' | 'center' | 'right' | null;
+  card_accent: string | null;
   card_text_on_image: boolean | null;
 }
 
@@ -142,12 +144,21 @@ function ManageContent() {
       await fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'update_palette', card_palette: paletteId }),
+        body: JSON.stringify({ token, action: 'update_palette', card_palette: paletteId, card_accent: campaign?.card_accent ?? null }),
       });
       setCampaign(prev => prev ? { ...prev, card_palette: paletteId } : prev);
     } finally {
       setSavingPalette(false);
     }
+  };
+
+  // Same live-preview-then-save-on-release pattern as the logo scale slider.
+  const saveAccent = async (accent: string | null) => {
+    await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_palette', card_palette: campaign?.card_palette ?? 'navy', card_accent: accent }),
+    });
   };
 
   const saveCardDetails = async () => {
@@ -190,7 +201,7 @@ function ManageContent() {
       await fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: url, card_logo_scale: campaign?.card_logo_scale ?? 1 }),
+        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: url, card_logo_scale: campaign?.card_logo_scale ?? 1, card_logo_position: campaign?.card_logo_position ?? 'left' }),
       });
       setCampaign(prev => prev ? { ...prev, card_logo_url: url } : prev);
     } finally {
@@ -205,7 +216,16 @@ function ManageContent() {
     await fetch(`/api/manage/${slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: scale }),
+      body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: scale, card_logo_position: campaign?.card_logo_position ?? 'left' }),
+    });
+  };
+
+  const saveLogoPosition = async (position: 'left' | 'center' | 'right') => {
+    setCampaign(prev => prev ? { ...prev, card_logo_position: position } : prev);
+    await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: campaign?.card_logo_scale ?? 1, card_logo_position: position }),
     });
   };
 
@@ -492,6 +512,7 @@ ${origin}/card/${slug}
                 contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
                 preview
                 logoScale={campaign.card_logo_scale ?? 1}
+                logoPosition={campaign.card_logo_position ?? 'left'}
               />
             ) : (
               <CardScrollView
@@ -632,6 +653,32 @@ ${origin}/card/${slug}
           </div>
         )}
 
+        {/* Corporate text colour */}
+        {campaign.card_style === 'corporate' && (() => {
+          const corpPalette = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy')) ?? CORPORATE_PALETTES[0];
+          return (
+            <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🖋 Text colour</div>
+              <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Used for the tagline and highlights throughout the card.</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', position: 'relative', overflow: 'hidden', background: campaign.card_accent ?? corpPalette.accent, border: '3px solid #fff', boxShadow: '0 0 0 2px #E8E2F0', flexShrink: 0 }}>
+                  <input type="color"
+                    value={campaign.card_accent ?? corpPalette.accent}
+                    onChange={e => { setCampaign(prev => prev ? { ...prev, card_accent: e.target.value } : prev); saveAccent(e.target.value); }}
+                    style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }}
+                  />
+                </div>
+                {campaign.card_accent && (
+                  <button onClick={() => { setCampaign(prev => prev ? { ...prev, card_accent: null } : prev); saveAccent(null); }}
+                    style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    Reset to palette default
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Corporate logo upload */}
         {campaign.card_style === 'corporate' && (
           <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
@@ -669,6 +716,20 @@ ${origin}/card/${slug}
                     style={{ flex: 1 }}
                   />
                   <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{(campaign.card_logo_scale ?? 1).toFixed(1)}×</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+                  <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Position</span>
+                  {(['left', 'center', 'right'] as const).map(pos => (
+                    <button key={pos} onClick={() => saveLogoPosition(pos)} style={{
+                      flex: 1, textTransform: 'capitalize', padding: '6px 0', borderRadius: 8, fontSize: '.74rem', fontWeight: 800,
+                      fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
+                      background: (campaign.card_logo_position ?? 'left') === pos ? '#7C5CBF' : '#fff',
+                      color: (campaign.card_logo_position ?? 'left') === pos ? '#fff' : '#7A7585',
+                      border: (campaign.card_logo_position ?? 'left') === pos ? '1.5px solid #7C5CBF' : '1.5px solid #E8E2F0',
+                    }}>
+                      {pos}
+                    </button>
+                  ))}
                 </div>
               </>
             ) : (

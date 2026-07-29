@@ -36,6 +36,8 @@ export default function CardPickerGroupDevPage() {
   const [cardPalette, setCardPalette] = useState('sky');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoScale, setLogoScale] = useState(1);
+  const [logoPosition, setLogoPosition] = useState<'left' | 'center' | 'right'>('left');
+  const [accentColor, setAccentColor] = useState<string | null>(null);
 
   const [recip, setRecip] = useState('');
   const [msgAreaRecip, setMsgAreaRecip] = useState('');
@@ -126,8 +128,9 @@ export default function CardPickerGroupDevPage() {
               />
             ) : (
               <CorporateView
-                campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_image_url: customImgUrl, card_palette: cardPalette, card_logo_url: logoUrl }}
+                campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_image_url: customImgUrl, card_palette: cardPalette, card_logo_url: logoUrl, card_accent: accentColor }}
                 logoScale={logoScale}
+                logoPosition={logoPosition}
                 contributions={[]}
               />
             )}
@@ -165,7 +168,13 @@ export default function CardPickerGroupDevPage() {
             )}
 
             {cardStyle === 'corporate' && (
-              <BrandKitPanel cardPalette={cardPalette} logoUrl={logoUrl} onApply={(palette, kitLogoUrl) => { setCardPalette(palette); setLogoUrl(kitLogoUrl); }}>
+              <BrandKitPanel
+                cardPalette={cardPalette} logoUrl={logoUrl} logoScale={logoScale} logoPosition={logoPosition} accentColor={accentColor}
+                onApply={(palette, kitLogoUrl, kitLogoScale, kitLogoPosition, kitAccentColor) => {
+                  setCardPalette(palette); setLogoUrl(kitLogoUrl);
+                  setLogoScale(kitLogoScale); setLogoPosition(kitLogoPosition); setAccentColor(kitAccentColor);
+                }}
+              >
                 <div>
                   <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -262,8 +271,9 @@ export default function CardPickerGroupDevPage() {
               💬 Example messages — your contributors&apos; real ones will appear here
             </div>
             <CorporateView
-              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
+              campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl, card_accent: accentColor }}
               logoScale={logoScale}
+              logoPosition={logoPosition}
               contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
               preview
               noHeader

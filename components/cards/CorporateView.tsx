@@ -11,6 +11,7 @@ interface Campaign {
   card_image_url: string | null;
   card_palette: string | null;
   card_logo_url?: string | null;
+  card_accent?: string | null;
 }
 
 interface Contribution {
@@ -127,15 +128,21 @@ export function CorporateView({
   preview,
   noHeader,
   logoScale = 1,
+  logoPosition = 'left',
 }: {
   campaign: Campaign;
   contributions: Contribution[];
   preview?: boolean;
   noHeader?: boolean;
   logoScale?: number;
+  logoPosition?: 'left' | 'center' | 'right';
 }) {
-  const palette        = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy'))
+  const rawPalette = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy'))
     ?? (campaign.card_palette?.startsWith('#') ? buildCustomPalette(campaign.card_palette) : CORPORATE_PALETTES[0]);
+  // A custom accent overrides the palette's built-in one everywhere accent is used
+  // (tagline, message-card highlights, footer CTA) — computed once here so every
+  // other usage of `palette.accent` below just works without further changes.
+  const palette: CorporatePalette = campaign.card_accent ? { ...rawPalette, accent: campaign.card_accent } : rawPalette;
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasImage       = !!campaign.card_image_url;
   const visibleAvatars = contributions.slice(0, MAX_AVATARS);
@@ -177,11 +184,15 @@ export function CorporateView({
                 {campaign.occasion.replace(/^From\s+/i, '')}
               </div>
             )}
-            {campaign.card_logo_url ? (
-              <img src={campaign.card_logo_url} alt="" style={{ maxHeight: 40 * logoScale, maxWidth: 120 * logoScale, objectFit: 'contain', objectPosition: 'left center', marginTop: 14, opacity: 0.9 }} />
-            ) : preview && (
-              <div style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', height: 40, minWidth: 64, border: '1.5px dashed rgba(255,255,255,.3)', borderRadius: 6, padding: '0 14px' }}>
-                <span style={{ fontSize: '.62rem', color: 'rgba(255,255,255,.4)', fontWeight: 800, fontFamily: "'Nunito', sans-serif", whiteSpace: 'nowrap' }}>Your logo</span>
+            {(campaign.card_logo_url || preview) && (
+              <div style={{ display: 'flex', width: '100%', marginTop: 14, justifyContent: logoPosition === 'center' ? 'center' : logoPosition === 'right' ? 'flex-end' : 'flex-start' }}>
+                {campaign.card_logo_url ? (
+                  <img src={campaign.card_logo_url} alt="" style={{ maxHeight: 40 * logoScale, maxWidth: 120 * logoScale, objectFit: 'contain', opacity: 0.9 }} />
+                ) : (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', height: 40, minWidth: 64, border: '1.5px dashed rgba(255,255,255,.3)', borderRadius: 6, padding: '0 14px' }}>
+                    <span style={{ fontSize: '.62rem', color: 'rgba(255,255,255,.4)', fontWeight: 800, fontFamily: "'Nunito', sans-serif", whiteSpace: 'nowrap' }}>Your logo</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

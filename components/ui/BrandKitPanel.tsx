@@ -8,17 +8,26 @@ interface BrandKit {
   name: string;
   card_palette: string;
   card_logo_url: string | null;
+  card_logo_scale: number | null;
+  card_logo_position: 'left' | 'center' | 'right' | null;
+  card_accent: string | null;
 }
 
 export function BrandKitPanel({
   cardPalette,
   logoUrl,
+  logoScale,
+  logoPosition,
+  accentColor,
   onApply,
   children,
 }: {
   cardPalette: string;
   logoUrl: string | null;
-  onApply: (palette: string, logoUrl: string | null) => void;
+  logoScale: number;
+  logoPosition: 'left' | 'center' | 'right';
+  accentColor: string | null;
+  onApply: (palette: string, logoUrl: string | null, logoScale: number, logoPosition: 'left' | 'center' | 'right', accentColor: string | null) => void;
   children: React.ReactNode;
 }) {
   const { session } = useOrganiserSession();
@@ -42,7 +51,7 @@ export function BrandKitPanel({
   function selectKit(id: string) {
     setSelectedKitId(id);
     const kit = kits.find(k => k.id === id);
-    if (kit) onApply(kit.card_palette, kit.card_logo_url);
+    if (kit) onApply(kit.card_palette, kit.card_logo_url, kit.card_logo_scale ?? 1, kit.card_logo_position ?? 'left', kit.card_accent);
   }
 
   async function saveCurrentKit() {
@@ -52,7 +61,10 @@ export function BrandKitPanel({
       const res = await fetch('/api/brand-kits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...session, name: savingName.trim(), card_palette: cardPalette, card_logo_url: logoUrl }),
+        body: JSON.stringify({
+          ...session, name: savingName.trim(), card_palette: cardPalette, card_logo_url: logoUrl,
+          card_logo_scale: logoScale, card_logo_position: logoPosition, card_accent: accentColor,
+        }),
       });
       const json = await res.json();
       if (res.ok) {

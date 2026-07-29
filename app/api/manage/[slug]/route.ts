@@ -64,21 +64,21 @@ export async function PATCH(
   }
 
   if (action === 'update_logo') {
-    const { card_logo_url, card_logo_scale } = body;
+    const { card_logo_url, card_logo_scale, card_logo_position } = body;
     const { error: updateError } = await supabaseAdmin
       .from('campaigns')
-      .update({ card_logo_url: card_logo_url ?? null, card_logo_scale: card_logo_scale ?? 1 })
+      .update({ card_logo_url: card_logo_url ?? null, card_logo_scale: card_logo_scale ?? 1, card_logo_position: card_logo_position ?? 'left' })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true });
   }
 
   if (action === 'update_palette') {
-    const { card_palette } = body;
+    const { card_palette, card_accent } = body;
     if (!card_palette) return Response.json({ error: 'Missing card_palette' }, { status: 400 });
     const { error: updateError } = await supabaseAdmin
       .from('campaigns')
-      .update({ card_palette })
+      .update({ card_palette, card_accent: card_accent ?? null })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true });

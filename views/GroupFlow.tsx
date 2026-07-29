@@ -84,6 +84,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
   const [logoScale, setLogoScale]       = useState(1);
+  const [logoPosition, setLogoPosition] = useState<'left' | 'center' | 'right'>('left');
+  const [accentColor, setAccentColor]   = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
 
   const uploadRef    = useRef<HTMLInputElement>(null);
@@ -192,6 +194,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_palette: cardPalette,
           card_logo_url: logoUrl,
           card_logo_scale: logoScale,
+          card_logo_position: logoPosition,
+          card_accent: accentColor,
           card_text_on_image: recip.trim() !== '' || cardMsg.trim() !== '',
         }),
       });
@@ -239,8 +243,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 campaign={{
                   slug: '', recipient_name: recip, occasion, card_message: cardMsg,
                   card_image_url: customImgUrl, card_palette: cardPalette, card_logo_url: logoUrl,
+                  card_accent: accentColor,
                 }}
                 logoScale={logoScale}
+                logoPosition={logoPosition}
                 contributions={[]}
               />
             ) : (
@@ -301,7 +307,13 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <BrandKitPanel
               cardPalette={cardPalette}
               logoUrl={logoUrl}
-              onApply={(palette, kitLogoUrl) => { setCardPalette(palette); setLogoUrl(kitLogoUrl); }}
+              logoScale={logoScale}
+              logoPosition={logoPosition}
+              accentColor={accentColor}
+              onApply={(palette, kitLogoUrl, kitLogoScale, kitLogoPosition, kitAccentColor) => {
+                setCardPalette(palette); setLogoUrl(kitLogoUrl);
+                setLogoScale(kitLogoScale); setLogoPosition(kitLogoPosition); setAccentColor(kitAccentColor);
+              }}
             >
               <div>
                 <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Header colour</div>
@@ -321,13 +333,25 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 </div>
               </div>
               <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Text colour</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', position: 'relative', overflow: 'hidden', background: accentColor ?? corpPalette.accent, border: '3px solid #fff', boxShadow: '0 0 0 2px #E8E2F0', flexShrink: 0 }}>
+                    <input type="color" value={accentColor ?? corpPalette.accent} onChange={e => setAccentColor(e.target.value)} style={{ position: 'absolute', inset: '-4px', opacity: 0, cursor: 'pointer', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)' }} />
+                  </div>
+                  <span style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600 }}>Used for the tagline and highlights</span>
+                  {accentColor && (
+                    <button onClick={() => setAccentColor(null)} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", whiteSpace: 'nowrap' }}>Reset</button>
+                  )}
+                </div>
+              </div>
+              <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
                 <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
                 {logoUrl ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 10, padding: '8px 12px' }}>
                       <img src={logoUrl} alt="" style={{ maxHeight: 28 * logoScale, maxWidth: 90 * logoScale, objectFit: 'contain' }} />
-                      <button onClick={() => { setLogoUrl(null); setLogoScale(1); }} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+                      <button onClick={() => { setLogoUrl(null); setLogoScale(1); setLogoPosition('left'); }} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
                       <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
@@ -338,6 +362,20 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                         style={{ flex: 1 }}
                       />
                       <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{logoScale.toFixed(1)}×</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+                      <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Position</span>
+                      {(['left', 'center', 'right'] as const).map(pos => (
+                        <button key={pos} onClick={() => setLogoPosition(pos)} style={{
+                          flex: 1, textTransform: 'capitalize', padding: '6px 0', borderRadius: 8, fontSize: '.74rem', fontWeight: 800,
+                          fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
+                          background: logoPosition === pos ? '#7C5CBF' : '#fff',
+                          color: logoPosition === pos ? '#fff' : '#7A7585',
+                          border: logoPosition === pos ? '1.5px solid #7C5CBF' : '1.5px solid #E8E2F0',
+                        }}>
+                          {pos}
+                        </button>
+                      ))}
                     </div>
                   </>
                 ) : (
@@ -375,7 +413,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.25)', lineHeight: 1.4 }}>Add a tagline…</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
                   />
                 </div>
 
@@ -389,11 +427,11 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   />
                 </div>
                 {/* Logo — pushed to bottom; placeholder shows when none uploaded */}
-                <div style={{ marginTop: 'auto', paddingTop: 12 }}>
+                <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', justifyContent: logoPosition === 'center' ? 'center' : logoPosition === 'right' ? 'flex-end' : 'flex-start' }}>
                   {logoUrl ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <img src={logoUrl} alt="" style={{ maxHeight: 40, maxWidth: 120, objectFit: 'contain', objectPosition: 'left center', opacity: 0.9 }} />
-                      <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                      <img src={logoUrl} alt="" style={{ maxHeight: 40 * logoScale, maxWidth: 120 * logoScale, objectFit: 'contain', opacity: 0.9 }} />
+                      <button onClick={() => setLogoUrl(null)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', color: '#fff', fontSize: '.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
                     </div>
                   ) : (
                     <div style={{ display: 'inline-flex', alignItems: 'center', height: 40, minWidth: 64, border: '1.5px dashed rgba(255,255,255,.3)', borderRadius: 6, padding: '0 14px' }}>
@@ -429,8 +467,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             💬 Example messages — your contributors&apos; real ones will appear here
           </div>
           <CorporateView
-            campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl }}
+            campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl, card_accent: accentColor }}
             logoScale={logoScale}
+            logoPosition={logoPosition}
             contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
             preview
             noHeader

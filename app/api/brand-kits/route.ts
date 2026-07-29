@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('brand_kits')
-    .select('id, name, card_palette, card_logo_url, created_at')
+    .select('id, name, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, created_at')
     .eq('email', email)
     .order('created_at', { ascending: true });
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { email, session_token, name, card_palette, card_logo_url } = body;
+  const { email, session_token, name, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent } = body;
 
   if (!(await sessionIsValid(email, session_token))) {
     return Response.json({ error: 'Not signed in' }, { status: 401 });
@@ -33,8 +33,12 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('brand_kits')
-    .insert({ email, name, card_palette, card_logo_url: card_logo_url ?? null })
-    .select('id, name, card_palette, card_logo_url, created_at')
+    .insert({
+      email, name, card_palette, card_logo_url: card_logo_url ?? null,
+      card_logo_scale: card_logo_scale ?? 1, card_logo_position: card_logo_position ?? 'left',
+      card_accent: card_accent ?? null,
+    })
+    .select('id, name, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, created_at')
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
