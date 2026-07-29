@@ -54,6 +54,8 @@ function ManageContent() {
   const [copied, setCopied]               = useState(false);
   const [copiedRecipient, setCopiedRecipient] = useState(false);
   const [copiedManage, setCopiedManage]   = useState(false);
+  const [copiedUpdate, setCopiedUpdate]   = useState(false);
+  const [updateMsgEdit, setUpdateMsgEdit] = useState<string | null>(null);
   const [paying, setPaying]               = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
   const [savingPalette, setSavingPalette] = useState(false);
@@ -404,6 +406,71 @@ function ManageContent() {
                   style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                   ✉️ Email
                 </a>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Send a reminder — only shown before sending. Framed as coming from TYC, not the
+            organiser, so re-sharing it doesn't feel like the organiser nagging their own
+            friends/colleagues. Editable, and never persisted — it's regenerated fresh (with
+            the current day-count and contributor count) every time the dashboard loads, and
+            any edit only lasts for this visit. */}
+        {!isSent && (() => {
+          const joinedLine = totalContributors > 0
+            ? `A huge thank you to everyone who's already joined the card ❤️\n\nIf you'd like to be part of it too, we'd love to include your message.`
+            : `We'd love to include your message — it only takes a minute.`;
+          const dayLine = daysLeft !== null
+            ? (daysLeft > 0
+                ? `${recipientName}'s card is only ${daysLeft} day${daysLeft !== 1 ? 's' : ''} away, and it's already looking fantastic.`
+                : `${recipientName}'s card is ready to send any day now, and it's already looking fantastic.`)
+            : `${recipientName}'s card is coming together, and it's already looking fantastic.`;
+          const defaultUpdateMsg = `💌 Share an update
+
+🎉 We're creating something special for ${recipientName}!
+
+${dayLine}
+
+${joinedLine}
+
+👉 Join the card:
+${origin}/card/${slug}
+
+— sent via thankyoucards.au 💌`;
+          const updateMsg = updateMsgEdit ?? defaultUpdateMsg;
+          return (
+            <div style={{ background: '#FFF4EC', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>💌 Send a reminder</div>
+              <div style={{ fontSize: '.74rem', color: '#9A7A6A', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
+                A friendly nudge from TYC, not from you — edit it if you like, then share it back into the group.
+              </div>
+              <textarea
+                value={updateMsg}
+                onChange={e => setUpdateMsgEdit(e.target.value)}
+                rows={9}
+                style={{
+                  width: '100%', border: '1.5px solid #F0D0B8', borderRadius: 8, padding: '10px 12px',
+                  fontSize: '.78rem', color: '#2A2A2A', fontFamily: "'Nunito',sans-serif", lineHeight: 1.55,
+                  resize: 'vertical', background: '#fff', boxSizing: 'border-box', marginBottom: 8,
+                }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(updateMsg); setCopiedUpdate(true); setTimeout(() => setCopiedUpdate(false), 2000); }}
+                  style={{ flex: 1, background: '#E8724A', border: 'none', borderRadius: 10, padding: '10px 0', color: '#fff', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                >
+                  {copiedUpdate ? '✓ Copied!' : 'Copy'}
+                </button>
+                <a href={`https://wa.me/?text=${encodeURIComponent(updateMsg)}`} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
+                  💬 WhatsApp
+                </a>
+                {updateMsgEdit !== null && (
+                  <button onClick={() => setUpdateMsgEdit(null)}
+                    style={{ background: 'none', border: '1.5px solid #F0D0B8', borderRadius: 10, padding: '10px 12px', color: '#9A7A6A', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
           );
