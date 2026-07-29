@@ -70,7 +70,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [myContrib, setMyContrib]       = useState<{ id: string; name: string; message: string; amount?: number } | null>(null);
-  const [showPreview, setShowPreview]   = useState(false);
 
   const hasMsg      = msg.trim().length > 0 || photoUrl !== null;
   const hasAmount   = !!(giftSel || giftCustom);
@@ -216,9 +215,19 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
     ? [{ name: myContrib.name, msg: myContrib.message }]
     : [];
 
-  const previewMsgs = name.trim() && msg.trim()
+  // What they're currently typing, live — shown on the card before they've submitted
+  // anything, so they can see it land alongside everyone else's rather than blindly
+  // writing into a form. Only appears once there's a name and something to show.
+  const hasDraft = name.trim() && (msg.trim() || photoUrl);
+
+  const previewMsgs = hasDraft
     ? [...existingMsgs, ...optimisticMsg, { name: name.trim(), msg: msg.trim() }]
     : [...existingMsgs, ...optimisticMsg];
+
+  const previewContribsRich = [
+    ...(hasDraft ? [{ contributor_name: name.trim(), message: msg.trim() || null, photo_url: photoUrl, photo_label: photoLabel.trim() || null }] : []),
+    ...contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url ?? null, photo_label: c.photo_label ?? null })),
+  ];
 
   return (
     <div>
@@ -260,8 +269,14 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
         )}
       </div>
 
-      {/* Card preview — classic only; casual uses the preview overlay */}
-      {campaign.card_style !== 'casual' && (
+      {/* Live card — always visible, not something they have to go looking for. Updates
+          as they type, so they can see their message land alongside everyone else's
+          instead of blindly writing into a form. */}
+      {campaign.card_style === 'casual' ? (
+        <CasualView campaign={campaign} contributions={previewContribsRich} preview />
+      ) : campaign.card_style === 'corporate' ? (
+        <CorporateView campaign={campaign} contributions={previewContribsRich} preview logoScale={campaign.card_logo_scale ?? 1} />
+      ) : (
         <div style={{ padding: '16px 18px 0' }}>
           <CardScrollView
             theme={theme} imgIdx={0}
@@ -371,66 +386,8 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
           <GiftSelector selected={giftSel} onSelect={a => { setGiftSel(a); setGiftCustom(''); }} custom={giftCustom} onCustom={v => { setGiftCustom(v); setGiftSel(null); }} />
         </div>
         */}
-        {canSubmit && (
-          <button
-            type="button"
-            onClick={() => setShowPreview(true)}
-            style={{
-              width: '100%', border: '2px solid #3A8FA0', borderRadius: 12,
-              padding: '12px', background: '#EAF4FB', color: '#3A8FA0',
-              fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '.9rem',
-              cursor: 'pointer', marginBottom: 8,
-            }}
-          >
-            👀 Preview your message on the card
-          </button>
-        )}
         {submitError && <div style={{ color: '#E8724A', fontWeight: 700, fontSize: '.85rem', marginTop: 12 }}>{submitError}</div>}
       </div>
-
-      {/* Preview overlay */}
-      {showPreview && campaign && (() => {
-        const pendingContrib = { contributor_name: name.trim(), message: msg.trim() || null, photo_url: photoUrl, photo_label: photoLabel.trim() || null };
-        const previewContribs = [pendingContrib, ...contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url ?? null, photo_label: c.photo_label ?? null }))];
-        return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#FFFDF8', overflowY: 'auto', fontFamily: "'Nunito',sans-serif" }}>
-            {/* Top bar */}
-            <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(42,42,42,.94)', backdropFilter: 'blur(6px)', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <button onClick={() => setShowPreview(false)} style={{ background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 8, padding: '7px 12px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                ← Edit
-              </button>
-              <span style={{ color: 'rgba(255,255,255,.6)', fontSize: '.76rem', fontWeight: 700 }}>Your message preview</span>
-              <button
-                onClick={() => { setShowPreview(false); submitMessageOnly(); }}
-                disabled={submitting}
-                style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '7px 14px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
-              >
-                {submitting ? 'Saving…' : 'Submit →'}
-              </button>
-            </div>
-            {/* Card */}
-            {campaign.card_style === 'casual' ? (
-              <CasualView campaign={campaign} contributions={previewContribs} preview />
-            ) : campaign.card_style === 'corporate' ? (
-              <CorporateView campaign={campaign} contributions={previewContribs} preview logoScale={campaign.card_logo_scale ?? 1} />
-            ) : (
-              <div style={{ padding: '16px 16px 40px' }}>
-                <CardScrollView
-                  theme={theme} imgIdx={0}
-                  customImgUrl={campaign.card_image_url ?? undefined}
-                  recipientName={recipientName}
-                  fromText={campaign.occasion ?? undefined}
-                  message={campaign.card_message ?? ''}
-                  messages={previewContribs.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
-                  landscapeCover
-                  showCoverText={campaign.card_text_on_image ?? true}
-                  alwaysShowCoverMessage
-                />
-              </div>
-            )}
-          </div>
-        );
-      })()}
 
       {/* Sticky buttons */}
       <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.97)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
