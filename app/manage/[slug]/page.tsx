@@ -67,6 +67,9 @@ function ManageContent() {
   const [editOccasion, setEditOccasion]   = useState('');
   const [editImageUrl, setEditImageUrl]   = useState<string | null>(null);
   const [editShowCoverText, setEditShowCoverText] = useState(true);
+  const [editingContribId, setEditingContribId] = useState<string | null>(null);
+  const [editingContribText, setEditingContribText] = useState('');
+  const [contribBusyId, setContribBusyId] = useState<string | null>(null);
   const [savingCard, setSavingCard]       = useState(false);
   const [cardSaved, setCardSaved]         = useState(false);
   const [editImageUploading, setEditImageUploading] = useState(false);
@@ -227,6 +230,45 @@ function ManageContent() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: campaign?.card_logo_scale ?? 1, card_logo_position: position }),
     });
+  };
+
+  const startEditContrib = (c: Contribution) => {
+    setEditingContribId(c.id);
+    setEditingContribText(c.message ?? '');
+  };
+
+  const saveEditContrib = async () => {
+    if (!editingContribId) return;
+    const id = editingContribId;
+    setContribBusyId(id);
+    try {
+      const res = await fetch(`/api/contributions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, message: editingContribText.trim() || null }),
+      });
+      if (res.ok) {
+        setContributions(prev => prev.map(c => c.id === id ? { ...c, message: editingContribText.trim() || null } : c));
+        setEditingContribId(null);
+      }
+    } finally {
+      setContribBusyId(null);
+    }
+  };
+
+  const deleteContrib = async (id: string) => {
+    if (!window.confirm('Remove this message from the card? This can\'t be undone.')) return;
+    setContribBusyId(id);
+    try {
+      const res = await fetch(`/api/contributions/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      if (res.ok) setContributions(prev => prev.filter(c => c.id !== id));
+    } finally {
+      setContribBusyId(null);
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -752,21 +794,61 @@ ${origin}/card/${slug}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {contributions.map(c => (
-                <div key={c.id} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
-                    {c.contributor_name.charAt(0).toUpperCase()}
+              {contributions.map(c => {
+                const isEditing = editingContribId === c.id;
+                const isBusy = contribBusyId === c.id;
+                return (
+                  <div key={c.id} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
+                      {c.contributor_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
+                      {isEditing ? (
+                        <div style={{ marginTop: 6 }}>
+                          <textarea
+                            value={editingContribText}
+                            onChange={e => setEditingContribText(e.target.value)}
+                            rows={3}
+                            autoFocus
+                            style={{ width: '100%', border: '2px solid #3A8FA0', borderRadius: 8, padding: '8px 10px', fontFamily: "'Nunito',sans-serif", fontSize: '.82rem', color: '#2A2A2A', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+                          />
+                          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                            <button onClick={saveEditContrib} disabled={isBusy}
+                              style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '6px 12px', color: '#fff', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                              {isBusy ? 'Saving…' : 'Save'}
+                            </button>
+                            <button onClick={() => setEditingContribId(null)} disabled={isBusy}
+                              style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#7A7585', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, lineHeight: 1.5, wordBreak: 'break-word' }}>&quot;{c.message}&quot;</div>}
+                          {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>📷 Photo</div>}
+                        </>
+                      )}
+                    </div>
+                    {c.photo_url && (
+                      <img src={c.photo_url} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                    )}
+                    {!isEditing && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                        <button onClick={() => startEditContrib(c)} disabled={isBusy} title="Edit message"
+                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, width: 28, height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#7A7585', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          ✎
+                        </button>
+                        <button onClick={() => deleteContrib(c.id)} disabled={isBusy} title="Remove"
+                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, width: 28, height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#E8724A', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {isBusy ? '…' : '🗑'}
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
-                    {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{c.message}"</div>}
-                    {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>📷 Photo</div>}
-                  </div>
-                  {c.photo_url && (
-                    <img src={c.photo_url} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
