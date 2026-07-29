@@ -75,7 +75,7 @@ export async function sendContactMessage({
 }) {
   const { error } = await resend.emails.send({
     from: `thankyoucards.au <${FROM}>`,
-    to: 'tim.atk@gmail.com',
+    to: 'hellothankyoucards@gmail.com',
     replyTo: email,
     subject: `Contact form: ${name}`,
     html: `
