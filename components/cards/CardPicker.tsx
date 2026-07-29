@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CATEGORIES, TAGS } from '@/lib/cardTaxonomy';
+import { CATEGORIES, TAGS, SPORTS_SUBCATEGORIES } from '@/lib/cardTaxonomy';
 
 const GREEN = '#3FAE6A';
 const ORANGE = '#E8724A';
@@ -12,7 +12,7 @@ const ORANGE = '#E8724A';
 const CATEGORIES_COLLAPSED_COUNT = 3;
 const TAGS_COLLAPSED_COUNT = 3;
 
-interface CardData { id: string; category: string; tags: string[]; url: string }
+interface CardData { id: string; category: string; subcategory: string | null; tags: string[]; url: string }
 
 interface CardPickerProps {
   selectedUrl: string;
@@ -25,6 +25,7 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
   const [showAllTags, setShowAllTags] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [selectedSports, setSelectedSports] = useState<Set<string>>(new Set());
   const [cards, setCards] = useState<CardData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,8 +33,8 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
   useEffect(() => {
     fetch('/api/cards')
       .then(r => r.json())
-      .then(json => setCards((json.cards ?? []).map((c: { id: string; category: string; tags: string[] | null; image_url: string }) => ({
-        id: c.id, category: c.category, tags: c.tags ?? [], url: c.image_url,
+      .then(json => setCards((json.cards ?? []).map((c: { id: string; category: string; subcategory: string | null; tags: string[] | null; image_url: string }) => ({
+        id: c.id, category: c.category, subcategory: c.subcategory, tags: c.tags ?? [], url: c.image_url,
       }))))
       .finally(() => setLoading(false));
   }, []);
@@ -44,10 +45,13 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
     setter(next);
   };
 
+  const showSportFilters = selectedCategories.has('sports');
+
   const filteredCards = cards.filter(c => {
     const catOk = selectedCategories.size === 0 || selectedCategories.has(c.category);
     const tagOk = selectedTags.size === 0 || c.tags.some(t => selectedTags.has(t));
-    return catOk && tagOk;
+    const sportOk = !showSportFilters || selectedSports.size === 0 || selectedSports.has(c.subcategory ?? '');
+    return catOk && tagOk && sportOk;
   });
 
   // Deliberately no fixed/sticky positioning at all: this sits in plain document flow,
@@ -121,6 +125,21 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
               </div>
             )}
           </div>
+
+          {/* ── Sport filters (green) — only shown once Sports is selected as a category,
+               since these subcategory ids only mean anything within Sports. ── */}
+          {showSportFilters && (
+            <div style={{ padding: '0 18px 10px' }}>
+              <div style={{ fontSize: '.68rem', fontWeight: 800, color: '#B0A8BC', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Which sport?</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {SPORTS_SUBCATEGORIES.map(s => (
+                  <button key={s.id} onClick={() => toggle(selectedSports, setSelectedSports, s.id)} style={pillStyle(selectedSports.has(s.id), GREEN)}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── Divider ── */}
           <div style={{ height: 1, background: '#F0EDF5', margin: '0 18px' }} />

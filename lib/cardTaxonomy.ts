@@ -39,6 +39,20 @@ export const TAGS = [
   { id: 'australia', label: 'Australia' },
 ];
 
+// Context-driven — only shown in the picker once the Sports category is selected, since
+// these subcategory ids only mean anything within Sports (mirrors the AUTO_TAGS sports
+// keys below, so every taggable sport subcategory has a matching filter pill).
+export const SPORTS_SUBCATEGORIES = [
+  { id: 'afl', label: 'AFL' },
+  { id: 'kids_afl', label: 'Kids AFL' },
+  { id: 'nrl', label: 'NRL' },
+  { id: 'rugby_union', label: 'Rugby Union' },
+  { id: 'cricket', label: 'Cricket' },
+  { id: 'netball', label: 'Netball' },
+  { id: 'swimming', label: 'Swimming' },
+  { id: 'surfing', label: 'Surfing' },
+];
+
 // Longest-id-first so a multi-word category (e.g. `get_well`, `thank_you`) is matched
 // before any shorter category could accidentally look like a prefix of it.
 const CATEGORY_IDS = [...CATEGORIES.map(c => c.id)].sort((a, b) => b.length - a.length);

@@ -66,7 +66,7 @@ export default function ContactPage() {
             <label style={labelStyle}>Your name</label>
             <input
               value={name} onChange={e => setName(e.target.value)}
-              placeholder="Sarah"
+              placeholder="Your name"
               style={inputStyle}
               onFocus={e => (e.target.style.borderColor = '#3A8FA0')}
               onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
