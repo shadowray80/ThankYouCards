@@ -102,14 +102,14 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
           {/* ── Category filters (green) — fixed first row + toggle, expandable second row ── */}
           <div style={{ padding: '12px 18px 10px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button onClick={() => setShowAllCategories(v => !v)} style={pillStyle(false, GREEN)}>
+                {showAllCategories ? '⋯ Less' : '⋯ More'}
+              </button>
               {CATEGORIES.slice(0, CATEGORIES_COLLAPSED_COUNT).map(c => (
                 <button key={c.id} onClick={() => toggle(selectedCategories, setSelectedCategories, c.id)} style={pillStyle(selectedCategories.has(c.id), GREEN)}>
                   {c.label}
                 </button>
               ))}
-              <button onClick={() => setShowAllCategories(v => !v)} style={pillStyle(false, GREEN)}>
-                {showAllCategories ? '⋯ Less' : '⋯ More'}
-              </button>
             </div>
             {showAllCategories && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
@@ -128,14 +128,14 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
           {/* ── Tag filters (orange) — same fixed-row + toggle pattern ── */}
           <div style={{ padding: '10px 18px 12px' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button onClick={() => setShowAllTags(v => !v)} style={pillStyle(false, ORANGE)}>
+                {showAllTags ? '⋯ Less' : '⋯ More'}
+              </button>
               {TAGS.slice(0, TAGS_COLLAPSED_COUNT).map(t => (
                 <button key={t.id} onClick={() => toggle(selectedTags, setSelectedTags, t.id)} style={pillStyle(selectedTags.has(t.id), ORANGE)}>
                   {t.label}
                 </button>
               ))}
-              <button onClick={() => setShowAllTags(v => !v)} style={pillStyle(false, ORANGE)}>
-                {showAllTags ? '⋯ Less' : '⋯ More'}
-              </button>
             </div>
             {showAllTags && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
