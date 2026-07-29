@@ -336,6 +336,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
           <div style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
             <a href="/terms" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Terms</a>
             <a href="/privacy" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Privacy</a>
+            <a href="/contact" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Contact</a>
           </div>
         </div>
       )}

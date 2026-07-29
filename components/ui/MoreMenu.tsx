@@ -39,16 +39,28 @@ export function MoreMenu({ code, onCodeChange, onSubmit }: MoreMenuProps) {
             padding: 14, boxShadow: '0 8px 32px rgba(60,50,100,.18)',
           }}>
             {!showCode ? (
-              <button
-                onClick={() => setShowCode(true)}
-                style={{
-                  width: '100%', textAlign: 'left', background: 'none', border: 'none',
-                  padding: '8px 4px', fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A',
-                  cursor: 'pointer', fontFamily: "'Nunito',sans-serif", display: 'flex', alignItems: 'center', gap: 8,
-                }}
-              >
-                📬 Got a card code?
-              </button>
+              <>
+                <button
+                  onClick={() => setShowCode(true)}
+                  style={{
+                    width: '100%', textAlign: 'left', background: 'none', border: 'none',
+                    padding: '8px 4px', fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A',
+                    cursor: 'pointer', fontFamily: "'Nunito',sans-serif", display: 'flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  📬 Got a card code?
+                </button>
+                <a
+                  href="/contact"
+                  style={{
+                    width: '100%', boxSizing: 'border-box', textAlign: 'left', background: 'none', border: 'none',
+                    padding: '8px 4px', fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', textDecoration: 'none',
+                    cursor: 'pointer', fontFamily: "'Nunito',sans-serif", display: 'flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  💌 Contact us
+                </a>
+              </>
             ) : (
               <>
                 <button

@@ -3,6 +3,13 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM   = process.env.RESEND_FROM ?? 'hello@thankyoucards.au';
 
+// Only needed for values that come from a public form (contact message) — the other
+// templates below only ever interpolate our own data (names/URLs we generated), not
+// third-party input, so they don't need it.
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
+
 export async function sendOrganiserLink({
   to,
   recipientName,
@@ -55,6 +62,45 @@ export async function sendOrganiserLink({
   });
 
   if (error) console.error('Resend error:', error);
+}
+
+export async function sendContactMessage({
+  name,
+  email,
+  message,
+}: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  const { error } = await resend.emails.send({
+    from: `thankyoucards.au <${FROM}>`,
+    to: 'tim.atk@gmail.com',
+    reply_to: email,
+    subject: `Contact form: ${name}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#FFFDF8;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;padding:32px 24px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <span style="font-size:1.3rem;font-weight:900;color:#3A8FA0;">thank<span style="color:#E8724A">you</span>cards<span style="color:#B0CCDC">.au</span></span>
+    </div>
+    <p style="font-size:.8rem;font-weight:800;color:#7A7585;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em;">From</p>
+    <p style="font-size:.95rem;color:#2A2A2A;font-weight:700;margin:0 0 20px;">${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+    <p style="font-size:.8rem;font-weight:800;color:#7A7585;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em;">Message</p>
+    <p style="font-size:.95rem;color:#2A2A2A;line-height:1.7;white-space:pre-wrap;margin:0;">${escapeHtml(message)}</p>
+  </div>
+</body>
+</html>`,
+  });
+
+  if (error) {
+    console.error('Resend error:', error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
 }
 
 export async function sendLoginLink({
