@@ -425,9 +425,7 @@ function ManageContent() {
                 ? `${recipientName}'s card is only ${daysLeft} day${daysLeft !== 1 ? 's' : ''} away, and it's already looking fantastic.`
                 : `${recipientName}'s card is ready to send any day now, and it's already looking fantastic.`)
             : `${recipientName}'s card is coming together, and it's already looking fantastic.`;
-          const defaultUpdateMsg = `💌 Share an update
-
-🎉 We're creating something special for ${recipientName}!
+          const defaultUpdateMsg = `🎉 We're creating something special for ${recipientName}!
 
 ${dayLine}
 

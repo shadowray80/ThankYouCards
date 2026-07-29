@@ -30,7 +30,7 @@ export function AdminToolbar() {
     { label: '👥 Group Card', href: '/?v=group' },
     ...(demoCard ? [
       { label: '✍️ Contributor', href: `/card/${demoCard.slug}` },
-      { label: '📊 Manage',      href: `/manage/${demoCard.slug}?token=${demoCard.token}` },
+      { label: '📊 Organiser',   href: `/manage/${demoCard.slug}?token=${demoCard.token}` },
       { label: '🎴 Recipient',   href: `/view/${demoCard.slug}?preview=1` },
     ] : []),
   ];
