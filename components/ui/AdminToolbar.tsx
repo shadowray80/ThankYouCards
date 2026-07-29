@@ -1,34 +1,39 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
-import type { User } from '@supabase/supabase-js';
-
-const NAV = [
-  { label: '🏠 Home',        href: '/' },
-  { label: '📨 Solo Card',   href: '/?v=solo' },
-  { label: '👥 Group Card',  href: '/?v=group' },
-  { label: '✍️ Contrib',     href: '/?v=contrib' },
-  { label: '📊 Dashboard',   href: '/?v=dash' },
-  { label: '🎴 Card View',   href: '/?v=card' },
-];
+import Link from 'next/link';
+import { useOrganiserSession } from '@/lib/useOrganiserSession';
+import { useIsAdmin } from '@/lib/useIsAdmin';
 
 export function AdminToolbar() {
-  const [user, setUser] = useState<User | null>(null);
+  const { session, setSession } = useOrganiserSession();
+  const status = useIsAdmin();
+  const [demoCard, setDemoCard] = useState<{ slug: string; token: string } | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    if (status !== 'admin' || !session) return;
+    fetch(`/api/admin/demo-card?email=${encodeURIComponent(session.email)}&session_token=${encodeURIComponent(session.session_token)}`)
+      .then(r => r.json())
+      .then(json => { if (json.slug) setDemoCard({ slug: json.slug, token: json.token }); })
+      .catch(() => {});
+  }, [status, session]);
 
   useEffect(() => {
-    document.body.style.paddingTop = user ? '68px' : '';
-  }, [user]);
+    document.body.style.paddingTop = status === 'admin' ? '68px' : '';
+  }, [status]);
 
-  if (!user) return null;
+  if (status !== 'admin') return null;
+
+  const NAV = [
+    { label: '🏠 Home',       href: '/' },
+    { label: '📨 Solo Card',  href: '/?v=solo' },
+    { label: '👥 Group Card', href: '/?v=group' },
+    ...(demoCard ? [
+      { label: '✍️ Contributor', href: `/card/${demoCard.slug}` },
+      { label: '📊 Manage',      href: `/manage/${demoCard.slug}?token=${demoCard.token}` },
+      { label: '🎴 Recipient',   href: `/view/${demoCard.slug}?preview=1` },
+    ] : []),
+  ];
 
   return (
     <div style={{
@@ -38,15 +43,15 @@ export function AdminToolbar() {
     }}>
       {/* Row 1: label + email + sign out */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '5px 12px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
-        <div style={{ fontSize: '.58rem', fontWeight: 800, color: 'rgba(255,255,255,.25)', letterSpacing: '.12em', textTransform: 'uppercase' }}>
+        <Link href="/admin" style={{ fontSize: '.58rem', fontWeight: 800, color: 'rgba(255,255,255,.4)', letterSpacing: '.12em', textTransform: 'uppercase', textDecoration: 'none' }}>
           Admin
-        </div>
+        </Link>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: '.63rem', color: 'rgba(255,255,255,.25)', marginRight: 10 }}>
-          {user.email}
+          {session?.email}
         </span>
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() => setSession(null)}
           style={{
             padding: '3px 10px', borderRadius: 6,
             fontSize: '.68rem', fontWeight: 700,
