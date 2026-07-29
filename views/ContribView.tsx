@@ -129,8 +129,9 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       const saved = { id: json.contribution.id, name, message: msg };
       localStorage.setItem(`tyc_contrib_${activeSlug}`, JSON.stringify(saved));
       setMyContrib(saved);
-      setContributions(prev => [...prev, { id: json.contribution.id, contributor_name: name, message: msg || null, amount: 0 }]);
+      setContributions(prev => [...prev, { id: json.contribution.id, contributor_name: name, message: msg || null, amount: 0, photo_url: photoUrl, photo_label: photoLabel.trim() || null }]);
       setMsg(''); setName(''); setGiftSel(null); setGiftCustom('');
+      setPhotoUrl(null); setPhotoLabel('');
       onToast("You're on the card! ✨");
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : 'Something went wrong');
