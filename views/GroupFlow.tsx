@@ -189,7 +189,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_theme: '',
           card_message: effectiveCardMsg,
           card_note: cardStyle === 'casual' ? (cardNote.trim() || null) : null,
-          card_image_url: customImgUrl || selectedUrl,
+          // Corporate has no library-card cover, only an optional uploaded photo — falling
+          // back to the picker's default (a casual/classic library card) here was leaking
+          // an unrelated stock photo onto corporate cards that never had one uploaded.
+          card_image_url: cardStyle === 'corporate' ? customImgUrl : (customImgUrl || selectedUrl),
           card_style: cardStyle,
           card_palette: cardPalette,
           card_logo_url: logoUrl,

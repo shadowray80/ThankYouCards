@@ -614,32 +614,32 @@ ${origin}/card/${slug}
               onFocus={e => (e.target.style.borderColor = '#E8724A')} onBlur={e => (e.target.style.borderColor = '#E8E2F0')} />
           </div>
 
-          {campaign.card_style !== 'corporate' && (
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Cover photo</label>
-              <input ref={editImageUploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditImageUpload} />
-              {editImageUrl ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <img src={editImageUrl} alt="" style={{ width: 64, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
-                      style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '7px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                      {editImageUploading ? '…' : 'Change'}
-                    </button>
-                    <button onClick={() => setEditImageUrl(null)}
-                      style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '5px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                      Remove
-                    </button>
-                  </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>
+              {campaign.card_style === 'corporate' ? 'Photo (optional)' : 'Cover photo'}
+            </label>
+            <input ref={editImageUploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditImageUpload} />
+            {editImageUrl ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <img src={editImageUrl} alt="" style={{ width: 64, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
+                    style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '7px 12px', color: '#fff', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    {editImageUploading ? '…' : 'Change'}
+                  </button>
+                  <button onClick={() => setEditImageUrl(null)}
+                    style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '5px 12px', color: '#B0A8BC', fontWeight: 800, fontSize: '.76rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    Remove
+                  </button>
                 </div>
-              ) : (
-                <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
-                  style={{ width: '100%', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '12px', background: '#FAFAFA', cursor: editImageUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 700, fontSize: '.82rem' }}>
-                  {editImageUploading ? 'Uploading…' : '+ Upload cover photo'}
-                </button>
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <button onClick={() => editImageUploadRef.current?.click()} disabled={editImageUploading}
+                style={{ width: '100%', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '12px', background: '#FAFAFA', cursor: editImageUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif", color: '#7A7585', fontWeight: 700, fontSize: '.82rem' }}>
+                {editImageUploading ? 'Uploading…' : '+ Upload cover photo'}
+              </button>
+            )}
+          </div>
 
           {campaign.card_style !== 'corporate' && (
             <div
