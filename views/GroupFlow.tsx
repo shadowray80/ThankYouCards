@@ -11,6 +11,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
+import { OCCASIONS } from '@/lib/occasions';
 
 const CORPORATE_PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
@@ -66,6 +67,10 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [msgAreaCardMsg, setMsgAreaCardMsg] = useState('');
   const [msgAreaOccasion, setMsgAreaOccasion] = useState('');
   const [occasion, setOccasion] = useState('');
+  // What the card is actually for (Birthday, Farewell, etc) — distinct from `occasion`
+  // above, which despite its name is really the on-card "From" signer text.
+  const [cardOccasion, setCardOccasion] = useState('');
+  const [cardOccasionOther, setCardOccasionOther] = useState('');
   const [deadline, setDeadline] = useState('');
   const [cardMsg, setCardMsg]   = useState('');
   // Longer-form personal note from the organiser — casual style only, lives purely in the
@@ -121,7 +126,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const effectiveRecip = recip || msgAreaRecip;
   const effectiveCardMsg = cardMsg || msgAreaCardMsg;
   const effectiveOccasion = occasion || msgAreaOccasion;
-  const canCreate = effectiveRecip.trim() && effectiveOccasion.trim() && deadline && organiserEmail.trim();
+  const effectiveCardOccasion = cardOccasion === 'Other' ? cardOccasionOther.trim() : cardOccasion;
+  const canCreate = effectiveRecip.trim() && effectiveOccasion.trim() && deadline && organiserEmail.trim() && effectiveCardOccasion;
 
   const corpPalette = CORPORATE_PALETTES.find(p => p.id === cardPalette)
     ?? (cardPalette?.startsWith('#') ? buildCustomPalette(cardPalette) : CORPORATE_PALETTES[0]);
@@ -183,6 +189,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
         body: JSON.stringify({
           recipient_name: effectiveRecip.trim(),
           occasion: effectiveOccasion.trim() || null,
+          card_occasion: effectiveCardOccasion || null,
           target_amount: 0,
           deadline: deadline || null,
           organiser_email: organiserEmail.trim(),
@@ -664,6 +671,31 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
         </>
         )}
+
+        {/* Occasion — internal data, not shown on the card itself; guides gift proposals
+            and other occasion-driven features down the line. */}
+        <div style={{ margin: '12px 18px 0' }}>
+          <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Occasion</label>
+          <select
+            value={cardOccasion}
+            onChange={e => setCardOccasion(e.target.value)}
+            style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: cardOccasion ? '#2A2A2A' : '#B0A8BC', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+          >
+            <option value="" disabled>What&apos;s this card for?</option>
+            {OCCASIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            <option value="Other">Other</option>
+          </select>
+          {cardOccasion === 'Other' && (
+            <input
+              value={cardOccasionOther}
+              onChange={e => setCardOccasionOther(e.target.value)}
+              placeholder="Tell us what it's for"
+              style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 12, padding: '13px 14px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '16px', color: '#2A2A2A', background: '#FFFDF8', outline: 'none', boxSizing: 'border-box', marginTop: 8 }}
+              onFocus={e => (e.target.style.borderColor = '#E8724A')}
+              onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
+            />
+          )}
+        </div>
 
         {/* Deadline — same width as card */}
         <div

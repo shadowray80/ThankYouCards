@@ -19,7 +19,7 @@ function randomToken(): string {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { recipient_name, occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_note, card_image_url, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image } = body;
+  const { recipient_name, occasion, card_occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_note, card_image_url, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image } = body;
 
   if (!recipient_name) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     .insert({
       recipient_name,
       occasion: occasion ?? null,
+      card_occasion: card_occasion ?? null,
       target_amount: target_amount ?? null,
       funded_amount: 0,
       deadline: deadline ?? null,
