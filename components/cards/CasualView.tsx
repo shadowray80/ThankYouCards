@@ -204,7 +204,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
     <div style={{ background: palette.bg, minHeight: (preview || noHeader) ? 'auto' : '100dvh', borderRadius: (preview || noHeader) ? 16 : 0, overflow: (preview || noHeader) ? 'hidden' : 'visible', fontFamily: "'Nunito', sans-serif" }}>
 
       {/* ── Cover ── */}
-      {!noHeader && <div style={{
+      {!noHeader && <div className="tyc-cover-page" style={{
         position: 'relative', overflow: 'hidden',
         background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`,
       }}>
@@ -313,7 +313,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
           No messages yet — check back soon!
         </div>
       ) : (
-        <div style={{ padding: '16px 14px 4px', columns: 2, columnGap: '12px' }}>
+        <div className="tyc-print-grid" style={{ padding: '16px 14px 4px', columns: 2, columnGap: '12px' }}>
           {tiles}
         </div>
       )}
@@ -333,7 +333,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
           <div style={{ marginTop: 10, fontSize: '.72rem', color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>
             It&apos;s easy, meaningful and unforgettable.
           </div>
-          <div style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
+          <div className="tyc-print-hide" style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
             <a href="/terms" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Terms</a>
             <a href="/privacy" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Privacy</a>
             <a href="/contact" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', fontWeight: 600, textDecoration: 'none' }}>Contact</a>

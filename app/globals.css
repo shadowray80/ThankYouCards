@@ -20,3 +20,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #FAF8F3; }
 input, textarea, button { font-family: 'Nunito', sans-serif; }
+
+/* Printable keepsake — cover reads as an actual card front on its own sheet, then the
+   messages follow as a masonry collage (just like the on-screen layout) across however
+   many A4 sheets it takes. Nothing here forces booklet folding/imposition — that's left
+   to the printer/PDF reader's own "Booklet" print mode, which already exists in tools
+   like Adobe Reader and handles the fold order and duplexing far more reliably than we
+   could guess at from a web page. */
+@media print {
+  @page { size: A4; margin: 12mm; }
+
+  .tyc-print-hide { display: none !important; }
+
+  .tyc-cover-page { break-after: page; }
+
+  .tyc-print-grid { columns: 2 !important; }
+}
