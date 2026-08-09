@@ -134,6 +134,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     // flagged "unverified"/suspicious by SMS carriers, and it also lets WhatsApp/iMessage
     // render their own clean link preview (using the Open Graph image) instead of raw text.
     const shareText = fullUrl;
+    // Email bodies can only ever be plain text (mailto: is a plain-text-only standard,
+    // unlike the clipboard which can carry rich HTML) — can't look like the branded
+    // copy-paste card, but can at least read like an actual message, not a bare link.
+    const emailBody = `Hi ${effectiveTo},\n\n${from.trim() || 'A friend'} sent you a card! 🎉\n\nView it here:\n${fullUrl}`;
     return (
       <div>
         <Nav onHome={onBack} onNav={onNav} badge="solo" />
@@ -174,7 +178,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 💬 SMS
               </a>
-              <a href={`mailto:?subject=${encodeURIComponent(`${effectiveTo}, you've got a card from ${from.trim() || 'a friend'}! 🎉`)}&body=${encodeURIComponent(shareText)}`}
+              <a href={`mailto:?subject=${encodeURIComponent(`${effectiveTo}, you've got a card from ${from.trim() || 'a friend'}! 🎉`)}&body=${encodeURIComponent(emailBody)}`}
                 style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 ✉️ Email
               </a>

@@ -409,6 +409,11 @@ function ManageContent() {
                 const msg = `${origin}/view/${slug}`;
                 const sender = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'your team';
                 const subject = `${recipientName}, you've got a card from ${sender}! 🎉`;
+                // Email bodies can only ever be plain text (mailto: is a plain-text-only
+                // standard, unlike the clipboard which can carry rich HTML) — so this can't
+                // look like the branded copy-paste card, but it can at least read like an
+                // actual message instead of a bare link sitting alone.
+                const emailBody = `Hi ${recipientName},\n\n${sender} put together a card for you! 🎉\n\nView it here:\n${msg}`;
                 return (<>
                   <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
                     style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
@@ -418,7 +423,7 @@ function ManageContent() {
                     style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                     💬 SMS
                   </a>
-                  <a href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`}
+                  <a href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`}
                     style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                     ✉️ Email
                   </a>
