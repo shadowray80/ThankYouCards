@@ -167,7 +167,7 @@ export function CorporateView({
 
       {/* ── Cover ── */}
       {!noHeader && (
-        <div style={{ position: 'relative', background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, minHeight: 280, display: 'flex', overflow: 'hidden' }}>
+        <div className="tyc-cover-page" style={{ position: 'relative', background: `linear-gradient(135deg, ${palette.headerFrom}, ${palette.headerTo})`, minHeight: 280, display: 'flex', overflow: 'hidden' }}>
           {/* Text side */}
           <div style={{ flex: 1, padding: '40px 24px 32px', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
             <div style={{ fontSize: '.55rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 10 }}>TO</div>
@@ -233,7 +233,7 @@ export function CorporateView({
           No messages yet — check back soon!
         </div>
       ) : (
-        <div style={{ padding: '14px 12px 4px', columns: 2, columnGap: '10px' }}>
+        <div className="tyc-print-grid" style={{ padding: '14px 12px 4px', columns: 2, columnGap: '10px' }}>
           {tiles}
         </div>
       )}
@@ -252,7 +252,7 @@ export function CorporateView({
           <a href="/" style={{ display: 'inline-block', background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
             Create your own card →
           </a>
-          <div style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
+          <div className="tyc-print-hide" style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
             <a href="/terms" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', fontWeight: 600, textDecoration: 'none' }}>Terms</a>
             <a href="/privacy" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', fontWeight: 600, textDecoration: 'none' }}>Privacy</a>
             <a href="/contact" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', fontWeight: 600, textDecoration: 'none' }}>Contact</a>
