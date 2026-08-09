@@ -7,6 +7,7 @@ import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
+import { copyLinkRich } from '@/lib/richCopy';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -150,7 +151,15 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 {recipientUrl}
               </div>
               <button
-                onClick={() => { navigator.clipboard.writeText(fullUrl); setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000); }}
+                onClick={() => {
+                  copyLinkRich(fullUrl, {
+                    title: `🎉 ${effectiveTo}, you've got a card!`,
+                    subtitle: 'Open to read your personalised card.',
+                    imageUrl: imgUrl,
+                    buttonLabel: 'View your card →',
+                  });
+                  setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
+                }}
                 style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}
               >
                 {copiedLink ? '✓ Copied!' : 'Copy'}
