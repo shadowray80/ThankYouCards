@@ -174,7 +174,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 💬 SMS
               </a>
-              <a href={`mailto:?subject=A card for you, ${effectiveTo}&body=${encodeURIComponent(shareText)}`}
+              <a href={`mailto:?subject=${encodeURIComponent(`${effectiveTo}, you've got a card from ${from.trim() || 'a friend'}! 🎉`)}&body=${encodeURIComponent(shareText)}`}
                 style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                 ✉️ Email
               </a>

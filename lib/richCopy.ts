@@ -9,7 +9,10 @@ function escapeHtml(s: string): string {
 }
 
 export async function copyLinkRich(url: string, opts: { title: string; subtitle?: string; imageUrl?: string; buttonLabel: string }): Promise<void> {
-  const { title, subtitle, imageUrl, buttonLabel } = opts;
+  const { title, subtitle, buttonLabel } = opts;
+  // Always show *something* — fall back to the site logo when the card has no cover photo
+  // (e.g. a corporate card without one uploaded), rather than a bare text block.
+  const imageUrl = opts.imageUrl || (typeof window !== 'undefined' ? `${window.location.origin}/og-image.png` : undefined);
 
   const html = `<div style="max-width:420px;font-family:Arial,Helvetica,sans-serif;border:1px solid #E8E2F0;border-radius:14px;overflow:hidden;">
 ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="" style="width:100%;height:auto;display:block;" />` : ''}

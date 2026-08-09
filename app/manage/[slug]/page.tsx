@@ -407,6 +407,8 @@ function ManageContent() {
                 // to be flagged "unverified"/suspicious by SMS carriers, and it also lets
                 // WhatsApp/iMessage render their own clean link preview instead of raw text.
                 const msg = `${origin}/view/${slug}`;
+                const sender = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'your team';
+                const subject = `${recipientName}, you've got a card from ${sender}! 🎉`;
                 return (<>
                   <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
                     style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
@@ -416,7 +418,7 @@ function ManageContent() {
                     style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                     💬 SMS
                   </a>
-                  <a href={`mailto:?subject=A card for you, ${recipientName}&body=${encodeURIComponent(msg)}`}
+                  <a href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`}
                     style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
                     ✉️ Email
                   </a>
