@@ -10,6 +10,7 @@ import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { CASUAL_PALETTES, CORPORATE_PALETTES } from '@/lib/palettes';
 import { THEMES } from '@/lib/themes';
+import { resizeImage } from '@/lib/resizeImage';
 
 interface SampleMessage {
   contributor_name: string;
@@ -69,7 +70,7 @@ function PhotoPicker({
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('file', f);
+      fd.append('file', await resizeImage(f));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (json.url) onChange(json.url);
