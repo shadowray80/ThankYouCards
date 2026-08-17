@@ -7,6 +7,7 @@ import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { copyLinkRich } from '@/lib/richCopy';
+import { resizeImage } from '@/lib/resizeImage';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -201,7 +202,7 @@ function ManageContent() {
     setEditImageUploading(true);
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', await resizeImage(file));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (json.url) setEditImageUrl(json.url);
@@ -401,35 +402,6 @@ function ManageContent() {
                 {copiedRecipient ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              {(() => {
-                // Just the bare link, deliberately — a link with surrounding text is more likely
-                // to be flagged "unverified"/suspicious by SMS carriers, and it also lets
-                // WhatsApp/iMessage render their own clean link preview instead of raw text.
-                const msg = `${origin}/view/${slug}`;
-                const sender = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'your team';
-                const subject = `${recipientName}, you've got a card from ${sender}! 🎉`;
-                // Email bodies can only ever be plain text (mailto: is a plain-text-only
-                // standard, unlike the clipboard which can carry rich HTML) — so this can't
-                // look like the branded copy-paste card, but it can at least read like an
-                // actual message instead of a bare link sitting alone.
-                const emailBody = `Hi ${recipientName},\n\n${sender} put together a card for you! 🎉\n\nView it here:\n${msg}`;
-                return (<>
-                  <a href={`https://wa.me/?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
-                    style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                    💬 WhatsApp
-                  </a>
-                  <a href={`sms:?body=${encodeURIComponent(msg)}`}
-                    style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                    💬 SMS
-                  </a>
-                  <a href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`}
-                    style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                    ✉️ Email
-                  </a>
-                </>);
-              })()}
-            </div>
             <a href={`/view/${slug}`} target="_blank"
               style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
               Preview what {recipientName} will see →
@@ -461,37 +433,19 @@ function ManageContent() {
         </div>
 
         {/* Share link — only shown before sending */}
-        {!isSent && (() => {
-          const from = campaign.occasion ? campaign.occasion.replace(/^From\s+/i, '') : 'the team';
-          const contribMsg = `We're making a group card for ${recipientName} from ${from} — add your message here 💙 ${origin}/card/${slug}`;
-          return (
-            <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
-                  {origin}/card/{slug}
-                </div>
-                <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+        {!isSent && (
+          <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
+                {origin}/card/{slug}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <a href={`https://wa.me/?text=${encodeURIComponent(contribMsg)}`} target="_blank" rel="noopener noreferrer"
-                  style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                  💬 WhatsApp
-                </a>
-                <a href={`sms:?body=${encodeURIComponent(contribMsg)}`}
-                  style={{ flex: 1, background: '#5AC8FA', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                  💬 SMS
-                </a>
-                <a href={`mailto:?subject=Add your message to ${recipientName}'s card&body=${encodeURIComponent(contribMsg)}`}
-                  style={{ flex: 1, background: '#3A8FA0', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                  ✉️ Email
-                </a>
-              </div>
+              <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         {/* Send a reminder — only shown before sending. Framed as coming from TYC, not the
             organiser, so re-sharing it doesn't feel like the organiser nagging their own
@@ -541,10 +495,6 @@ ${origin}/card/${slug}
                 >
                   {copiedUpdate ? '✓ Copied!' : 'Copy'}
                 </button>
-                <a href={`https://wa.me/?text=${encodeURIComponent(updateMsg)}`} target="_blank" rel="noopener noreferrer"
-                  style={{ flex: 1, background: '#25D366', color: '#fff', borderRadius: 10, padding: '10px 0', textAlign: 'center', fontWeight: 800, fontSize: '.85rem', textDecoration: 'none', fontFamily: "'Nunito',sans-serif" }}>
-                  💬 WhatsApp
-                </a>
                 {updateMsgEdit !== null && (
                   <button onClick={() => setUpdateMsgEdit(null)}
                     style={{ background: 'none', border: '1.5px solid #F0D0B8', borderRadius: 10, padding: '10px 12px', color: '#9A7A6A', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
