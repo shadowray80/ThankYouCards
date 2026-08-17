@@ -9,6 +9,7 @@ import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { copyLinkRich } from '@/lib/richCopy';
 import { resizeImage } from '@/lib/resizeImage';
+import { useLiveEditableText } from '@/lib/useLiveEditableText';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -45,8 +46,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const uploadRef = useRef<HTMLInputElement>(null);
   const msgPhotoRef = useRef<HTMLInputElement>(null);
   const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const cardMsgRef = useRef<HTMLDivElement>(null);
-  const toRef = useRef<HTMLDivElement>(null);
+
+  const toEditable = useLiveEditableText(to, setTo, { capitalizeWords: true });
+  const cardMsgEditable = useLiveEditableText(cardMsg, setCardMsg, { capitalizeWords: true });
 
   async function handleSubmit() {
     setSaving(true);
@@ -284,25 +286,14 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   </div>
                 )}
                 <div
-                  ref={el => {
-                    toRef.current = el;
-                    // Restore text only into a freshly mounted, empty node — e.g. leaving
-                    // and re-entering Preview mode unmounts this whole overlay, so it comes
-                    // back as a fresh node needing its text restored. A ref callback only
-                    // fires on actual mount/unmount, unlike a useEffect keyed on state,
-                    // which was firing mid-keystroke and breaking mobile predictive-text
-                    // word completion (it inserts via a delete-then-insert DOM sequence,
-                    // and a same-tick state-driven textContent overwrite stomped on it).
-                    if (el && !el.textContent && to) el.textContent = to;
-                  }}
+                  ref={toEditable.ref}
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
                   autoCapitalize="words"
-                  onInput={e => {
-                    const raw = e.currentTarget.textContent ?? '';
-                    setTo(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase()));
-                  }}
+                  onInput={toEditable.onInput}
+                  onCompositionStart={toEditable.onCompositionStart}
+                  onCompositionEnd={toEditable.onCompositionEnd}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
@@ -337,19 +328,13 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   </div>
                 )}
                 <div
-                  ref={el => {
-                    cardMsgRef.current = el;
-                    // See the "To" field's ref callback above for why this has to be a ref
-                    // callback (mount-only) rather than a useEffect keyed on state.
-                    if (el && !el.textContent && cardMsg) el.textContent = cardMsg;
-                  }}
+                  ref={cardMsgEditable.ref}
                   contentEditable
                   suppressContentEditableWarning
                   spellCheck={false}
-                  onInput={e => {
-                    const raw = e.currentTarget.textContent ?? '';
-                    setCardMsg(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase()));
-                  }}
+                  onInput={cardMsgEditable.onInput}
+                  onCompositionStart={cardMsgEditable.onCompositionStart}
+                  onCompositionEnd={cardMsgEditable.onCompositionEnd}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
