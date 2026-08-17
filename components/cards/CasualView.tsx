@@ -222,19 +222,19 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
         }}>
           {showCoverText && recipientName && (
             <>
-              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>TO</div>
-              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 2px 20px rgba(0,0,0,.55)', marginBottom: 8 }}>
+              <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>TO</div>
+              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', marginBottom: 8 }}>
                 {recipientName}
               </div>
               {campaign.card_message && (
-                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 3px 24px rgba(0,0,0,.7)', marginBottom: 6 }}>
+                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', marginBottom: 6 }}>
                   {campaign.card_message}
                 </div>
               )}
             </>
           )}
           {campaign.occasion && (
-            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
       </div>}

@@ -225,14 +225,14 @@ export default function CardPickerGroupDevPage() {
               <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 2 }}>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 8 }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 10 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>The legend</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
                   <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setRecip(e.currentTarget.textContent ?? '')}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40 }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.25)' }}>Add a tagline…</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)' }}>Add a tagline…</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: corpPalette.accent, caretColor: '#fff' }}
@@ -240,7 +240,7 @@ export default function CardPickerGroupDevPage() {
                 </div>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>From</div>
                 <div style={{ position: 'relative' }}>
-                  {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.22)', fontWeight: 700 }}>the team</div>}
+                  {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.65)', fontWeight: 700 }}>the team</div>}
                   <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
                     style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', minWidth: 40 }}
@@ -297,28 +297,28 @@ export default function CardPickerGroupDevPage() {
                 {/* Name/message/from — positioned to match CasualView's actual cover exactly
                     (bottom-anchored, left-aligned, stacked). */}
                 <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
-                  <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>To</div>
+                  <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                   <div style={{ position: 'relative', marginBottom: 8 }}>
-                    {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.3)' }}>The Legend&apos;s Name</div>}
+                    {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.65)' }}>Legend&apos;s Name</div>}
                     <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false}
                       onInput={e => setRecip(e.currentTarget.textContent ?? '')}
-                      style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,.55)', caretColor: '#fff', minWidth: 40 }}
+                      style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', minWidth: 40 }}
                     />
                   </div>
                   <div style={{ position: 'relative', marginBottom: 6 }}>
-                    {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)' }}>Cover Message</div>}
+                    {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.65)' }}>Cover Message</div>}
                     <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                       onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                      style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 3px 24px rgba(0,0,0,.7)', caretColor: '#fff' }}
+                      style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff' }}
                     />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                    <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 2px 14px rgba(0,0,0,.55)', flexShrink: 0 }}>From</span>
+                    <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', flexShrink: 0 }}>From</span>
                     <div style={{ position: 'relative', flex: 1, minWidth: 30 }}>
-                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the team</div>}
+                      {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>the team</div>}
                       <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
                         onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
-                        style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.92)', textShadow: '0 2px 14px rgba(0,0,0,.55)', caretColor: '#fff', minWidth: 40 }}
+                        style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', caretColor: '#fff', minWidth: 40 }}
                       />
                     </div>
                   </div>
@@ -339,7 +339,7 @@ export default function CardPickerGroupDevPage() {
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
                   <span style={{ flexShrink: 0 }}>To</span>
                   {recip ? <span>{recip}</span> : (
-                    <input value={msgAreaRecip} onChange={e => setMsgAreaRecip(e.target.value)} placeholder="The Legend's Name"
+                    <input value={msgAreaRecip} onChange={e => setMsgAreaRecip(e.target.value)} placeholder="Legend's Name"
                       style={{ flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent', font: 'inherit', color: msgAreaRecip ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0' }} />
                   )}
                 </div>

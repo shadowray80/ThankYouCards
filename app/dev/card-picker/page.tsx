@@ -112,8 +112,8 @@ export default function CardPickerDevPage() {
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
               <div style={{ position: 'relative', width: '85%', margin: '0 auto' }}>
                 {!to && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>
-                    The Legend&apos;s Name
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap' }}>
+                    Legend&apos;s Name
                   </div>
                 )}
                 <div
@@ -122,7 +122,7 @@ export default function CardPickerDevPage() {
                   suppressContentEditableWarning
                   spellCheck={false}
                   onInput={e => setTo(e.currentTarget.textContent ?? '')}
-                  style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,0.55)', caretColor: '#fff', padding: '6px 4px', minWidth: 40 }}
+                  style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(2.4rem, 9vw, 3.2rem)', lineHeight: 1.1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', padding: '6px 4px', minWidth: 40 }}
                 />
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function CardPickerDevPage() {
             <div style={{ position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3, textAlign: 'center', padding: '0 16px' }}>
               <div style={{ position: 'relative', width: '90%', margin: '0 auto' }}>
                 {!cardMsg && (
-                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3.2rem, 12vw, 4.5rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.35)' }}>
+                  <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3.2rem, 12vw, 4.5rem)', lineHeight: 1.2, color: 'rgba(255,255,255,0.65)' }}>
                     Cover Message
                   </div>
                 )}
@@ -141,7 +141,7 @@ export default function CardPickerDevPage() {
                   suppressContentEditableWarning
                   spellCheck={false}
                   onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                  style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3.2rem, 12vw, 4.5rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 3px 24px rgba(0,0,0,0.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                  style={{ outline: 'none', cursor: 'text', textAlign: 'center', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3.2rem, 12vw, 4.5rem)', lineHeight: 1.2, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', wordBreak: 'break-word' }}
                 />
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function CardPickerDevPage() {
           <div style={{ background: '#fff', padding: '20px 22px 8px' }}>
             <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', gap: 4, fontSize: '.68rem', fontWeight: 800, letterSpacing: '.12em', textTransform: 'uppercase', color: '#B0A8BC' }}>
               <span style={{ flexShrink: 0 }}>To</span>
-              <span>{to || 'The Legend\'s Name'}</span>
+              <span>{to || 'Legend\'s Name'}</span>
             </div>
             {photoData ? (
               <img src={photoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', borderRadius: 8 }} />

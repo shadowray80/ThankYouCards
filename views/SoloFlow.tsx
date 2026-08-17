@@ -8,6 +8,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { copyLinkRich } from '@/lib/richCopy';
+import { resizeImage } from '@/lib/resizeImage';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -28,6 +29,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [msgAreaTo, setMsgAreaTo] = useState('');
   const [msg, setMsg] = useState('');
   const [photoData, setPhotoData] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [includeGift, setIncludeGift] = useState(false);
   const [giftSel, setGiftSel] = useState<string | null>('25');
@@ -72,6 +75,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           campaign_id: campaign.id,
           contributor_name: from.trim() || 'From a friend',
           message: photoData === null && msg.trim() ? msg.trim() : null,
+          photo_url: photoData !== null ? photoUrl : null,
         }),
       });
       const contribData = await contribRes.json();
@@ -105,7 +109,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     setUploadingImg(true);
     try {
       const fd = new FormData();
-      fd.append('file', f);
+      fd.append('file', await resizeImage(f));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (json.url) setCustomImgUrl(json.url);
@@ -118,12 +122,36 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
     }
   };
 
-  const handleMsgPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMsgPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    // Instant local preview while the real upload happens in the background.
     const r = new FileReader();
     r.onload = ev => setPhotoData(ev.target?.result as string);
     r.readAsDataURL(f);
+
+    setUploadingPhoto(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', await resizeImage(f));
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.url) {
+        setPhotoUrl(json.url);
+      } else {
+        onToast(json.error ?? 'Photo upload failed — please try again');
+        setPhotoData(null);
+        setPhotoUrl(null);
+      }
+    } catch {
+      onToast('Photo upload failed — please try again');
+      setPhotoData(null);
+      setPhotoUrl(null);
+    } finally {
+      setUploadingPhoto(false);
+      if (msgPhotoRef.current) msgPhotoRef.current.value = '';
+    }
   };
 
   // ── Done screen ──────────────────────────────────────────────
@@ -272,9 +300,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, letterSpacing: '.01em', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap',
+                    lineHeight: 1.1, letterSpacing: '.01em', color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
                   }}>
-                    The Legend&apos;s Name
+                    Legend&apos;s Name
                   </div>
                 )}
                 <div
@@ -302,7 +330,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.1, letterSpacing: '.01em', color: '#fff',
-                    textShadow: '0 2px 20px rgba(0,0,0,0.55)',
+                    textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
                     caretColor: '#fff',
                     minWidth: 40,
                     textTransform: 'capitalize',
@@ -325,7 +353,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.2, color: 'rgba(255,255,255,0.35)',
+                    lineHeight: 1.2, color: 'rgba(255,255,255,0.65)',
                   }}>
                     Cover Message
                   </div>
@@ -349,7 +377,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.2, color: '#fff',
-                    textShadow: '0 3px 24px rgba(0,0,0,0.7)',
+                    textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
                     caretColor: '#fff',
                     wordBreak: 'break-word',
                     textTransform: 'capitalize',
@@ -395,7 +423,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 <input
                   value={msgAreaTo}
                   onChange={e => setMsgAreaTo(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
-                  placeholder="The Legend's Name"
+                  placeholder="Legend's Name"
                   autoCapitalize="words"
                   style={{
                     flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent',
@@ -466,10 +494,11 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             <input ref={msgPhotoRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleMsgPhoto} />
             {photoData ? (
               <button
-                onClick={() => setPhotoData(null)}
-                style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '7px 14px', fontSize: '.75rem', fontWeight: 700, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                onClick={() => { setPhotoData(null); setPhotoUrl(null); }}
+                disabled={uploadingPhoto}
+                style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '7px 14px', fontSize: '.75rem', fontWeight: 700, color: '#7A7585', cursor: uploadingPhoto ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
               >
-                ✕ Remove handwritten note
+                {uploadingPhoto ? 'Uploading…' : '✕ Remove handwritten note'}
               </button>
             ) : (
               <button
@@ -517,8 +546,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
         {/* ── Sticky continue button ── */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
-          <Btn variant="teal" full disabled={!canContinue || saving} onClick={handleSubmit}>
-            {saving ? 'Saving…' : 'Continue → Send this card'}
+          <Btn variant="teal" full disabled={!canContinue || saving || uploadingPhoto} onClick={handleSubmit}>
+            {saving ? 'Saving…' : uploadingPhoto ? 'Uploading photo…' : 'Continue → Send this card'}
           </Btn>
         </div>
 

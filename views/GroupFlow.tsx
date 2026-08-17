@@ -12,6 +12,7 @@ import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { OCCASIONS } from '@/lib/occasions';
+import { resizeImage } from '@/lib/resizeImage';
 
 const CORPORATE_PREVIEW_CONTRIBUTIONS = [
   { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
@@ -151,7 +152,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
     setUploadingImg(true);
     try {
       const fd = new FormData();
-      fd.append('file', f);
+      fd.append('file', await resizeImage(f));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (json.url) setCustomImgUrl(json.url);
@@ -411,7 +412,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
                 {/* Recipient */}
                 <div style={{ position: 'relative', marginBottom: 10 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.28)' }}>The legend</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
                   <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
@@ -420,7 +421,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
                 {/* Message */}
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.25)', lineHeight: 1.4 }}>Add a tagline…</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)', lineHeight: 1.4 }}>Add a tagline…</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
                     style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
@@ -430,7 +431,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 {/* From */}
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>From</div>
                 <div style={{ position: 'relative' }}>
-                  {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.22)', fontWeight: 700 }}>the team</div>}
+                  {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.65)', fontWeight: 700 }}>the team</div>}
                   <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
                     style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
@@ -507,28 +508,28 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   (bottom-anchored, left-aligned, stacked), so what you see while editing is
                   what the recipient actually sees, not a different layout. */}
               <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
-                <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 2px 14px rgba(0,0,0,.55)' }}>To</div>
+                <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>The Legend&apos;s Name</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
                   <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={e => { const raw = e.currentTarget.textContent ?? ''; setRecip(raw.replace(/(?:^|\s)\S/g, c => c.toUpperCase())); }}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 20px rgba(0,0,0,.55)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 6 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)' }}>Cover Message</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.65)' }}>Cover Message</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 3px 24px rgba(0,0,0,.7)', caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', wordBreak: 'break-word' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 2px 14px rgba(0,0,0,.55)', flexShrink: 0 }}>From</span>
+                  <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', flexShrink: 0 }}>From</span>
                   <div style={{ position: 'relative', flex: 1, minWidth: 30 }}>
-                    {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: 'rgba(255,255,255,0.28)', fontWeight: 700 }}>the team</div>}
+                    {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>the team</div>}
                     <div ref={occasionRef} contentEditable suppressContentEditableWarning spellCheck={false}
                       onInput={e => setOccasion(e.currentTarget.textContent ?? '')}
-                      style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 2px 14px rgba(0,0,0,.55)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
+                      style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
                     />
                   </div>
                 </div>
@@ -561,7 +562,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   <input
                     value={msgAreaRecip}
                     onChange={e => setMsgAreaRecip(e.target.value.replace(/(?:^|\s)\S/g, c => c.toUpperCase()))}
-                    placeholder="The Legend's Name"
+                    placeholder="Legend's Name"
                     autoCapitalize="words"
                     style={{
                       flex: 1, minWidth: 40, border: 'none', outline: 'none', background: 'transparent',
