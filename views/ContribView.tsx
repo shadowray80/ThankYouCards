@@ -9,6 +9,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
+import { resizeImage } from '@/lib/resizeImage';
 
 interface Campaign {
   id: string;
@@ -49,6 +50,21 @@ interface ContribViewProps {
   campaignSlug?: string;
 }
 
+// Little starter cues for the message box — not "prompts", just a friendly nudge for
+// people who freeze up at a blank page. Tapping one drops a lead-in sentence into the
+// textarea so they can finish the thought rather than start from nothing.
+const MESSAGE_CUES: { label: string; starter: (name: string) => string }[] = [
+  { label: 'Fun times', starter: name => `One of my favourite memories with ${name} is ` },
+  { label: 'A special talent', starter: name => `${name} is honestly so good at ` },
+  { label: 'An in-joke', starter: () => `I still crack up thinking about the time ` },
+  { label: 'Appreciation', starter: name => `I really appreciate ${name} for ` },
+  { label: 'The difference they made', starter: name => `${name} made such a difference by ` },
+  { label: 'A specific thing', starter: () => `One thing I'll never forget is ` },
+  { label: 'Something that stuck with you', starter: name => `Something ${name} once said or did that stuck with me was ` },
+  { label: 'An attribute, like generosity', starter: name => `${name} is one of the most generous people I know — ` },
+  { label: 'The outcome', starter: name => `Because of ${name}, ` },
+];
+
 export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug }: ContribViewProps) {
   const DEMO_CAMPAIGN: Campaign = { id: 'demo', slug: 'demo', recipient_name: 'Coach Dave', occasion: 'Coach', card_theme: 'coach', card_message: 'Thank you Coach!', card_image_url: null, card_style: 'casual', card_palette: null, card_logo_url: null, funded_amount: 87, target_amount: 150, deadline: null, status: 'active' };
 
@@ -65,6 +81,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [uploading, setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState('');
   const photoInputRef               = useRef<HTMLInputElement>(null);
+  const messageTextareaRef          = useRef<HTMLTextAreaElement>(null);
   const [name, setName]             = useState('');
   const [email, setEmail]           = useState('');
   const [giftSel, setGiftSel]       = useState<string | null>(null);
@@ -94,14 +111,27 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       .finally(() => setLoading(false));
   }, [activeSlug]);
 
+  function insertCue(starter: string) {
+    setMsg(prev => {
+      const needsSpace = prev.length > 0 && !/\s$/.test(prev);
+      return prev + (needsSpace ? ' ' : '') + starter;
+    });
+    requestAnimationFrame(() => {
+      const el = messageTextareaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
+
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     setUploading(true);
     setUploadError('');
-    const fd = new FormData();
-    fd.append('file', f);
     try {
+      const fd = new FormData();
+      fd.append('file', await resizeImage(f));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Upload failed');
@@ -311,6 +341,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>Your message</label>
           <textarea
+            ref={messageTextareaRef}
             value={msg} onChange={e => setMsg(e.target.value)}
             placeholder={`Write something nice…`}
             maxLength={400}
@@ -319,6 +350,26 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
             onBlur={e => (e.target.style.borderColor = '#E8E2F0')}
           />
           <div style={{ textAlign: 'right', fontSize: '.73rem', color: '#7A7585', marginTop: 4 }}>{msg.length}/400</div>
+
+          {/* Friendly starter cues — not labelled "prompts", just a nudge for anyone
+              staring at a blank box. Tapping one drops a lead-in sentence to finish. */}
+          <div style={{ marginTop: 12, background: '#FAF7FF', border: '1.5px solid #E8E2F0', borderRadius: 12, padding: '12px 14px' }}>
+            <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#7A7585', marginBottom: 8 }}>
+              Thank {recipientName} for…
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {MESSAGE_CUES.map(cue => (
+                <button
+                  key={cue.label}
+                  type="button"
+                  onClick={() => insertCue(cue.starter(recipientName))}
+                  style={{ background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 20, padding: '6px 12px', fontSize: '.76rem', fontWeight: 700, color: '#3A8FA0', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                >
+                  {cue.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Photo upload */}
           <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
