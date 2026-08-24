@@ -37,7 +37,7 @@ export default function PrivacyPage() {
       </div>
 
       <p style={S.p}>
-        thankyoucards.au is operated by Tim Atkinson (ABN to be provided), an Australian sole trader ("we", "us", "our"). This Privacy Policy explains how we handle personal information collected through thankyoucards.au. We comply with the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs).
+        thankyoucards.au is operated by Tim Atkinson (ABN 54 939 189 975), trading as Thank you cards, an Australian sole trader ("we", "us", "our"). This Privacy Policy explains how we handle personal information collected through thankyoucards.au. We comply with the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs).
       </p>
 
       <h2 style={S.h2}>1. What Information We Collect</h2>

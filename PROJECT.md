@@ -226,5 +226,5 @@ PATCH actions available:
 | Gift fund / Tillo gift cards | 🔜 Planned |
 | Scrapbook card style | 🔜 Planned |
 | Contributor payment (gift contributions) | 🔜 Planned |
-| ABN in Privacy Policy | ⚠️ Placeholder — needed before launch |
+| ABN in Privacy Policy | ✅ Live |
 | DNS / domain pointing to Vercel | ⚠️ Pending |
