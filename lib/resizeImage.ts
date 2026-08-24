@@ -1,8 +1,26 @@
 const MAX_DIMENSION = 2000;
 const QUALITY = 0.8;
+const DECODE_TIMEOUT_MS = 10000;
 
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
   return new Promise(resolve => canvas.toBlob(resolve, type, quality));
+}
+
+// iOS Safari has long-standing WebKit bugs where createImageBitmap() on a HEIC
+// photo (the iPhone camera's default format) hangs or leaks rather than
+// resolving or rejecting — so a plain try/catch around it doesn't help, since
+// there's nothing to catch. Racing it against a timeout guarantees we give up
+// and fall back to the original file instead of leaving the caller waiting
+// forever. HEIC's compression is efficient enough that the original file is
+// often already under the server's size cap anyway.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timed out')), ms);
+    promise.then(
+      v => { clearTimeout(timer); resolve(v); },
+      e => { clearTimeout(timer); reject(e); },
+    );
+  });
 }
 
 // Downscales + re-encodes an uploaded photo as WebP (falling back to JPEG if the
@@ -14,7 +32,7 @@ export async function resizeImage(file: File): Promise<File> {
 
   let bitmap: ImageBitmap;
   try {
-    bitmap = await createImageBitmap(file);
+    bitmap = await withTimeout(createImageBitmap(file), DECODE_TIMEOUT_MS);
   } catch {
     return file;
   }
