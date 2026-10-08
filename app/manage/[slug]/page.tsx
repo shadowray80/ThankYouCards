@@ -7,6 +7,7 @@ import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { resizeImage } from '@/lib/resizeImage';
+import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -30,6 +31,7 @@ interface Campaign {
   card_logo_position: 'left' | 'center' | 'right' | null;
   card_accent: string | null;
   card_text_on_image: boolean | null;
+  card_occasion: string | null;
 }
 
 interface Contribution {
@@ -393,6 +395,19 @@ function ManageContent() {
               style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
               Preview what {recipientName} will see →
             </a>
+            <div style={{ marginTop: 14 }}>
+              <EmailCardForm
+                slug={slug}
+                token={token}
+                isSolo={false}
+                recipientName={recipientName}
+                fromName={(campaign.occasion ?? '').replace(/^From\s+/i, '')}
+                cardOccasion={campaign.card_occasion}
+                messageCount={totalContributors}
+                imageUrl={campaign.card_image_url}
+                defaultSenderEmail={campaign.organiser_email}
+              />
+            </div>
           </div>
         )}
 

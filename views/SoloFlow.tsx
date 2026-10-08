@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
+import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
@@ -42,6 +43,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [imageOnly, setImageOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
+  const [organiserToken, setOrganiserToken] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -92,6 +94,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       });
 
       setSlug(campaign.slug);
+      setOrganiserToken(campaign.organiser_token);
       setShowDone(true);
       window.scrollTo({ top: 0, behavior: 'instant' });
     } catch (err) {
@@ -187,6 +190,16 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 {copiedLink ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
+            {organiserToken && (
+              <EmailCardForm
+                slug={slug}
+                token={organiserToken}
+                isSolo
+                recipientName={effectiveTo}
+                fromName={from.trim()}
+                imageUrl={imgUrl}
+              />
+            )}
           </div>
           <CardScrollView
             customImgUrl={imgUrl}
