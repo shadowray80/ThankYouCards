@@ -361,12 +361,15 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 style={{
                   height: 36, borderRadius: 18, padding: '0 14px', cursor: 'pointer',
                   background: '#DDD6E6', color: '#5A5566', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
-                  display: 'flex', alignItems: 'center',
+                  display: 'grid', alignItems: 'center', justifyItems: 'center',
                   fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 'clamp(.74rem, 3.2vw, .85rem)', whiteSpace: 'nowrap',
                 }}
                 title={imageOnly ? 'Show the name and message on the card' : 'Hide all text on the card'}
               >
-                {imageOnly ? 'Show text' : 'Image only'}
+                {/* Both labels share one grid cell so the pill is always as wide as the longer
+                    one — toggling never resizes it or shifts the neighbouring buttons. */}
+                <span style={{ gridArea: '1 / 1', visibility: imageOnly ? 'hidden' : 'visible' }}>Image only</span>
+                <span style={{ gridArea: '1 / 1', visibility: imageOnly ? 'visible' : 'hidden' }}>Show text</span>
               </div>
             }
             headerAction={

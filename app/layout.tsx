@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito, Lora, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { AdminToolbar } from "@/components/ui/AdminToolbar";
@@ -42,6 +42,14 @@ export const metadata: Metadata = {
     description: "Beautiful, personalised thank you cards sent instantly",
     images: ["/og-image.png"],
   },
+};
+
+// maximumScale 1 stops iPhone Safari auto-zooming whenever a text field with a
+// small font is tapped (and zooming back out after). iOS still lets people pinch-zoom.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
