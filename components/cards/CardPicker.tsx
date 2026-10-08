@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { CATEGORIES, TAGS, SPORTS_SUBCATEGORIES } from '@/lib/cardTaxonomy';
 
 const GREEN = '#3FAE6A';
@@ -9,7 +9,7 @@ const ORANGE = '#E8724A';
 // Kept small enough that this first group reliably fits on one line at mobile widths —
 // the More/Less toggle rides along as the last pill in this same fixed row, so it never
 // moves when the rest of the list expands/contracts below it.
-const CATEGORIES_COLLAPSED_COUNT = 3;
+const CATEGORIES_COLLAPSED_COUNT = 2;
 const TAGS_COLLAPSED_COUNT = 3;
 
 interface CardData { id: string; category: string; subcategory: string | null; tags: string[]; url: string }
@@ -17,9 +17,14 @@ interface CardData { id: string; category: string; subcategory: string | null; t
 interface CardPickerProps {
   selectedUrl: string;
   onSelect: (url: string) => void;
+  // Solo flow's header: one larger centred "Browse more designs" line, no drag hint.
+  browseHeader?: boolean;
+  // Extra buttons either side of the browse pill (solo flow's image-only + upload-photo buttons).
+  headerLead?: ReactNode;
+  headerAction?: ReactNode;
 }
 
-export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
+export function CardPicker({ selectedUrl, onSelect, browseHeader = false, headerLead, headerAction }: CardPickerProps) {
   const [expanded, setExpanded] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
@@ -54,6 +59,26 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
     return catOk && tagOk && sportOk;
   });
 
+  const toggleCircle = (
+    <div
+      onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
+      style={{
+        flexShrink: 0, width: 36, height: 36, borderRadius: '50%',
+        background: expanded ? ORANGE : GREEN,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,.15)',
+      }}
+    >
+      <svg
+        width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+        style={{ transition: 'transform .25s ease', transform: expanded ? 'none' : 'rotate(180deg)' }}
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+  );
+
   // Deliberately no fixed/sticky positioning at all: this sits in plain document flow,
   // exactly where the parent places it (immediately after the card image). That means it's
   // always anchored precisely to the image's bottom edge with zero measurement, and normal
@@ -71,34 +96,36 @@ export function CardPicker({ selectedUrl, onSelect }: CardPickerProps) {
       <div
         onClick={() => setExpanded(v => !v)}
         style={{
-          cursor: 'pointer', padding: '14px 18px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          cursor: 'pointer', padding: browseHeader ? '14px 12px' : '14px 18px',
+          display: 'flex', alignItems: 'center', justifyContent: browseHeader ? 'center' : 'space-between', gap: 8,
           borderBottom: expanded ? '1px solid #F0EDF5' : 'none',
         }}
       >
-        <div>
-          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>Choose a card</div>
-          <div style={{ fontSize: '.76rem', color: '#B0A8BC', marginTop: 1 }}>
-            {expanded ? 'Drag down to focus on your card' : 'Drag up to browse other designs'}
+        {browseHeader && headerLead && <div onClick={e => e.stopPropagation()}>{headerLead}</div>}
+        {browseHeader ? (
+          // Soft pill with the toggle circle forming its right-hand end.
+          <div style={{
+            display: 'flex', alignItems: 'center', height: 36, borderRadius: 18,
+            background: expanded ? 'rgba(232,114,74,.12)' : 'rgba(63,174,106,.12)',
+            transition: 'background .25s ease',
+          }}>
+            <span style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 'clamp(.78rem, 3.4vw, .95rem)', color: expanded ? '#B8532F' : '#2C7A4B', padding: '0 10px 0 14px', whiteSpace: 'nowrap', transition: 'color .25s ease' }}>
+              Browse designs
+            </span>
+            {toggleCircle}
           </div>
-        </div>
-        <div
-          onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
-          style={{
-            flexShrink: 0, width: 36, height: 36, borderRadius: '50%',
-            background: expanded ? ORANGE : GREEN,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,.15)',
-          }}
-        >
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transition: 'transform .25s ease', transform: expanded ? 'none' : 'rotate(180deg)' }}
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
+        ) : (
+          <>
+            <div>
+              <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>Choose a card</div>
+              <div style={{ fontSize: '.76rem', color: '#B0A8BC', marginTop: 1 }}>
+                {expanded ? 'Drag down to focus on your card' : 'Drag up to browse other designs'}
+              </div>
+            </div>
+            {toggleCircle}
+          </>
+        )}
+        {browseHeader && headerAction && <div onClick={e => e.stopPropagation()}>{headerAction}</div>}
       </div>
 
       {expanded && (

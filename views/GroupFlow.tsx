@@ -491,23 +491,23 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
                 <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
                   <div ref={recipEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={recipEditable.onInput} onCompositionStart={recipEditable.onCompositionStart} onCompositionEnd={recipEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 6 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,0.65)' }}>Cover Message</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)' }}>Cover Message</div>}
                   <div ref={cardMsgEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={cardMsgEditable.onInput} onCompositionStart={cardMsgEditable.onCompositionStart} onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)', caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', caretColor: '#fff', wordBreak: 'break-word' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                   <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', flexShrink: 0 }}>From</span>
                   <div style={{ position: 'relative', flex: 1, minWidth: 30 }}>
-                    {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>the team</div>}
+                    {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: '#fff', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>the team</div>}
                     <div ref={occasionEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
                       onInput={occasionEditable.onInput} onCompositionStart={occasionEditable.onCompositionStart} onCompositionEnd={occasionEditable.onCompositionEnd}
                       style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}

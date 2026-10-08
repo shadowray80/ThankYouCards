@@ -6,7 +6,6 @@ import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { CORPORATE_PALETTES } from '@/lib/palettes';
-import { copyLinkRich } from '@/lib/richCopy';
 import { resizeImage } from '@/lib/resizeImage';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
@@ -126,25 +125,13 @@ function ManageContent() {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
 
   const copyShareLink = () => {
-    const name = campaign?.recipient_name ? campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1) : 'their';
-    copyLinkRich(`${origin}/card/${slug}`, {
-      title: `💌 We're making a card for ${name}!`,
-      subtitle: `Add your message — it only takes a minute.`,
-      imageUrl: campaign?.card_image_url ?? undefined,
-      buttonLabel: 'Join the card →',
-    });
+    navigator.clipboard.writeText(`${origin}/card/${slug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const copyRecipientLink = () => {
-    const name = campaign?.recipient_name ? campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1) : 'You';
-    copyLinkRich(`${origin}/view/${slug}`, {
-      title: `🎉 ${name}, you've got a card!`,
-      subtitle: 'Open to read your personalised card.',
-      imageUrl: campaign?.card_image_url ?? undefined,
-      buttonLabel: 'View your card →',
-    });
+    navigator.clipboard.writeText(`${origin}/view/${slug}`);
     setCopiedRecipient(true);
     setTimeout(() => setCopiedRecipient(false), 2000);
   };

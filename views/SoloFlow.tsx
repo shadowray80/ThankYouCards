@@ -7,7 +7,6 @@ import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
-import { copyLinkRich } from '@/lib/richCopy';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
 
@@ -39,6 +38,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
   const [showDone, setShowDone] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  // Image only: hides all text on the cover (editor, preview and the sent card).
+  const [imageOnly, setImageOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -64,7 +65,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           card_theme: '',
           card_message: cardMsg.trim(),
           card_image_url: imageUrl,
-          card_text_on_image: to.trim() !== '' || cardMsg.trim() !== '',
+          card_text_on_image: !imageOnly && (to.trim() !== '' || cardMsg.trim() !== ''),
         }),
       });
       const campaignData = await campaignRes.json();
@@ -178,12 +179,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               </div>
               <button
                 onClick={() => {
-                  copyLinkRich(fullUrl, {
-                    title: `🎉 ${effectiveTo}, you've got a card!`,
-                    subtitle: 'Open to read your personalised card.',
-                    imageUrl: imgUrl,
-                    buttonLabel: 'View your card →',
-                  });
+                  navigator.clipboard.writeText(fullUrl);
                   setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000);
                 }}
                 style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}
@@ -202,6 +198,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             soloPhotoData={photoData ?? undefined}
             messages={[]}
             landscapeCover
+            showCoverText={!imageOnly}
             giftAmount={giftAmount}
           />
           <Btn variant="outline" full onClick={onBack}>Make another card</Btn>
@@ -217,7 +214,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 100 }}>
 
         {showPreview ? (
-          <div style={{ padding: '16px 18px 0', position: 'relative' }}>
+          <div style={{ padding: '16px 18px 0' }}>
+            {/* Toggle positioned against the card itself (not the padded wrapper) so it sits
+                in exactly the same spot as on the editing cover. */}
+            <div style={{ position: 'relative' }}>
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
             <CardScrollView
               customImgUrl={imgUrl}
@@ -229,8 +229,10 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               soloPhotoData={photoData ?? undefined}
               messages={[]}
               landscapeCover
+              showCoverText={!imageOnly}
               giftAmount={giftAmount}
             />
+            </div>
           </div>
         ) : (
         <>
@@ -251,28 +253,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             {/* Inset border */}
             <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
 
-            {/* Upload own photo — corner button */}
-            <div
-              onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
-              style={{
-                position: 'absolute', top: 14, right: 14, zIndex: 5,
-                width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer',
-                background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)',
-                backdropFilter: 'blur(4px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
-                transition: 'background .2s', color: '#fff', fontWeight: 800,
-              }}
-              title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-            >
-              {uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}
-            </div>
             <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
 
             {/* Recipient name — contentEditable so text-shadow isn't clipped */}
-            <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
+            <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px', display: imageOnly ? 'none' : undefined }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
               <div style={{ position: 'relative' }}>
                 {!to && (
@@ -280,7 +266,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, letterSpacing: '.01em', color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
+                    lineHeight: 1.1, letterSpacing: '.01em', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
                   }}>
                     Legend&apos;s Name
                   </div>
@@ -299,7 +285,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.1, letterSpacing: '.01em', color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
+                    textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
                     caretColor: '#fff',
                     minWidth: 40,
                     textTransform: 'capitalize',
@@ -314,7 +300,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 placeholder. It starts empty — nothing is sent unless you type here. */}
             <div style={{
               position: 'absolute', bottom: '8%', left: 0, right: 0, zIndex: 3,
-              textAlign: 'center', padding: '0 16px',
+              textAlign: 'center', padding: '0 16px', display: imageOnly ? 'none' : undefined,
             }}>
               <div style={{ position: 'relative' }}>
                 {!cardMsg && (
@@ -322,7 +308,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.2, color: 'rgba(255,255,255,0.65)',
+                    lineHeight: 1.2, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
                   }}>
                     Cover Message
                   </div>
@@ -340,7 +326,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     fontFamily: 'var(--font-dancing), cursive',
                     fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                     lineHeight: 1.2, color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
+                    textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
                     caretColor: '#fff',
                     wordBreak: 'break-word',
                     textTransform: 'capitalize',
@@ -367,7 +353,38 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
              it's always anchored exactly to the image's bottom edge with no measuring,
              and normal page scroll doubles as scrolling the picker. ── */}
         <div style={{ margin: '0 18px' }}>
-          <CardPicker selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+          <CardPicker
+            browseHeader
+            headerLead={
+              <div
+                onClick={() => setImageOnly(v => !v)}
+                style={{
+                  height: 36, borderRadius: 18, padding: '0 14px', cursor: 'pointer',
+                  background: '#DDD6E6', color: '#5A5566', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
+                  display: 'flex', alignItems: 'center',
+                  fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 'clamp(.74rem, 3.2vw, .85rem)', whiteSpace: 'nowrap',
+                }}
+                title={imageOnly ? 'Show the name and message on the card' : 'Hide all text on the card'}
+              >
+                {imageOnly ? 'Show text' : 'Image only'}
+              </div>
+            }
+            headerAction={
+              <div
+                onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
+                style={{
+                  width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer',
+                  background: customImgUrl ? '#E8724A' : '#DDD6E6',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
+                  transition: 'background .2s', color: customImgUrl ? '#fff' : '#5A5566', fontWeight: 800,
+                }}
+                title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
+              >
+                {uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}
+              </div>
+            }
+            selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
         </div>
 
         <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
@@ -479,28 +496,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               thank<span style={{ color: '#F09070' }}>you</span>cards.au
             </div>
             <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.68rem', letterSpacing: '.06em' }}>A card thoughtfully chosen just for you.</div>
-          </div>
-        </div>
-
-        {/* ── Gift card — coming soon ── */}
-        <div style={{ padding: '16px 18px 0' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: '#FAFAFA', border: '2px solid #E8E2F0',
-            borderRadius: 12, padding: '14px 16px', opacity: 0.6,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: '1.4rem' }}>💳</span>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ fontWeight: 800, fontSize: '.93rem', color: '#2A2A2A' }}>Add a gift card</div>
-                  <div style={{ background: '#F09070', color: '#fff', fontSize: '.58rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', borderRadius: 6, padding: '2px 7px' }}>Coming soon</div>
-                </div>
-              </div>
-            </div>
-            <div style={{ width: 42, height: 24, borderRadius: 12, position: 'relative', flexShrink: 0, background: '#D1C8DC' }}>
-              <div style={{ position: 'absolute', top: 3, left: 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
-            </div>
           </div>
         </div>
 

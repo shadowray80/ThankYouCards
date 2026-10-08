@@ -111,7 +111,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
               lineHeight: 1.1,
               letterSpacing: '.01em',
               color: '#fff',
-              textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
+              textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
             }}>
               {name}
             </div>
@@ -130,7 +130,7 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
                 fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
                 color: '#fff',
                 lineHeight: 1.2,
-                textShadow: '0 1px 3px rgba(0,0,0,.9), 0 3px 12px rgba(0,0,0,.75), 0 5px 30px rgba(0,0,0,.6)',
+                textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
               }}>
                 {msg}
               </div>

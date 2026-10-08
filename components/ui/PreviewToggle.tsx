@@ -22,7 +22,7 @@ export function PreviewToggle({ active, onClick }: { active: boolean; onClick: (
         }} />
       </div>
       <span style={{ fontSize: '.66rem', fontWeight: 800, color: '#fff', fontFamily: "'Nunito',sans-serif" }}>
-        👀 Preview
+        Preview
       </span>
     </div>
   );
