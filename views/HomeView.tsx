@@ -39,6 +39,18 @@ interface ShowcaseCard {
   sample_messages: ShowcaseSampleMessage[];
 }
 
+// Hand-drawn line icons from /public/Icons (black on transparent). `white` flips them for
+// coloured buttons/banners. Paths are case-sensitive on Vercel.
+function Icon({ src, size, white = false }: { src: string; size: number; white?: boolean }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src} alt="" aria-hidden
+      style={{ width: size, height: size, objectFit: 'contain', flexShrink: 0, display: 'block', filter: white ? 'invert(1)' : undefined }}
+    />
+  );
+}
+
 export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
   const [code, setCode] = useState('');
   const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
@@ -204,8 +216,8 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
       <div style={{ background: '#FFFDF8', padding: '44px 20px 0', maxWidth: 440, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           {[
-            { icon: '📨', title: 'Send a solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', solid: '#3A8FA0' },
-            { icon: '👥', title: 'Send a group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', solid: '#E8724A' },
+            { icon: '/Icons/Send.png', title: 'Send a solo card', desc: 'From you, to someone special. Quick and personal.', onClick: onSolo, color: '#3A8FA0', bg: '#EAF4FB', solid: '#3A8FA0' },
+            { icon: '/Icons/people.png', title: 'Send a group card', desc: 'Everyone adds a message and chips in. We handle the chasing.', onClick: onGroup, color: '#E8724A', bg: '#FDF0E8', solid: '#E8724A' },
           ].map((c, i) => (
             <div
               key={i}
@@ -214,7 +226,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.filter = 'brightness(0.93)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.filter = ''; }}
             >
-              <div style={{ fontSize: '2.4rem', marginBottom: 10 }}>{c.icon}</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}><Icon src={c.icon} size={44} /></div>
               <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 5, color: c.color }}>{c.title}</div>
               <div style={{ fontSize: '.78rem', color: '#7A7585', lineHeight: 1.4, fontWeight: 600 }}>{c.desc}</div>
             </div>
@@ -261,13 +273,13 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
         </div>
 
         {[
-          { bg: '#F0ECFB', icon: '🖼️', title: 'Curated images for every occasion', desc: 'Coaches, birthdays, thank yous, weddings, new babies, retirement, mum, dad and more. Or upload your own team photo!' },
-          { bg: '#E8F5EF', icon: '✍️', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
-          { bg: '#FDF0E8', icon: '📨', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
-          { bg: '#FBE8EE', icon: '👥', title: 'Everyone signs, no chasing', desc: 'Share one link. Everyone adds their own message. No more chasing people down for signatures.' },
+          { bg: '#F0ECFB', icon: '/Icons/image.png', title: 'Curated images for every occasion', desc: 'Coaches, birthdays, thank yous, weddings, new babies, retirement, mum, dad and more. Or upload your own team photo!' },
+          { bg: '#E8F5EF', icon: '/Icons/pencil.png', title: 'Handwrite it if you want', desc: 'Write on paper, take a photo - it appears on the card exactly as you wrote it. Personal, not generic.' },
+          { bg: '#FDF0E8', icon: '/Icons/Mail.png', title: 'Arrives instantly, anywhere', desc: 'UK relatives, interstate coaches, overseas family - no postage, no delays, no address headaches.' },
+          { bg: '#FBE8EE', icon: '/Icons/people.png', title: 'Everyone signs, no chasing', desc: 'Share one link. Everyone adds their own message. No more chasing people down for signatures.' },
         ].map((b, i) => (
           <div key={i} style={{ background: b.bg, borderRadius: 16, padding: '17px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', marginBottom: 11 }}>
-            <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>{b.icon}</div>
+            <Icon src={b.icon} size={34} />
             <div>
               <div style={{ fontWeight: 800, fontSize: '.97rem', marginBottom: 3 }}>{b.title}</div>
               <div style={{ fontSize: '.83rem', color: '#7A7585', lineHeight: 1.5, fontWeight: 600 }}>{b.desc}</div>
@@ -277,7 +289,10 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
 
         {/* Group callout */}
         <div style={{ background: 'linear-gradient(135deg,#E87240,#F09070)', borderRadius: 18, padding: '22px 20px', marginBottom: 28, color: '#fff' }}>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 6 }}>👥 Running a group gift?</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontWeight: 800, fontSize: '1.1rem', marginBottom: 6 }}>
+            <Icon src="/Icons/Calendar.png" size={24} white />
+            Running a group gift?
+          </div>
           <div style={{ fontSize: '.86rem', lineHeight: 1.55, opacity: .9, fontWeight: 600, marginBottom: 14 }}>
             Share one link. Everyone adds their own message. No more chasing people down — they sign in their own time, from their phone.
           </div>
@@ -292,7 +307,6 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
 
             {/* Solo — free */}
             <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(58,143,160,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div style={{ fontSize: '1rem', marginBottom: 2 }}>📨</div>
               <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#3A8FA0', lineHeight: 1 }}>Free</div>
               <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Solo card</div>
               <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Just you, to someone special</div>
@@ -300,7 +314,6 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
 
             {/* Group card */}
             <div style={{ background: '#FDF0E8', borderRadius: 14, padding: '18px 14px', border: '2px solid rgba(232,114,74,.25)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <div style={{ fontSize: '1rem', marginBottom: 2 }}>👥</div>
               <div style={{ fontSize: '1.7rem', fontWeight: 800, color: '#E8724A', lineHeight: 1 }}>$15</div>
               <div style={{ fontSize: '.8rem', fontWeight: 800, color: '#2A2A2A', marginTop: 4 }}>Group card</div>
               <div style={{ fontSize: '.72rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>Unlimited contributors, all messages in one card</div>
@@ -311,8 +324,8 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
 
         {/* Final CTAs */}
         <div style={{ paddingBottom: 50 }}>
-          <Btn variant="teal" full onClick={onSolo}>💌 Send a card now →</Btn>
-          <Btn variant="coral" full onClick={onGroup}>👥 Create a group card →</Btn>
+          <Btn variant="teal" full onClick={onSolo}><Icon src="/Icons/Send.png" size={20} white />Send a card now →</Btn>
+          <Btn variant="coral" full onClick={onGroup}><Icon src="/Icons/people.png" size={20} white />Create a group card →</Btn>
         </div>
 
       </div>
