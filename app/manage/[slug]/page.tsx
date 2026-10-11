@@ -8,6 +8,7 @@ import { THEMES } from '@/lib/themes';
 import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { resizeImage } from '@/lib/resizeImage';
 import { EmailCardForm } from '@/components/forms/EmailCardForm';
+import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -234,6 +235,23 @@ function ManageContent() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, action: 'update_logo', card_logo_url: campaign?.card_logo_url ?? null, card_logo_scale: campaign?.card_logo_scale ?? 1, card_logo_position: position }),
     });
+  };
+
+  // Picking a saved brand template applies its colours + logo to this card and saves them.
+  const applyTemplate = async (palette: string, logoUrl: string | null, logoScale: number, logoPosition: 'left' | 'center' | 'right', accent: string | null) => {
+    setCampaign(prev => prev ? { ...prev, card_palette: palette, card_accent: accent, card_logo_url: logoUrl, card_logo_scale: logoScale, card_logo_position: logoPosition } : prev);
+    await Promise.all([
+      fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'update_palette', card_palette: palette, card_accent: accent }),
+      }),
+      fetch(`/api/manage/${slug}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, action: 'update_logo', card_logo_url: logoUrl, card_logo_scale: logoScale, card_logo_position: logoPosition }),
+      }),
+    ]);
   };
 
   const startEditContrib = (c: Contribution) => {
@@ -753,6 +771,20 @@ ${origin}/card/${slug}
                 {savingLogo ? 'Uploading…' : '+ Upload logo'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* Corporate brand template — save this card's colours + logo, or apply a saved one */}
+        {campaign.card_style === 'corporate' && (
+          <div style={{ marginBottom: 20 }}>
+            <BrandKitPanel
+              cardPalette={campaign.card_palette ?? 'navy'}
+              logoUrl={campaign.card_logo_url}
+              logoScale={campaign.card_logo_scale ?? 1}
+              logoPosition={campaign.card_logo_position ?? 'left'}
+              accentColor={campaign.card_accent}
+              onApply={applyTemplate}
+            />
           </div>
         )}
 

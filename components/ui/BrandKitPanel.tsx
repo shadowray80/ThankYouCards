@@ -28,7 +28,7 @@ export function BrandKitPanel({
   logoPosition: 'left' | 'center' | 'right';
   accentColor: string | null;
   onApply: (palette: string, logoUrl: string | null, logoScale: number, logoPosition: 'left' | 'center' | 'right', accentColor: string | null) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const { session } = useOrganiserSession();
   const [kits, setKits] = useState<BrandKit[]>([]);
@@ -104,20 +104,21 @@ export function BrandKitPanel({
   return (
     <div style={{ marginTop: 14, background: '#F7F5FB', border: '1.5px solid #E8E2F0', borderRadius: 14, padding: '14px 16px' }}>
       <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 12 }}>
-        💾 Brand kit
+        💾 Brand template
       </div>
 
       {children}
 
-      <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1.5px solid #E8E2F0' }}>
+      {/* Divider only when colour/logo controls sit above (builder); the organiser page has those as separate sections. */}
+      <div style={children ? { marginTop: 14, paddingTop: 14, borderTop: '1.5px solid #E8E2F0' } : undefined}>
         {!session ? (
           <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.5 }}>
-            Log in from the menu above to save &amp; load your colour and logo for next time.
+            Log in from the menu above to save &amp; load your colours and logo as a template.
           </div>
         ) : (
           <>
             {loadingKits ? (
-              <div style={{ fontSize: '.76rem', color: '#B0A8BC', fontWeight: 600 }}>Loading your saved kits…</div>
+              <div style={{ fontSize: '.76rem', color: '#B0A8BC', fontWeight: 600 }}>Loading your saved templates…</div>
             ) : kits.length > 0 && (
               <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
                 <select
@@ -125,13 +126,13 @@ export function BrandKitPanel({
                   onChange={e => selectKit(e.target.value)}
                   style={{ ...inputStyle, flex: 1, cursor: 'pointer' }}
                 >
-                  <option value="">Pick a saved kit…</option>
+                  <option value="">Pick a saved template…</option>
                   {kits.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
                 </select>
                 {selectedKitId && (
                   <button
                     onClick={removeSelectedKit} disabled={removing}
-                    title="Remove this saved kit"
+                    title="Remove this saved template"
                     style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 10, padding: '0 12px', color: '#7A7585', fontWeight: 800, fontSize: '.78rem', cursor: removing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
                   >
                     ✕
@@ -145,7 +146,7 @@ export function BrandKitPanel({
                 onClick={() => setSavingName('')}
                 style={{ background: 'none', border: '2px dashed #D4C8EE', borderRadius: 10, padding: '8px 12px', width: '100%', color: '#7C5CBF', fontWeight: 800, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
               >
-                + Save current colour &amp; logo as a kit
+                + Save these colours &amp; logo as a template
               </button>
             ) : (
               <div style={{ display: 'flex', gap: 6 }}>
