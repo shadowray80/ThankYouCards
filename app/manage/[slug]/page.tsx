@@ -51,6 +51,7 @@ function ManageContent() {
   const slug         = typeof params.slug === 'string' ? params.slug : '';
   const token        = searchParams.get('token') ?? '';
   const paidParam    = searchParams.get('paid') === '1';
+  const sessionId    = searchParams.get('session_id') ?? '';
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -117,7 +118,7 @@ function ManageContent() {
       fetch(`/api/manage/${slug}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'mark_sent' }),
+        body: JSON.stringify({ token, action: 'mark_sent', session_id: sessionId }),
       })
       .then(() => loadData()) // reload so DB status is 'sent' before user clicks recipient link
       .catch(err => console.error('mark_sent failed:', err));

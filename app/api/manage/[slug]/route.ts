@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server';
+import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET(
   request: NextRequest,
@@ -46,7 +49,7 @@ export async function PATCH(
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
-    .select('id, status')
+    .select('id, status, deadline')
     .eq('slug', slug)
     .eq('organiser_token', token)
     .single();
@@ -85,6 +88,29 @@ export async function PATCH(
   }
 
   if (campaign.status === 'sent') return Response.json({ ok: true });
+
+  // Sending is only free for a solo card (no deadline, at most one message). Anything else
+  // needs a completed Stripe checkout for this exact campaign — paid, or $0 via a promo code.
+  const { count: messageCount, error: countError } = await supabaseAdmin
+    .from('contributions')
+    .select('id', { count: 'exact', head: true })
+    .eq('campaign_id', campaign.id);
+  if (countError) return Response.json({ error: countError.message }, { status: 500 });
+
+  const isFreeSolo = !campaign.deadline && (messageCount ?? 0) <= 1;
+  if (!isFreeSolo) {
+    const sessionId = typeof body.session_id === 'string' ? body.session_id : '';
+    if (!sessionId) return Response.json({ error: 'Payment required' }, { status: 402 });
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      const paid = session.status === 'complete'
+        && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required')
+        && session.metadata?.campaign_id === campaign.id;
+      if (!paid) return Response.json({ error: 'Payment not completed' }, { status: 402 });
+    } catch {
+      return Response.json({ error: 'Could not confirm payment' }, { status: 402 });
+    }
+  }
 
   const { error: updateError } = await supabaseAdmin
     .from('campaigns')

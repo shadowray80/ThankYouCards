@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     mode: 'payment',
     // Shows an "Add promotion code" box; codes are created in the Stripe dashboard.
     // A 100%-off code creates no PaymentIntent, so the webhook never fires for it —
-    // the manage page's ?paid=1 mark_sent fallback is what sends those cards.
+    // the manage page's ?paid=1 mark_sent (verified against the session) sends those cards.
     allow_promotion_codes: true,
     line_items: [{
       price_data: {
@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
       campaign_id: campaign.id,
       slug,
     },
-    success_url: `${origin}/manage/${slug}?token=${token}&paid=1`,
+    // Stripe fills in {CHECKOUT_SESSION_ID}; mark_sent checks that session with Stripe.
+    success_url: `${origin}/manage/${slug}?token=${token}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url:  `${origin}/manage/${slug}?token=${token}`,
   });
 
