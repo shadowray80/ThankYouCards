@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/requireAdmin';
 import { parseCardFileName, autoTagsFor } from '@/lib/cardTaxonomy';
 
 const BUCKET = 'cards';
+const PAGE_SIZE = 1000;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -13,16 +14,21 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'Not authorised' }, { status: 401 });
   }
 
-  const { data: files, error: listError } = await supabaseAdmin.storage
-    .from(BUCKET)
-    .list('', { limit: 1000 });
-
-  if (listError) return Response.json({ error: listError.message }, { status: 500 });
+  // The bucket is the master copy of the library: page through every file in it.
+  const files: { name: string }[] = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const { data, error: listError } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .list('', { limit: PAGE_SIZE, offset, sortBy: { column: 'name', order: 'asc' } });
+    if (listError) return Response.json({ error: listError.message }, { status: 500 });
+    files.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) break;
+  }
 
   const skipped: string[] = [];
   const parsedRows: { file_name: string; image_url: string; category: string; subcategory: string | null; style: string }[] = [];
 
-  for (const file of files ?? []) {
+  for (const file of files) {
     if (!file.name || file.name.startsWith('.')) continue; // storage placeholder entries
     const parsed = parseCardFileName(file.name);
     if (!parsed) { skipped.push(file.name); continue; }
@@ -38,7 +44,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (parsedRows.length === 0) {
-    return Response.json({ synced: 0, inserted: 0, skipped });
+    // An empty listing is far more likely a Storage hiccup than a deliberately emptied
+    // library, so never treat it as "remove everything".
+    return Response.json({ synced: 0, inserted: 0, removed: 0, skipped });
   }
 
   // Split into brand-new files vs. ones already in the table. New rows get their
@@ -57,6 +65,8 @@ export async function POST(request: NextRequest) {
 
   const existingTags = new Map((existing ?? []).map(r => [r.file_name, r.tags as string[]]));
   const newRows = parsedRows.filter(r => !existingTags.has(r.file_name));
+  const inStorage = new Set(parsedRows.map(r => r.file_name));
+  const goneFromStorage = [...existingTags.keys()].filter(name => !inStorage.has(name));
   const existingRows = parsedRows.filter(r => existingTags.has(r.file_name));
 
   if (newRows.length > 0) {
@@ -86,5 +96,14 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return Response.json({ synced: parsedRows.length, inserted: newRows.length, backfilled, skipped });
+  // Library rows whose image file was deleted from the bucket can't show anything, so drop them.
+  if (goneFromStorage.length > 0) {
+    const { error: removeError } = await supabaseAdmin
+      .from('cards')
+      .delete()
+      .in('file_name', goneFromStorage);
+    if (removeError) return Response.json({ error: removeError.message }, { status: 500 });
+  }
+
+  return Response.json({ synced: parsedRows.length, inserted: newRows.length, backfilled, removed: goneFromStorage.length, skipped });
 }

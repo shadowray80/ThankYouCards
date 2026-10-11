@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { NotFound } from '@/components/ui/NotFound';
 import { Nav } from '@/components/ui/Nav';
 import { CATEGORIES, TAGS } from '@/lib/cardTaxonomy';
+import { supabaseBrowser } from '@/lib/supabase-browser';
 
 interface Card {
   id: string;
@@ -43,7 +44,10 @@ export default function AdminCardsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<{ synced: number; inserted: number; backfilled: number; skipped: string[] } | null>(null);
+  const [syncResult, setSyncResult] = useState<{ synced: number; inserted: number; backfilled: number; removed: number; skipped: string[] } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
+  const [uploadResult, setUploadResult] = useState<{ uploaded: number; failed: { name: string; error: string }[] } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
 
@@ -69,13 +73,49 @@ export default function AdminCardsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Sync failed');
-      setSyncResult({ synced: json.synced, inserted: json.inserted ?? 0, backfilled: json.backfilled ?? 0, skipped: json.skipped ?? [] });
+      setSyncResult({ synced: json.synced, inserted: json.inserted ?? 0, backfilled: json.backfilled ?? 0, removed: json.removed ?? 0, skipped: json.skipped ?? [] });
       reload();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSyncing(false);
     }
+  }
+
+  // Uploads go straight from the browser into the `cards` bucket via a signed URL from
+  // the server (which checks admin + the filename), then a sync adds them to the library.
+  async function uploadFiles(files: FileList | null) {
+    if (!session || !files || files.length === 0) return;
+    const list = [...files];
+    setError(''); setUploadResult(null); setSyncResult(null);
+    setUploadProgress({ done: 0, total: list.length });
+    let uploaded = 0;
+    const failed: { name: string; error: string }[] = [];
+
+    for (const [i, file] of list.entries()) {
+      try {
+        const res = await fetch('/api/admin/cards/upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...session, file_name: file.name }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Upload failed');
+        const { error: uploadError } = await supabaseBrowser.storage
+          .from('cards')
+          .uploadToSignedUrl(json.path, json.token, file, { contentType: file.type || undefined });
+        if (uploadError) throw new Error(uploadError.message);
+        uploaded++;
+      } catch (err: unknown) {
+        failed.push({ name: file.name, error: err instanceof Error ? err.message : 'Upload failed' });
+      }
+      setUploadProgress({ done: i + 1, total: list.length });
+    }
+
+    setUploadProgress(null);
+    setUploadResult({ uploaded, failed });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (uploaded > 0) await sync();
   }
 
   async function toggleTag(card: Card, tagId: string) {
@@ -112,23 +152,43 @@ export default function AdminCardsPage() {
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 18px 80px', fontFamily: "'Nunito',sans-serif" }}>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2A2A2A', marginBottom: 4 }}>Card library</h1>
         <p style={{ color: '#7A7585', fontSize: '.85rem', marginBottom: 20 }}>
-          Sync pulls in whatever&apos;s in the <code>cards</code> Storage bucket and parses category/subcategory/style
-          straight from each filename. Tags and the active toggle are never touched by sync — set those by hand here.
+          The <code>cards</code> Storage bucket is the master copy. Upload adds images to it (then syncs); Sync
+          brings the library in line with the bucket, reading category/subcategory/style from each filename. To take
+          a card out of the picker, untick Active — don&apos;t delete its file, as cards people have already made use it.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', marginBottom: 20, flexWrap: 'wrap' }}>
+          <input
+            ref={fileInputRef} type="file" multiple accept="image/png,image/jpeg,image/webp"
+            onChange={e => uploadFiles(e.target.files)}
+            style={{ display: 'none' }}
+          />
           <button
-            onClick={sync} disabled={syncing}
+            onClick={() => fileInputRef.current?.click()} disabled={!!uploadProgress || syncing}
+            style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '9px 16px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: uploadProgress || syncing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+          >
+            {uploadProgress ? `Uploading ${uploadProgress.done} of ${uploadProgress.total}…` : '⬆ Upload cards'}
+          </button>
+          <button
+            onClick={sync} disabled={syncing || !!uploadProgress}
             style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '9px 16px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: syncing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
           >
             {syncing ? 'Syncing…' : '🔄 Sync from Storage'}
           </button>
           {syncResult && (
             <span style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600 }}>
-              Synced {syncResult.synced} ({syncResult.inserted} new, {syncResult.backfilled} auto-tagged){syncResult.skipped.length > 0 && `, skipped ${syncResult.skipped.length} (didn't match the naming convention)`}
+              {uploadResult && `Uploaded ${uploadResult.uploaded}. `}
+              Synced {syncResult.synced} ({syncResult.inserted} new, {syncResult.backfilled} auto-tagged{syncResult.removed > 0 && `, ${syncResult.removed} removed — file no longer in Storage`}){syncResult.skipped.length > 0 && `, skipped ${syncResult.skipped.length} (didn't match the naming convention)`}
             </span>
           )}
         </div>
+
+        {uploadResult && uploadResult.failed.length > 0 && (
+          <div style={{ background: '#FFF8E8', border: '1.5px solid #F0D8A8', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: '.78rem', color: '#9A7A4A' }}>
+            <strong>Not uploaded ({uploadResult.failed.length}):</strong>
+            {uploadResult.failed.map(f => <div key={f.name}>{f.name} — {f.error}</div>)}
+          </div>
+        )}
 
         {syncResult && syncResult.skipped.length > 0 && (
           <div style={{ background: '#FFF8E8', border: '1.5px solid #F0D8A8', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: '.78rem', color: '#9A7A4A' }}>
@@ -155,7 +215,7 @@ export default function AdminCardsPage() {
           <div style={{ color: '#B0A8BC', fontWeight: 700 }}>Loading…</div>
         ) : visibleCards.length === 0 ? (
           <div style={{ color: '#B0A8BC', fontWeight: 700 }}>
-            {cards.length === 0 ? 'No cards yet — upload some to the "cards" bucket in Supabase Storage, then hit Sync.' : 'No cards match this filter.'}
+            {cards.length === 0 ? 'No cards yet — hit Upload cards to add some.' : 'No cards match this filter.'}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>

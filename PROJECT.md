@@ -109,8 +109,11 @@ lib/cardTaxonomy.ts  Card library categories/tags/sports used by CardPicker filt
 
 ### Admin + accounts
 ```
-/admin, /admin/cards, /admin/showcase   Admin area (card library synced from Supabase Storage,
-                                        home-page showcase). Access by ADMIN_EMAILS.
+/admin, /admin/cards, /admin/showcase   Admin area (card library, home-page showcase). Access by ADMIN_EMAILS.
+                                        The `cards` Storage bucket is the master copy of the library: upload
+                                        from /admin/cards (signed URLs, no overwrites); Sync adds new files and
+                                        drops rows whose file is gone. Hide cards with Active, never delete
+                                        files — sent cards link to them.
 Brand kits + email/password login      Corporate users save colours/logo. Log in with email + password
                                         (/api/auth/login); new account / forgot password = emailed link to
                                         /login/verify to choose a password (login_links, organiser_sessions,
