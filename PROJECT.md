@@ -110,10 +110,11 @@ lib/cardTaxonomy.ts  Card library categories/tags/sports used by CardPicker filt
 ### Admin + accounts
 ```
 /admin, /admin/cards, /admin/showcase   Admin area (card library, home-page showcase). Access by ADMIN_EMAILS.
-                                        The `cards` Storage bucket is the master copy of the library: upload
-                                        from /admin/cards (signed URLs, no overwrites); Sync adds new files and
-                                        drops rows whose file is gone. Hide cards with Active, never delete
-                                        files — sent cards link to them.
+                                        Card library = `cards` bucket + `cards` table. "Sync from my folder"
+                                        (pick Tim's culled PC folder → preview → confirm) uploads new files via
+                                        signed URLs and moves cards missing from the folder to Superseded
+                                        (`superseded_at`; hidden from picker, only back via Restore). "Delete
+                                        forever" refuses if a campaign/showcase card uses the image.
 Brand kits + email/password login      Corporate users save colours/logo. Log in with email + password
                                         (/api/auth/login); new account / forgot password = emailed link to
                                         /login/verify to choose a password (login_links, organiser_sessions,
