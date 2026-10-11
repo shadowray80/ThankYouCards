@@ -51,8 +51,7 @@ function Icon({ src, size, white = false }: { src: string; size: number; white?:
   );
 }
 
-export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
-  const [code, setCode] = useState('');
+export function HomeView({ onSolo, onGroup }: HomeViewProps) {
   const [showcase, setShowcase] = useState<ShowcaseCard[]>([]);
   const [showcaseReady, setShowcaseReady] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -86,34 +85,6 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
     return () => clearInterval(id);
   }, [showcase.length, carouselSeconds]);
 
-  async function goToCard() {
-    const raw = code.trim();
-
-    // Organiser manage link — full URL or path
-    const manageMatch = raw.match(/\/manage\/([^?#]+)(\?[^#]*)?/);
-    if (manageMatch) {
-      window.location.href = `/manage/${manageMatch[1]}${manageMatch[2] ?? ''}`;
-      return;
-    }
-
-    // Bare organiser token — long alphanumeric, no slashes
-    if (/^[a-z0-9]{15,}$/i.test(raw)) {
-      const res = await fetch(`/api/manage?token=${raw}`);
-      if (res.ok) {
-        const json = await res.json();
-        window.location.href = `/manage/${json.slug}?token=${raw}`;
-        return;
-      }
-    }
-
-    // Contributor card link — full URL or just slug
-    let slug = raw.toLowerCase();
-    const cardMatch = slug.match(/\/card\/([^/?#]+)/);
-    if (cardMatch) slug = cardMatch[1];
-    if (!slug) return;
-    onNav(`contrib:${slug}`);
-  }
-
   return (
     <div>
       {/* Nav */}
@@ -124,7 +95,7 @@ export function HomeView({ onSolo, onGroup, onNav }: HomeViewProps) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <LoginMenu />
-            <MoreMenu code={code} onCodeChange={setCode} onSubmit={goToCard} />
+            <MoreMenu />
           </div>
         </div>
       </div>

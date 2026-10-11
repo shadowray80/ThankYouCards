@@ -9,6 +9,8 @@ import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { resizeImage } from '@/lib/resizeImage';
 import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
+import { Nav } from '@/components/ui/Nav';
+import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -45,6 +47,43 @@ interface Contribution {
   created_at: string;
 }
 
+// Logged-in organisers: switch between their group cards. Current (still collecting) first,
+// then previous (sent) ones.
+function CardSwitcher({ cards, currentSlug }: { cards: MyCard[]; currentSlug: string }) {
+  const label = (c: MyCard) =>
+    `${c.recipient_name}${c.card_occasion ? ` · ${c.card_occasion}` : ''} · ${new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
+  const current = cards.filter(c => c.status !== 'sent');
+  const previous = cards.filter(c => c.status === 'sent');
+  const isListed = cards.some(c => c.slug === currentSlug);
+
+  return (
+    <select
+      value={isListed ? currentSlug : ''}
+      onChange={e => {
+        const card = cards.find(c => c.slug === e.target.value);
+        if (card) window.location.href = manageUrl(card);
+      }}
+      aria-label="Your cards"
+      style={{
+        maxWidth: '62%', background: 'rgba(255,255,255,.18)', border: '1.5px solid rgba(255,255,255,.45)', borderRadius: 10,
+        padding: '6px 10px', color: '#fff', fontWeight: 800, fontSize: '.85rem', fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
+      }}
+    >
+      {!isListed && <option value="" style={{ color: '#2A2A2A' }}>Your cards…</option>}
+      {current.length > 0 && (
+        <optgroup label="Current" style={{ color: '#2A2A2A' }}>
+          {current.map(c => <option key={c.slug} value={c.slug} style={{ color: '#2A2A2A' }}>{label(c)}</option>)}
+        </optgroup>
+      )}
+      {previous.length > 0 && (
+        <optgroup label="Previous" style={{ color: '#2A2A2A' }}>
+          {previous.map(c => <option key={c.slug} value={c.slug} style={{ color: '#2A2A2A' }}>{label(c)}</option>)}
+        </optgroup>
+      )}
+    </select>
+  );
+}
+
 function ManageContent() {
   const params       = useParams();
   const searchParams = useSearchParams();
@@ -55,6 +94,7 @@ function ManageContent() {
   const sessionId    = searchParams.get('session_id') ?? '';
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
+  const myCards                           = useMyCards();
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -355,13 +395,17 @@ function ManageContent() {
   return (
     <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif" }}>
 
+      <Nav onHome={() => router.push('/')} badge={null} />
+
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 800, fontSize: '1rem', color: 'rgba(255,255,255,.85)', fontFamily: "'Nunito',sans-serif" }}>
-              thank<span style={{ color: '#fff' }}>you</span>cards<span style={{ color: 'rgba(255,255,255,.5)' }}>.au</span>
-            </button>
+            {myCards && myCards.length > 0 ? (
+              <CardSwitcher cards={myCards} currentSlug={slug} />
+            ) : (
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#fff' }}>Organiser view</div>
+            )}
             <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
               {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
             </div>

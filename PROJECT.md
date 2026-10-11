@@ -62,6 +62,8 @@ components/cards/CardPicker.tsx     "Browse designs" accordion under the cover (
                                     toolbar: [Image only] [Browse designs ⌃] [📷]
 components/forms/EmailCardForm.tsx  "✉️ Email the card" form (solo done screen + group dashboard)
 components/ui/PreviewToggle.tsx     Preview switch, top-left of the cover (same spot in edit + preview)
+components/ui/Nav.tsx               Site top bar on every page: logo, LoginMenu, MoreMenu (Organiser view,
+                                    card code, contact). LoginForm is shared by LoginMenu and /organiser.
 ```
 
 ### App Router pages
@@ -70,7 +72,9 @@ app/page.tsx                 Root — renders HomeView
 app/card/[slug]/page.tsx     Contributor entry point → renders ContribView
 app/view/[slug]/page.tsx     Recipient views the finished card → ViewContent
 app/view/[slug]/ViewContent.tsx  Actual card view logic
-app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY)
+app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY). Site top bar + card switcher dropdown
+                             (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
+app/organiser/page.tsx       "Organiser view" (More menu): logged out → log-in form; logged in → newest card
 ```
 
 ### Card renderers
