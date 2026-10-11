@@ -6,6 +6,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
+import { TintedIcon } from '@/components/ui/TintedIcon';
 
 interface Campaign {
   id: string;
@@ -187,9 +188,10 @@ export function ViewContent() {
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '14px 16px 0' }}>
         <a
           href="/"
-          style={{ background: '#E8724A', color: '#fff', borderRadius: 12, padding: '14px 24px', fontWeight: 800, fontSize: '1rem', textDecoration: 'none', display: 'block', textAlign: 'center', fontFamily: "'Nunito',sans-serif" }}
+          style={{ background: '#E8724A', color: '#fff', borderRadius: 12, padding: '14px 24px', fontWeight: 800, fontSize: '1rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, textAlign: 'center', fontFamily: "'Nunito',sans-serif" }}
         >
-          Create your own card →
+          Send a card!
+          <TintedIcon src="/Icons/Send.png" size={20} color="#fff" />
         </a>
       </div>
 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CORPORATE_PALETTES, CorporatePalette, buildCustomPalette } from '@/lib/palettes';
+import { TintedIcon } from '@/components/ui/TintedIcon';
 
 interface Campaign {
   slug: string;
@@ -249,8 +250,9 @@ export function CorporateView({
           {campaign.occasion && (
             <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
-          <a href="/" style={{ display: 'inline-block', background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
-            Create your own card →
+          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
+            Send a card!
+            <TintedIcon src="/Icons/Send.png" size={18} color="#fff" />
           </a>
           <div className="tyc-print-hide" style={{ marginTop: 14, display: 'flex', gap: 16, justifyContent: 'center' }}>
             <a href="/terms" style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', fontWeight: 600, textDecoration: 'none' }}>Terms</a>

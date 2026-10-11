@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CASUAL_PALETTES, CasualPalette } from '@/lib/palettes';
+import { TintedIcon } from '@/components/ui/TintedIcon';
 
 interface Campaign {
   slug: string;
@@ -327,8 +328,9 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
           {campaign.occasion && (
             <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.65)', fontWeight: 600, marginBottom: 18 }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
-          <a href="/" style={{ display: 'inline-block', background: '#fff', color: palette.accent, borderRadius: 12, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
-            Create your own card →
+          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: palette.accent, borderRadius: 12, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
+            Send a card!
+            <TintedIcon src="/Icons/Send.png" size={18} color={palette.accent} />
           </a>
           <div style={{ marginTop: 10, fontSize: '.72rem', color: 'rgba(255,255,255,.5)', fontWeight: 600 }}>
             It&apos;s easy, meaningful and unforgettable.
