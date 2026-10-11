@@ -31,6 +31,10 @@ export async function POST(request: NextRequest) {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
+    // Shows an "Add promotion code" box; codes are created in the Stripe dashboard.
+    // A 100%-off code creates no PaymentIntent, so the webhook never fires for it —
+    // the manage page's ?paid=1 mark_sent fallback is what sends those cards.
+    allow_promotion_codes: true,
     line_items: [{
       price_data: {
         currency: 'aud',
