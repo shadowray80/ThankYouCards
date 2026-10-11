@@ -1,7 +1,7 @@
 # thankyoucards.au — Project Context
 
 > Hand this file to any new Claude conversation (Claude Code or the Claude app). It covers everything needed to pick up the work.
-> Last updated: 8 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
+> Last updated: 11 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
 
 ---
 
@@ -307,11 +307,72 @@ PATCH actions available:
 
 ## Plans & ideas (Tim's roadmap)
 
-**Next up, in order:**
-1. **More card designs** Tim is happy with (library via /admin/cards).
-2. **Better printable version** — idea: one tall strip laid out like the phone view (cover on top,
-   messages flowing down), set out well for A4. Watch for page breaks splitting a message.
-3. **Find partners** — especially for the gift side.
+### The guiding idea — "Pellegrini's"
+Like Pellegrini's in Melbourne: a short menu, every item excellent. Few card designs that are all
+great, a handful of gifts that are all great, a site that feels premium (as if Apple made it).
+Less is more.
+
+### Phase 1 — NOW: a solid website, then get it out there
+1. **Card designs** Tim is happy with (pipeline → "Sync from my folder" on /admin/cards). Christmas set.
+2. **Design refresh** — make it look premium, not AI-made. Tim has the full list in Anytype. Headlines:
+   desktop layout (currently a phone column on desktop), drop rainbow pastel boxes / gradients,
+   remaining emojis, "→" on every button, made-up-looking testimonials, Nunito everywhere, tiny pale
+   text, no home-page footer. **Discuss each change with Tim before editing.**
+3. **Proper email** (`tim@`/`hello@thankyoucards.au`) — free first: Crazy Domains email forwarding or
+   Zoho Mail free plan; Google Workspace later. Root domain has no MX yet; Resend uses `send.` so no clash.
+4. **Promotion** — Instagram (customer showcase exports 1080×1350 posts), testimonials from real cards
+   (Coach Matt).
+5. **Better printable version** — one tall strip like the phone view, set out for A4, no message split
+   across pages.
+
+### Phase 2 — the gift shelf ("Add a little something")
+**End product:** a small shelf of 6–12 hand-picked gifts, mostly for **solo** card senders, shown on the
+"Your card is ready" screen (and maybe a Gifts page). Categories: coffee, chocolate, skincare, drinks,
+something for kids, a few-months subscription. Each tile: photo, name, brand, price, who delivers it.
+Clear, honest labelling of partner brands. Managed by Tim from an admin page.
+
+**Two kinds of gift on the same shelf:**
+- **Sold on our site (preferred, "seamless"):** customer pays once in our checkout (card + gift),
+  enters the address once; we email/send the order to the partner, who packs and ships Australia-wide.
+  We buy at a wholesale/partner price and keep the margin. We're the seller (consumer law, refunds,
+  "where's my parcel"). Normal Stripe e-commerce — no crowdfunding approval needed.
+  **Not alcohol** — selling booze through our checkout needs a liquor licence.
+- **Affiliate link-out:** customer buys on the brand's own site; we earn a commission (a few %), paid
+  weeks later. Use for alcohol and anything we can't get a partner deal on.
+
+**Finding partners (Australia-wide):** look for brands that already offer "corporate gifting" (they
+already ship on someone else's behalf); coffee roasters (subscriptions too); small Aussie skincare/candle
+brands; hamper companies. Ask for "dropship / gift fulfilment": ships Australia-wide with tracking,
+dispatch in 1–2 days, gift-ready packaging, no price in the box, partner price invoiced monthly.
+Beware chocolate in summer heat (Christmas!). Claude can draft the outreach email.
+
+**Affiliate networks (for link-outs):** Commission Factory (Australian, part of Awin; free for affiliates;
+$5 refundable card hold; review ≤3 business days; $50 payout minimum; public advertiser directory at
+commissionfactory.com/advertiser-directory — check it actually has alcohol brands before signing up).
+Also Awin and Impact (RedBalloon uses Impact). Tracking: the click sets a cookie (often 30 days, last
+click wins, same device only); exclusive discount codes credit us regardless of device — ask brands for
+one. Self-referral (buying through our own link) is banned, so affiliate only works when the customer buys.
+
+### Phase 3 — group money collection (needs Stripe's written OK first)
+Goal: Sarah collects $20 × 20 for Coach Pete with a progress bar; the pool pays the $15 card fee; the
+rest buys a gift (ours, an affiliate one, or anything she likes).
+- Plan: **Stripe Connect** — contributions go into **the organiser's own Stripe account** (Stripe does
+  ID checks, holds and pays out); we take the card fee as a platform fee. We never hold the money.
+- **Organiser chooses the gift up front.** Avoid "recipient chooses later" (that's a stored-value /
+  gift-card-like fund — the ASIC territory Zai warned about) and avoid us buying with the pool (kills
+  the affiliate commission).
+- Prepaid Visa cards: no (gift cards again, fees, we'd hold money, no commission).
+- Before building: email Stripe (Claude can draft) + one call with a payments/fintech lawyer.
+- Bridge until then: show the organiser's PayID with an "I've chipped in" tick on the same screens.
+- Competitor to watch: GroupTogether (AU) — collections + cards; earns on fees (contributor %, cash
+  withdrawal %) and gift cards. Industry pattern: fees on the collection are the dependable income;
+  gifts/affiliates are the extra. Our difference: real gifts, not gift cards.
+
+### Later
+- Christmas extras: scheduled sending ("deliver 25 Dec, 8am"), Christmas category — also the base for
+  reminders below.
+- UK / overseas gifting (Tim's own pain: UK relatives at Christmas) — maybe a tested "gifts to the UK
+  from Australia" guide via Awin UK brands. Not now; stay Australian first.
 
 **Big idea — "Never forget Mum's birthday" reminders:**
 - Users save people + dates in their account (Mum, wife, anniversary…).
