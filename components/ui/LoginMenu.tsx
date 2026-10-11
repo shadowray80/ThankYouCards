@@ -130,7 +130,7 @@ export function LoginMenu() {
                 {`Check ${email} for a link to set your password.`}
               </div>
             ) : mode === 'login' ? (
-              <form onSubmit={logIn}>
+              <form key="login" onSubmit={logIn}>
                 <input
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="Email" autoComplete="email" autoFocus
@@ -150,7 +150,7 @@ export function LoginMenu() {
                 </button>
               </form>
             ) : (
-              <form onSubmit={requestLink}>
+              <form key="reset" onSubmit={requestLink}>
                 <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
                   We&apos;ll email you a link to choose a password. New here? This sets up your account — save &amp; load your brand style on corporate cards.
                 </div>

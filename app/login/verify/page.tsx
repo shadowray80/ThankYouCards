@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
@@ -23,6 +23,15 @@ function SetPasswordContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(() => token ? '' : 'This link is missing its token — request a new one.');
   const [email, setEmail] = useState('');
+  const [linkEmail, setLinkEmail] = useState('');
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`/api/auth/set-password?token=${encodeURIComponent(token)}`)
+      .then(r => r.json())
+      .then(json => { if (json.email) setLinkEmail(json.email); else if (json.error) setError(json.error); })
+      .catch(() => {});
+  }, [token]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -68,7 +77,10 @@ function SetPasswordContent() {
       ) : (
         <form onSubmit={save} style={{ width: '100%', maxWidth: 340, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: '2.4rem' }}>🔑</div>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2A2A2A', marginBottom: 4 }}>Choose your password</div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2A2A2A' }}>Choose your password</div>
+          {linkEmail && <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600, marginBottom: 4 }}>for {linkEmail}</div>}
+          {/* Lets the browser's password manager save the password against the right email. */}
+          <input type="email" name="username" autoComplete="username" value={linkEmail} readOnly hidden />
           <input
             type="password" autoComplete="new-password" autoFocus
             value={password} onChange={e => setPassword(e.target.value)}
