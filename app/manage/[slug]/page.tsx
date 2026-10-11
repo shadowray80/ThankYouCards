@@ -8,7 +8,6 @@ import { THEMES } from '@/lib/themes';
 import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { resizeImage } from '@/lib/resizeImage';
 import { EmailCardForm } from '@/components/forms/EmailCardForm';
-import { FeatureOptIn } from '@/components/ui/FeatureOptIn';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 interface Campaign {
@@ -33,7 +32,6 @@ interface Campaign {
   card_accent: string | null;
   card_text_on_image: boolean | null;
   card_occasion: string | null;
-  feature_ok: boolean | null;
 }
 
 interface Contribution {
@@ -293,16 +291,6 @@ function ManageContent() {
     }
   };
 
-  // Saved straight away, so the choice holds whether it's ticked before or after sending.
-  const setFeatureOk = (next: boolean) => {
-    setCampaign(prev => prev ? { ...prev, feature_ok: next } : prev);
-    fetch(`/api/manage/${slug}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, action: 'set_feature_ok', feature_ok: next }),
-    }).catch(err => console.error('set_feature_ok failed:', err));
-  };
-
   const handlePay = async () => {
     setPaying(true);
     try {
@@ -408,9 +396,6 @@ function ManageContent() {
               style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
               Preview what {recipientName} will see →
             </a>
-            <div style={{ marginTop: 14 }}>
-              <FeatureOptIn checked={!!campaign.feature_ok} onChange={setFeatureOk} />
-            </div>
             <div style={{ marginTop: 14 }}>
               <EmailCardForm
                 slug={slug}
@@ -848,11 +833,8 @@ ${origin}/card/${slug}
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
               Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
             </div>
-            <div style={{ fontSize: '.75rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>
+            <div style={{ fontSize: '.75rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
               Contributors can still sign after you pay.
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <FeatureOptIn checked={!!campaign.feature_ok} onChange={setFeatureOk} />
             </div>
             <button
               onClick={handlePay}

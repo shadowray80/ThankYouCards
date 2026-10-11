@@ -5,7 +5,7 @@ import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { NotFound } from '@/components/ui/NotFound';
 import { Nav } from '@/components/ui/Nav';
-import { renderInstagramImage } from '@/lib/instagramImage';
+import { renderInstagramImage, renderInstagramMessage, hasMessageSlide } from '@/lib/instagramImage';
 
 interface CustomerCard {
   id: string;
@@ -23,6 +23,9 @@ interface CustomerCard {
   feature_dismissed: boolean;
   feature_exported_at: string | null;
   feature_showcase_id: string | null;
+  sender_name: string | null;
+  sender_message: string | null;
+  sender_photo_url: string | null;
 }
 
 const PURPLE = '#7C5CBF';
@@ -37,9 +40,17 @@ function badge(color: string): React.CSSProperties {
   return { fontSize: '.6rem', fontWeight: 800, color: '#fff', background: color, borderRadius: 10, padding: '2px 7px' };
 }
 
-function slugToFile(c: CustomerCard) {
-  return `thankyoucards-${c.slug}.jpg`;
+function download(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
+
+// A short gap stops the browser treating a burst of downloads as one.
+const pause = () => new Promise(r => setTimeout(r, 400));
 
 export default function AdminCustomerCardsPage() {
   const { session } = useOrganiserSession();
@@ -110,16 +121,14 @@ export default function AdminCustomerCardsPage() {
     for (const [i, card] of list.entries()) {
       setExporting(`Preparing ${i + 1} of ${list.length}…`);
       try {
-        const blob = await renderInstagramImage(card);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = slugToFile(card);
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+        // Instagram carousel: 1 = cover, 2 = the sender's message.
+        download(await renderInstagramImage(card), `thankyoucards-${card.slug}-1-cover.jpg`);
+        await pause();
+        if (hasMessageSlide(card)) {
+          download(await renderInstagramMessage(card), `thankyoucards-${card.slug}-2-message.jpg`);
+          await pause();
+        }
         await act(card, 'mark_exported');
-        // A short gap stops the browser treating a burst of downloads as one.
-        await new Promise(r => setTimeout(r, 400));
       } catch (err: unknown) {
         setError(`${card.recipient_name}: ${err instanceof Error ? err.message : 'export failed'}`);
       }
@@ -140,8 +149,8 @@ export default function AdminCustomerCardsPage() {
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 18px 80px', fontFamily: "'Nunito',sans-serif" }}>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2A2A2A', marginBottom: 4 }}>Customer cards</h1>
         <p style={{ color: '#7A7585', fontSize: '.85rem', marginBottom: 20, lineHeight: 1.5 }}>
-          Sent cards whose sender said yes to being featured. Only the cover is used — never the messages.
-          Each preview is exactly the Instagram image you&apos;ll download (1080 × 1350).
+          Solo cards whose sender said yes to being featured (the cover and their message). Downloads are an
+          Instagram carousel post at 1080 × 1350: slide 1 is the cover shown here, slide 2 is the sender&apos;s message.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
@@ -183,7 +192,7 @@ export default function AdminCustomerCardsPage() {
           <div style={{ color: '#B0A8BC', fontWeight: 700 }}>Loading…</div>
         ) : visible.length === 0 ? (
           <div style={{ color: '#B0A8BC', fontWeight: 700 }}>
-            {tab === 'new' ? 'No opted-in cards yet — they appear here once people tick "Happy for us to feature this card".' : 'Nothing dismissed.'}
+            {tab === 'new' ? 'No opted-in cards yet — they appear here once solo card senders tick "Happy for us to feature this card".' : 'Nothing dismissed.'}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
@@ -214,10 +223,13 @@ export default function AdminCustomerCardsPage() {
                   <div style={{ padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                       <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#2A2A2A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.recipient_name}</div>
-                      <div style={{ fontSize: '.62rem', color: '#B0A8BC', fontWeight: 700, flexShrink: 0 }}>{card.deadline ? 'Group' : 'Solo'}</div>
                     </div>
                     <div style={{ fontSize: '.64rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 6 }}>
                       {new Date(card.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+                    <div style={{ fontSize: '.68rem', color: '#7A7585', fontWeight: 600, fontStyle: 'italic', lineHeight: 1.4, marginBottom: 6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {card.sender_message?.trim() ? `“${card.sender_message.trim()}”` : card.sender_photo_url ? 'Handwritten message (photo)' : 'No message'}
+                      {card.sender_name && <span style={{ fontStyle: 'normal', fontWeight: 800 }}> — {card.sender_name}</span>}
                     </div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8, minHeight: 16 }}>
                       {card.feature_showcase_id && <span style={badge(GREEN)}>On homepage</span>}

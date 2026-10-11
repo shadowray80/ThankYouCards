@@ -2,9 +2,10 @@
 
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 
-// Draws a customer card's cover as an Instagram portrait post (1080 × 1350): the cover photo
-// filling the frame, the name + front message in the card's handwriting font with the same
-// soft white-text shadow, and a small thankyoucards.au mark. Cover only — never messages.
+// Draws a featured (solo, opted-in) customer card as an Instagram carousel post, 1080 × 1350:
+//   slide 1 — the cover: photo filling the frame, name + front message in the card's
+//             handwriting font with the same soft white-text shadow, small thankyoucards.au mark
+//   slide 2 — the sender's message (or their handwritten-message photo), signed with their name
 
 export const IG_WIDTH = 1080;
 export const IG_HEIGHT = 1350;
@@ -160,6 +161,112 @@ export async function renderInstagramImage(card: InstagramCard): Promise<Blob> {
   ctx.textAlign = 'right';
   ctx.fillStyle = 'rgba(255,255,255,.9)';
   shadowedText(ctx, 'thankyoucards.au', IG_WIDTH - 56, IG_HEIGHT - 52);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Could not create image'))), 'image/jpeg', 0.92);
+  });
+}
+
+export interface InstagramMessage {
+  sender_name: string | null;
+  sender_message: string | null;
+  sender_photo_url: string | null;
+}
+
+export function hasMessageSlide(m: InstagramMessage): boolean {
+  return !!(m.sender_message?.trim() || m.sender_photo_url);
+}
+
+export async function renderInstagramMessage(card: InstagramCard & InstagramMessage): Promise<Blob> {
+  const canvas = document.createElement('canvas');
+  canvas.width = IG_WIDTH;
+  canvas.height = IG_HEIGHT;
+  const ctx = canvas.getContext('2d')!;
+
+  const serif = fontFamily('--font-lora', 'serif');
+  const sans = fontFamily('--font-nunito', 'sans-serif');
+  await Promise.all([
+    document.fonts.load(`italic 48px ${serif}`),
+    document.fonts.load(`800 30px ${sans}`),
+  ]).catch(() => {});
+
+  const [accent] = paletteColours(card);
+  ctx.fillStyle = '#FFFDF8';
+  ctx.fillRect(0, 0, IG_WIDTH, IG_HEIGHT);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 0, IG_WIDTH, 14);
+
+  const pad = 110;
+  const maxWidth = IG_WIDTH - pad * 2;
+  const signature = card.sender_name?.trim() ? `— ${card.sender_name.trim()}` : '';
+  let signatureY: number;
+
+  const photo = card.sender_photo_url ? await loadImage(card.sender_photo_url).catch(() => null) : null;
+  if (photo) {
+    // Handwritten message photographed: show it whole, like a note on the table.
+    const boxW = IG_WIDTH - 160;
+    const boxH = IG_HEIGHT - 400;
+    const scale = Math.min(boxW / photo.naturalWidth, boxH / photo.naturalHeight);
+    const w = photo.naturalWidth * scale;
+    const h = photo.naturalHeight * scale;
+    const x = (IG_WIDTH - w) / 2;
+    const y = 120 + (boxH - h) / 2;
+    ctx.shadowColor = 'rgba(0,0,0,.18)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - 14, y - 14, w + 28, h + 28);
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.drawImage(photo, x, y, w, h);
+    signatureY = y + h + 110;
+  } else {
+    // Typed message: big open quote, then the text, shrinking until it fits.
+    ctx.font = `italic 280px ${serif}`;
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.18;
+    ctx.textAlign = 'left';
+    ctx.fillText('“', pad - 30, 330);
+    ctx.globalAlpha = 1;
+
+    const text = (card.sender_message ?? '').trim();
+    let size = 56;
+    let lines: string[] = [];
+    for (; size >= 30; size -= 2) {
+      ctx.font = `italic ${size}px ${serif}`;
+      lines = text.split(/\n+/).flatMap(p => wrapLines(ctx, p, maxWidth, 99));
+      if (lines.length * size * 1.45 <= IG_HEIGHT - 560) break;
+    }
+    if (size < 30) {
+      // Still too long at the smallest size — use that size and cut it off below.
+      size = 30;
+      ctx.font = `italic ${size}px ${serif}`;
+      lines = text.split(/\n+/).flatMap(p => wrapLines(ctx, p, maxWidth, 99));
+    }
+    const maxLines = Math.floor((IG_HEIGHT - 560) / (size * 1.45));
+    if (lines.length > maxLines) {
+      lines = lines.slice(0, maxLines);
+      lines[maxLines - 1] = lines[maxLines - 1].replace(/\s*\S*$/, '') + '…';
+    }
+    const lineHeight = size * 1.45;
+    const blockH = lines.length * lineHeight;
+    let y = Math.max(300, (IG_HEIGHT - blockH) / 2);
+    ctx.fillStyle = '#2A2A2A';
+    for (const line of lines) {
+      ctx.fillText(line, pad, y);
+      y += lineHeight;
+    }
+    signatureY = y + 50;
+  }
+
+  if (signature) {
+    ctx.font = `800 40px ${sans}`;
+    ctx.fillStyle = accent;
+    ctx.textAlign = photo ? 'center' : 'left';
+    ctx.fillText(signature, photo ? IG_WIDTH / 2 : pad, Math.min(signatureY, IG_HEIGHT - 140));
+  }
+
+  ctx.font = `800 30px ${sans}`;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = accent;
+  ctx.fillText('thankyoucards.au', IG_WIDTH - 56, IG_HEIGHT - 52);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Could not create image'))), 'image/jpeg', 0.92);
