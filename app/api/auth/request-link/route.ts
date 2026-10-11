@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString());
 
   if ((recentCount ?? 0) >= 3) {
-    return Response.json({ error: 'Too many login links requested — please wait a few minutes and try again.' }, { status: 429 });
+    return Response.json({ error: 'Too many links requested — please wait a few minutes and try again.' }, { status: 429 });
   }
 
   const token = randomUUID();

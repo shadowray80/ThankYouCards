@@ -113,7 +113,7 @@ export async function sendLoginLink({
   const { error } = await resend.emails.send({
     from: `thankyoucards.au <${FROM}>`,
     to,
-    subject: `Your thankyoucards.au login link`,
+    subject: `Set your thankyoucards.au password`,
     html: `
 <!DOCTYPE html>
 <html>
@@ -126,14 +126,14 @@ export async function sendLoginLink({
     </div>
 
     <h1 style="font-size:1.4rem;font-weight:800;color:#2A2A2A;margin:0 0 8px;">
-      Log in to your brand kit
+      Choose your password
     </h1>
     <p style="color:#7A7585;font-size:.95rem;line-height:1.6;margin:0 0 24px;">
-      Click below to log in and pick up your saved colours and logo — this link works for 15 minutes and can only be used once.
+      Click below to choose a password for your thankyoucards.au account. After that you can log in with your email and password — this link works for 15 minutes and can only be used once.
     </p>
 
     <a href="${loginUrl}" style="display:block;background:#3A8FA0;color:#fff;text-decoration:none;text-align:center;padding:14px 24px;border-radius:12px;font-weight:800;font-size:1rem;margin-bottom:24px;">
-      Log in →
+      Choose a password →
     </a>
 
     <p style="font-size:.78rem;color:#B0A8BC;text-align:center;margin:0;">

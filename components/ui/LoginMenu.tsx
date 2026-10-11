@@ -5,16 +5,56 @@ import Link from 'next/link';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 
+const inputStyle: React.CSSProperties = {
+  width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '9px 11px', fontFamily: "'Nunito',sans-serif",
+  fontWeight: 700, fontSize: '.82rem', color: '#2A2A2A', background: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: 8,
+};
+
+const primaryButtonStyle = (busy: boolean): React.CSSProperties => ({
+  width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '9px', color: '#fff',
+  fontWeight: 800, fontSize: '.78rem', cursor: busy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif",
+});
+
+const linkButtonStyle: React.CSSProperties = {
+  display: 'block', width: '100%', marginTop: 10, background: 'none', border: 'none', padding: 0, color: '#3A8FA0',
+  fontWeight: 700, fontSize: '.72rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", textAlign: 'center', lineHeight: 1.4,
+};
+
 export function LoginMenu() {
   const { session, setSession } = useOrganiserSession();
   const adminStatus = useIsAdmin();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
   const [error, setError] = useState('');
 
-  async function requestLink() {
+  async function logIn(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim() || !password) { setError('Enter your email and password.'); return; }
+    setRequesting(true); setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Something went wrong');
+      setSession({ email: json.email, session_token: json.session_token });
+      setPassword('');
+      setOpen(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setRequesting(false);
+    }
+  }
+
+  async function requestLink(e: React.FormEvent) {
+    e.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Enter a valid email address'); return; }
     setRequesting(true); setError('');
     try {
@@ -40,7 +80,7 @@ export function LoginMenu() {
 
   function toggle() {
     setOpen(v => !v);
-    setError(''); setLinkSent(false);
+    setError(''); setLinkSent(false); setMode('login');
   }
 
   return (
@@ -87,27 +127,46 @@ export function LoginMenu() {
               </>
             ) : linkSent ? (
               <div style={{ fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, lineHeight: 1.5 }}>
-                {`Check ${email} for a login link.`}
+                {`Check ${email} for a link to set your password.`}
               </div>
+            ) : mode === 'login' ? (
+              <form onSubmit={logIn}>
+                <input
+                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="Email" autoComplete="email" autoFocus
+                  style={inputStyle}
+                />
+                <input
+                  type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="Password" autoComplete="current-password"
+                  style={inputStyle}
+                />
+                <button type="submit" disabled={requesting} style={primaryButtonStyle(requesting)}>
+                  {requesting ? 'Logging in…' : 'Log in'}
+                </button>
+                {error && <div style={{ fontSize: '.72rem', color: '#E8724A', fontWeight: 700, marginTop: 6, lineHeight: 1.4 }}>{error}</div>}
+                <button type="button" onClick={() => { setMode('reset'); setError(''); }} style={linkButtonStyle}>
+                  New here, or forgot your password? Set or reset password
+                </button>
+              </form>
             ) : (
-              <>
+              <form onSubmit={requestLink}>
                 <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
-                  Save &amp; load your brand style on corporate cards. First time here? This sets up your account too — no separate sign-up.
+                  We&apos;ll email you a link to choose a password. New here? This sets up your account — save &amp; load your brand style on corporate cards.
                 </div>
                 <input
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  autoFocus
-                  style={{ width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '9px 11px', fontFamily: "'Nunito',sans-serif", fontWeight: 700, fontSize: '.82rem', color: '#2A2A2A', background: '#fff', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                  placeholder="you@company.com" autoComplete="email" autoFocus
+                  style={inputStyle}
                 />
-                <button
-                  onClick={requestLink} disabled={requesting}
-                  style={{ width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '9px', color: '#fff', fontWeight: 800, fontSize: '.78rem', cursor: requesting ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
-                >
-                  {requesting ? 'Sending…' : 'Email me a login link'}
+                <button type="submit" disabled={requesting} style={primaryButtonStyle(requesting)}>
+                  {requesting ? 'Sending…' : 'Email me a link'}
                 </button>
                 {error && <div style={{ fontSize: '.72rem', color: '#E8724A', fontWeight: 700, marginTop: 6 }}>{error}</div>}
-              </>
+                <button type="button" onClick={() => { setMode('login'); setError(''); }} style={linkButtonStyle}>
+                  ← Back to log in
+                </button>
+              </form>
             )}
           </div>
         </>

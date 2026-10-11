@@ -111,8 +111,10 @@ lib/cardTaxonomy.ts  Card library categories/tags/sports used by CardPicker filt
 ```
 /admin, /admin/cards, /admin/showcase   Admin area (card library synced from Supabase Storage,
                                         home-page showcase). Access by ADMIN_EMAILS.
-Brand kits + magic-link login           Corporate users save colours/logo; login by emailed link
-                                        (login_links, organiser_sessions, brand_kits tables)
+Brand kits + email/password login      Corporate users save colours/logo. Log in with email + password
+                                        (/api/auth/login); new account / forgot password = emailed link to
+                                        /login/verify to choose a password (login_links, organiser_sessions,
+                                        account_passwords, login_attempts, brand_kits tables)
 ```
 
 ---
@@ -153,7 +155,9 @@ Log of every "Email the card" send (`campaign_id`, `to_email`, `ip`, `created_at
 limits. Created by `scripts/card_emails.sql` (already run in Supabase).
 
 ### Other tables
-`cards` (card library), `showcase_cards`, `site_settings`, `brand_kits`, `login_links`, `organiser_sessions`.
+`cards` (card library), `showcase_cards`, `site_settings`, `brand_kits`, `login_links`, `organiser_sessions`,
+`account_passwords` (scrypt hashes, `lib/passwords.ts`), `login_attempts` (failed-login rate limit) —
+the last two from `scripts/account_passwords.sql` (already run).
 
 ### `contributions`
 | Column | Type | Notes |
@@ -279,7 +283,7 @@ PATCH actions available:
 | Email the card (site-sent, Outlook-safe) | ✅ Live |
 | Image-only covers | ✅ Live |
 | Printable keepsake (casual + corporate) | ✅ Live — needs a better layout (see Plans) |
-| Brand kits + magic-link login | ✅ Live |
+| Brand kits + email/password login | ✅ Live |
 | Gift cards | ❌ Dropped (removed from solo flow) — a different gift offering is planned |
 | Scrapbook card style | 🔜 Planned |
 | Contributor payment (gift contributions) | 🔜 Planned |
