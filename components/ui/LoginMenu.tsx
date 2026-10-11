@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useIsAdmin } from '@/lib/useIsAdmin';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 const inputStyle: React.CSSProperties = {
   width: '100%', border: '2px solid #E8E2F0', borderRadius: 10, padding: '9px 11px', fontFamily: "'Nunito',sans-serif",
@@ -136,8 +137,8 @@ export function LoginMenu() {
                   placeholder="Email" autoComplete="email" autoFocus
                   style={inputStyle}
                 />
-                <input
-                  type="password" value={password} onChange={e => setPassword(e.target.value)}
+                <PasswordInput
+                  value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="Password" autoComplete="current-password"
                   style={inputStyle}
                 />

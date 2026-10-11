@@ -36,3 +36,9 @@ input, textarea, button { font-family: 'Nunito', sans-serif; }
 
   .tyc-print-grid { columns: 2 !important; }
 }
+
+/* PasswordInput has its own show/hide eye; hide Edge's built-in one so there aren't two. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

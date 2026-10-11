@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -81,14 +82,14 @@ function SetPasswordContent() {
           {linkEmail && <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600, marginBottom: 4 }}>for {linkEmail}</div>}
           {/* Lets the browser's password manager save the password against the right email. */}
           <input type="email" name="username" autoComplete="username" value={linkEmail} readOnly hidden />
-          <input
-            type="password" autoComplete="new-password" autoFocus
+          <PasswordInput
+            autoComplete="new-password" autoFocus
             value={password} onChange={e => setPassword(e.target.value)}
             placeholder={`Password (at least ${MIN_PASSWORD_LENGTH} characters)`}
             style={inputStyle}
           />
-          <input
-            type="password" autoComplete="new-password"
+          <PasswordInput
+            autoComplete="new-password"
             value={confirm} onChange={e => setConfirm(e.target.value)}
             placeholder="Type it again"
             style={inputStyle}
