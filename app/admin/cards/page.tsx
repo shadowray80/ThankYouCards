@@ -400,7 +400,7 @@ export default function AdminCardsPage() {
             {plan.toUpload.length > 0 && (
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: '.78rem', color: '#7A7585', fontWeight: 700 }}>
-                  New in your folder — untick any you don&apos;t want uploaded:
+                  New in your folder — ✓ ticked ones get uploaded:
                   <button style={outlineButton} onClick={() => setUploadChecked(new Set(plan.toUpload))}>Tick all</button>
                   <button style={outlineButton} onClick={() => setUploadChecked(new Set())}>Untick all</button>
                 </div>
@@ -414,7 +414,7 @@ export default function AdminCardsPage() {
             {plan.toSupersede.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: '.78rem', color: '#7A7585', fontWeight: 700 }}>
-                  Not in your folder — untick any you want to keep in the library:
+                  Not in your folder — ✓ ticked ones move to Superseded (untick to keep in the library):
                   <button style={outlineButton} onClick={() => setSupersedeChecked(new Set(plan.toSupersede))}>Tick all</button>
                   <button style={outlineButton} onClick={() => setSupersedeChecked(new Set())}>Untick all</button>
                 </div>
