@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
   const session_token = randomUUID();
   const { error: sessionError } = await supabaseAdmin
     .from('organiser_sessions')
-    .upsert({ email: link.email, session_token }, { onConflict: 'email' });
+    // created_at must be reset here: the row is reused per email, and the 30-day
+    // expiry in sessionIsValid() is measured from it.
+    .upsert({ email: link.email, session_token, created_at: new Date().toISOString() }, { onConflict: 'email' });
 
   if (sessionError) {
     console.error('Create session error:', sessionError);
