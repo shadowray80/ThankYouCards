@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { NotFound } from '@/components/ui/NotFound';
@@ -63,6 +63,41 @@ const noticeStyle: React.CSSProperties = {
   marginBottom: 12, fontSize: '.78rem', color: '#9A7A4A', lineHeight: 1.5,
 };
 
+function toggled(set: Set<string>, name: string): Set<string> {
+  const next = new Set(set);
+  if (next.has(name)) next.delete(name); else next.add(name);
+  return next;
+}
+
+// Tickable thumbnail grid used by the folder-sync preview.
+function PreviewGrid({ names, checked, onToggle, imageFor, color }: {
+  names: string[];
+  checked: Set<string>;
+  onToggle: (name: string) => void;
+  imageFor: (name: string) => string | undefined;
+  color: string;
+}) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: 8, maxHeight: 360, overflowY: 'auto' }}>
+      {names.map(name => {
+        const isChecked = checked.has(name);
+        const src = imageFor(name);
+        return (
+          <label key={name} title={name} style={{ cursor: 'pointer', border: `2px solid ${isChecked ? color : '#E8E2F0'}`, borderRadius: 8, overflow: 'hidden', opacity: isChecked ? 1 : 0.5, background: '#fff' }}>
+            {src
+              ? <img src={src} alt="" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', display: 'block' }} />
+              : <div style={{ width: '100%', aspectRatio: '3 / 4', background: '#F7F5FB' }} />}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 5px', fontSize: '.6rem', color: '#7A7585', fontWeight: 700, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              <input type="checkbox" checked={isChecked} onChange={() => onToggle(name)} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+            </div>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminCardsPage() {
   const { session } = useOrganiserSession();
   const adminStatus = useIsAdmin();
@@ -84,12 +119,24 @@ export default function AdminCardsPage() {
   const [planning, setPlanning] = useState(false);
   const [plan, setPlan] = useState<FolderPlan | null>(null);
   const [supersedeChecked, setSupersedeChecked] = useState<Set<string>>(new Set());
+  const [uploadChecked, setUploadChecked] = useState<Set<string>>(new Set());
   const [applyProgress, setApplyProgress] = useState('');
   const [folderResult, setFolderResult] = useState<{ uploaded: number; superseded: number; failed: { name: string; error: string }[] } | null>(null);
 
   // Superseded tab
   const [cardMessages, setCardMessages] = useState<Record<string, string>>({});
   const [bulkDeleting, setBulkDeleting] = useState('');
+
+  // Local previews of the new files — read straight from the picked folder, nothing uploaded.
+  const newFilePreviews = useMemo(() => {
+    const urls = new Map<string, string>();
+    for (const name of plan?.toUpload ?? []) {
+      const file = folderFiles.get(name);
+      if (file) urls.set(name, URL.createObjectURL(file));
+    }
+    return urls;
+  }, [plan, folderFiles]);
+  useEffect(() => () => { for (const url of newFilePreviews.values()) URL.revokeObjectURL(url); }, [newFilePreviews]);
 
   // React doesn't type the folder-picker attribute, so set it directly.
   useEffect(() => {
@@ -157,6 +204,7 @@ export default function AdminCardsPage() {
       setFolderFiles(byName);
       setPlan(json);
       setSupersedeChecked(new Set(json.toSupersede));
+      setUploadChecked(new Set(json.toUpload));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -171,9 +219,10 @@ export default function AdminCardsPage() {
     setError('');
     const failed: { name: string; error: string }[] = [];
     let uploaded = 0;
+    const toUpload = plan.toUpload.filter(n => uploadChecked.has(n));
 
-    for (const [i, name] of plan.toUpload.entries()) {
-      setApplyProgress(`Uploading ${i + 1} of ${plan.toUpload.length}…`);
+    for (const [i, name] of toUpload.entries()) {
+      setApplyProgress(`Uploading ${i + 1} of ${toUpload.length}…`);
       const file = folderFiles.get(name);
       if (!file) continue;
       try {
@@ -304,7 +353,7 @@ export default function AdminCardsPage() {
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 18px 80px', fontFamily: "'Nunito',sans-serif" }}>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2A2A2A', marginBottom: 4 }}>Card library</h1>
         <p style={{ color: '#7A7585', fontSize: '.85rem', marginBottom: 20, lineHeight: 1.5 }}>
-          <strong>Sync from my folder</strong> makes the library match your card folder: new images are uploaded, and cards
+          <strong>Sync from my folder</strong>{' '}makes the library match your card folder: new images are uploaded, and cards
           no longer in the folder move to Superseded (hidden from the picker; they only come back if you Restore them).
           You&apos;ll see a preview before anything changes.
         </p>
@@ -343,16 +392,23 @@ export default function AdminCardsPage() {
           <div style={{ background: '#fff', border: '2px solid #7C5CBF', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 10 }}>Preview — nothing has changed yet</div>
             <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: '.85rem', fontWeight: 700, color: '#2A2A2A', marginBottom: 12 }}>
-              <span>⬆ {plan.toUpload.length} new to upload</span>
+              <span>⬆ {uploadChecked.size} of {plan.toUpload.length} new to upload</span>
               <span>🗂 {supersedeChecked.size} of {plan.toSupersede.length} to Superseded</span>
               <span style={{ color: '#7A7585' }}>{plan.unchanged} unchanged</span>
             </div>
 
             {plan.toUpload.length > 0 && (
-              <details style={{ marginBottom: 10, fontSize: '.78rem', color: '#7A7585' }}>
-                <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Show the {plan.toUpload.length} new files</summary>
-                <div style={{ marginTop: 6, columns: '2 260px' }}>{plan.toUpload.map(n => <div key={n}>{n}</div>)}</div>
-              </details>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, fontSize: '.78rem', color: '#7A7585', fontWeight: 700 }}>
+                  New in your folder — untick any you don&apos;t want uploaded:
+                  <button style={outlineButton} onClick={() => setUploadChecked(new Set(plan.toUpload))}>Tick all</button>
+                  <button style={outlineButton} onClick={() => setUploadChecked(new Set())}>Untick all</button>
+                </div>
+                <PreviewGrid
+                  names={plan.toUpload} checked={uploadChecked} onToggle={name => setUploadChecked(prev => toggled(prev, name))}
+                  imageFor={name => newFilePreviews.get(name)} color={GREEN}
+                />
+              </div>
             )}
 
             {plan.toSupersede.length > 0 && (
@@ -362,28 +418,10 @@ export default function AdminCardsPage() {
                   <button style={outlineButton} onClick={() => setSupersedeChecked(new Set(plan.toSupersede))}>Tick all</button>
                   <button style={outlineButton} onClick={() => setSupersedeChecked(new Set())}>Untick all</button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: 8, maxHeight: 360, overflowY: 'auto' }}>
-                  {plan.toSupersede.map(name => {
-                    const card = cardByName.get(name);
-                    const checked = supersedeChecked.has(name);
-                    return (
-                      <label key={name} title={name} style={{ cursor: 'pointer', border: `2px solid ${checked ? '#7C5CBF' : '#E8E2F0'}`, borderRadius: 8, overflow: 'hidden', opacity: checked ? 1 : 0.5, background: '#fff' }}>
-                        {card && <img src={card.image_url} alt="" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', display: 'block' }} />}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 5px', fontSize: '.6rem', color: '#7A7585', fontWeight: 700, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                          <input
-                            type="checkbox" checked={checked}
-                            onChange={() => setSupersedeChecked(prev => {
-                              const next = new Set(prev);
-                              if (next.has(name)) next.delete(name); else next.add(name);
-                              return next;
-                            })}
-                          />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
+                <PreviewGrid
+                  names={plan.toSupersede} checked={supersedeChecked} onToggle={name => setSupersedeChecked(prev => toggled(prev, name))}
+                  imageFor={name => cardByName.get(name)?.image_url} color="#7C5CBF"
+                />
               </div>
             )}
 
@@ -402,7 +440,7 @@ export default function AdminCardsPage() {
 
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <button
-                onClick={applyFolderSync} disabled={busy || (plan.toUpload.length === 0 && supersedeChecked.size === 0)}
+                onClick={applyFolderSync} disabled={busy || (uploadChecked.size === 0 && supersedeChecked.size === 0)}
                 style={buttonStyle(GREEN, busy)}
               >
                 {applyProgress || 'Confirm sync'}
