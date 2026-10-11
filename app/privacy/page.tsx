@@ -148,6 +148,9 @@ export default function PrivacyPage() {
       <p style={S.p}>
         We do not use contributor photos for any purpose other than displaying them on the card. We do not apply facial recognition or any form of AI analysis to uploaded images.
       </p>
+      <p style={S.p}>
+        <strong>Featured cards.</strong> If the person sending a card ticks &ldquo;Happy for us to feature this card&rdquo;, we may show that card&apos;s cover (its image, the recipient&apos;s name and the front message) on our website and social media, including Instagram. We never share the messages inside a card. The option is off unless ticked, and can be unticked at any time from the card&apos;s organiser page; to have a card that has already been featured taken down, contact us.
+      </p>
 
       <h2 style={S.h2}>5. Cookies and Tracking</h2>
       <p style={S.p}>

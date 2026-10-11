@@ -154,6 +154,13 @@ Brand kits + email/password login      Corporate users save colours/logo. Log in
 
 **Solo vs group in the DB:** group cards always have a `deadline`; solo cards never do.
 
+### Customer card showcase
+Senders opt in with "Happy for us to feature this card" (`FeatureOptIn`: solo builder + group manage page,
+unticked by default) → `campaigns.feature_ok`. `/admin/customer-cards` lists opted-in sent cards: Add to
+homepage (copies the cover into `showcase_cards`, no messages), download Instagram posts (1080×1350, drawn
+by `lib/instagramImage.ts`), dismiss. Columns `feature_ok`, `feature_dismissed`, `feature_exported_at`,
+`feature_showcase_id` from `scripts/customer_showcase.sql`. Cover only — never messages.
+
 ### `card_emails`
 Log of every "Email the card" send (`campaign_id`, `to_email`, `ip`, `created_at`), used for rate
 limits. Created by `scripts/card_emails.sql` (already run in Supabase).

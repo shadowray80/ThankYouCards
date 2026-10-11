@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { Nav } from '@/components/ui/Nav';
 import { Btn } from '@/components/ui/Button';
+import { FeatureOptIn } from '@/components/ui/FeatureOptIn';
 import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -53,6 +54,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const toEditable = useLiveEditableText(to, setTo, { capitalizeWords: true });
   const cardMsgEditable = useLiveEditableText(cardMsg, setCardMsg, { capitalizeWords: true });
 
+  const [featureOk, setFeatureOk] = useState(false);
+
   async function handleSubmit() {
     setSaving(true);
     try {
@@ -68,6 +71,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           card_message: cardMsg.trim(),
           card_image_url: imageUrl,
           card_text_on_image: !imageOnly && (to.trim() !== '' || cardMsg.trim() !== ''),
+          feature_ok: featureOk,
         }),
       });
       const campaignData = await campaignRes.json();
@@ -520,6 +524,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
         {/* ── Sticky continue button ── */}
         <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, padding: '12px 18px', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid #E8E2F0', zIndex: 100 }}>
+          <FeatureOptIn checked={featureOk} onChange={setFeatureOk} />
           <Btn variant="teal" full disabled={!canContinue || saving || uploadingPhoto} onClick={handleSubmit}>
             {saving ? 'Saving…' : uploadingPhoto ? 'Uploading photo…' : 'Continue → Send this card'}
           </Btn>
