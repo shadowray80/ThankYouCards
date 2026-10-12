@@ -18,22 +18,6 @@ import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 
-const CORPORATE_PREVIEW_CONTRIBUTIONS = [
-  { contributor_name: 'Sarah',  message: "You've been an amazing mentor — thank you for everything you do!", photo_url: null, photo_label: null },
-  { contributor_name: 'James',  message: null, photo_url: '/Team_Lunch.png', photo_label: 'Team lunch 2024 🎉' },
-  { contributor_name: 'Priya',  message: "Your positivity and energy inspire everyone around you 💙", photo_url: null, photo_label: null },
-  { contributor_name: 'Liam',   message: "Thanks for always going above and beyond for the team!", photo_url: null, photo_label: null },
-  { contributor_name: 'Emma',   message: "Working with you has been the highlight of my career — truly.", photo_url: null, photo_label: null },
-];
-
-const CASUAL_PREVIEW_CONTRIBUTIONS = [
-  { contributor_name: 'Sam',    message: "Great to catch up! 🙌", photo_url: null, photo_label: null },
-  { contributor_name: 'Priya',  message: null, photo_url: '/Team_Lunch.png', photo_label: 'Good times! 📸' },
-  { contributor_name: 'Jess',   message: "Cheers, big ears! 🍻", photo_url: null, photo_label: null },
-  { contributor_name: 'Mike',   message: "You're an absolute legend, mate 😊", photo_url: null, photo_label: null },
-  { contributor_name: 'Ava',    message: "So good seeing you the other day — always brightens my week catching up with you. Hope this little card makes you smile as much as you make everyone else smile ❤️", photo_url: null, photo_label: null },
-];
-
 interface GroupFlowProps {
   onBack: () => void;
   onToDash: () => void;
@@ -458,15 +442,12 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               </div>
             </div>
 
-          {/* Messages preview — corporate */}
-          <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
-            💬 Example messages — your contributors&apos; real ones will appear here
-          </div>
+          {/* Messages preview — corporate. Empty, as on the organiser page before anyone signs. */}
           <CorporateView
             campaign={{ slug: '', recipient_name: recip || 'Name', occasion, card_message: cardMsg, card_image_url: null, card_palette: cardPalette, card_logo_url: logoUrl, card_accent: accentColor }}
             logoScale={logoScale}
             logoPosition={logoPosition}
-            contributions={CORPORATE_PREVIEW_CONTRIBUTIONS}
+            contributions={[]}
             preview
             noHeader
           />
@@ -617,19 +598,12 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               </div>
             </div>
 
-          {/* Messages preview — style-aware. Casual shows realistic-looking example
-              messages (real names, real-looking text) rather than a bare "will appear
-              here" placeholder, so the banner below is the only thing telling the
-              organiser these aren't actually theirs — needed precisely because they look
-              real enough to otherwise be mistaken for it. */}
+          {/* Messages preview — style-aware. Empty, as on the organiser page before anyone signs. */}
           {cardStyle === 'casual' ? (
             <>
-              <div style={{ background: '#FFF8E8', padding: '8px 16px', textAlign: 'center', fontSize: '.7rem', fontWeight: 700, color: '#9A7A4A', letterSpacing: '.02em' }}>
-                💬 Example messages — your contributors&apos; real ones will appear here
-              </div>
               <CasualView
                 campaign={{ slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote, card_image_url: null, card_palette: cardPalette }}
-                contributions={CASUAL_PREVIEW_CONTRIBUTIONS}
+                contributions={[]}
                 messageAreaName={effectiveRecip}
                 messageAreaCoverMessage={effectiveCardMsg}
                 messageAreaOccasion={effectiveOccasion}
