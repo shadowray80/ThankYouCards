@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
+import { CoverLogo } from '@/components/cards/CoverLogo';
 import {
   SHEET_W, SHEET_H, PANEL_W, MARGIN, CONTENT_W, CONTENT_H, COLUMN_GAP, TILE_GAP, FONT_SIZES,
   columnsPerPanel, columnWidth, headerAloneOnLeft, chooseLayout, type InsideSpread,
@@ -132,6 +133,10 @@ function FrontPanel({ c, from, look, ratio }: { c: PrintCampaign; from: string; 
   const img = c.card_image_url;
   const showText = c.card_text_on_image !== false;
   const isLandscape = !!img && ratio !== null && ratio > 1.1;
+  // Classic cards: optional team logo, bottom right of the photo (as on the card on screen).
+  const teamLogo = !look.isCorporate && c.card_logo_url
+    ? <CoverLogo url={c.card_logo_url} scale={c.card_logo_scale ?? 1} inset={14} />
+    : null;
   const logo = look.isCorporate && c.card_logo_url ? (
     <img src={c.card_logo_url} alt="" style={{ maxHeight: 40 * (c.card_logo_scale ?? 1), maxWidth: 140 * (c.card_logo_scale ?? 1), objectFit: 'contain', marginTop: 16, alignSelf: 'center' }} />
   ) : null;
@@ -143,7 +148,10 @@ function FrontPanel({ c, from, look, ratio }: { c: PrintCampaign; from: string; 
     return (
       <Panel>
         <div style={{ height: '100%', border: `2px solid ${look.headerFrom}`, borderRadius: 18, padding: 16, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <img src={img!} alt="" style={{ width: '100%', aspectRatio: String(ratio), objectFit: 'cover', borderRadius: 10, display: 'block' }} />
+          <div style={{ position: 'relative' }}>
+            <img src={img!} alt="" style={{ width: '100%', aspectRatio: String(ratio), objectFit: 'cover', borderRadius: 10, display: 'block' }} />
+            {teamLogo}
+          </div>
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', borderRadius: 10, padding: '0 14px',
             background: textOnColour ? `linear-gradient(135deg, ${look.headerFrom}, ${look.headerTo})` : undefined,
@@ -162,6 +170,7 @@ function FrontPanel({ c, from, look, ratio }: { c: PrintCampaign; from: string; 
     <Panel>
       <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 14, overflow: 'hidden', background: `linear-gradient(135deg, ${look.headerFrom}, ${look.headerTo})` }}>
         {img && <img src={img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+        {teamLogo}
         {img && showText && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0) 45%, rgba(0,0,0,.35) 100%)' }} />}
         {(showText || !img) && (
           <div style={{ position: 'absolute', left: 30, right: 30, bottom: 32, color: '#fff', display: 'flex', flexDirection: 'column' }}>

@@ -3,6 +3,7 @@
 import React from 'react';
 import { CASUAL_PALETTES, CasualPalette } from '@/lib/palettes';
 import { TintedIcon } from '@/components/ui/TintedIcon';
+import { CoverLogo } from '@/components/cards/CoverLogo';
 
 interface Campaign {
   slug: string;
@@ -13,6 +14,8 @@ interface Campaign {
   card_image_url: string | null;
   card_palette: string | null;
   card_text_on_image?: boolean | null;
+  card_logo_url?: string | null;
+  card_logo_scale?: number | null;
 }
 
 interface Contribution {
@@ -238,6 +241,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
             <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>
+        {campaign.card_logo_url && <CoverLogo url={campaign.card_logo_url} scale={campaign.card_logo_scale ?? 1} />}
       </div>}
 
       {/* Recipient name — always shown here, on top of the cover overlay when that's on.

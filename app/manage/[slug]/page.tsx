@@ -763,11 +763,16 @@ ${origin}/card/${slug}
           );
         })()}
 
-        {/* Corporate logo upload */}
-        {campaign.card_style === 'corporate' && (
+        {/* Logo upload — Corporate (company logo in the header) and Classic (team logo,
+            bottom right of the cover photo; no position choice) */}
+        {(campaign.card_style === 'corporate' || campaign.card_style === 'casual') && (
           <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>Company logo</div>
-            <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Upload a PNG logo to display in the card header. Transparent PNG works best.</div>
+            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>{campaign.card_style === 'corporate' ? 'Company logo' : 'Team logo'}</div>
+            <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>
+              {campaign.card_style === 'corporate'
+                ? 'Upload a PNG logo to display in the card header. Transparent PNG works best.'
+                : 'Optional. Shows at the bottom right of the cover photo. Transparent PNG works best.'}
+            </div>
             <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp" style={{ display: 'none' }} onChange={handleLogoUpload} />
             {campaign.card_logo_url ? (
               <>
@@ -801,20 +806,22 @@ ${origin}/card/${slug}
                   />
                   <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{(campaign.card_logo_scale ?? 1).toFixed(1)}×</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-                  <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Position</span>
-                  {(['left', 'center', 'right'] as const).map(pos => (
-                    <button key={pos} onClick={() => saveLogoPosition(pos)} style={{
-                      flex: 1, textTransform: 'capitalize', padding: '6px 0', borderRadius: 8, fontSize: '.74rem', fontWeight: 800,
-                      fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
-                      background: (campaign.card_logo_position ?? 'left') === pos ? '#7C5CBF' : '#fff',
-                      color: (campaign.card_logo_position ?? 'left') === pos ? '#fff' : '#7A7585',
-                      border: (campaign.card_logo_position ?? 'left') === pos ? '1.5px solid #7C5CBF' : '1.5px solid #E8E2F0',
-                    }}>
-                      {pos}
-                    </button>
-                  ))}
-                </div>
+                {campaign.card_style === 'corporate' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+                    <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Position</span>
+                    {(['left', 'center', 'right'] as const).map(pos => (
+                      <button key={pos} onClick={() => saveLogoPosition(pos)} style={{
+                        flex: 1, textTransform: 'capitalize', padding: '6px 0', borderRadius: 8, fontSize: '.74rem', fontWeight: 800,
+                        fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
+                        background: (campaign.card_logo_position ?? 'left') === pos ? '#7C5CBF' : '#fff',
+                        color: (campaign.card_logo_position ?? 'left') === pos ? '#fff' : '#7A7585',
+                        border: (campaign.card_logo_position ?? 'left') === pos ? '1.5px solid #7C5CBF' : '1.5px solid #E8E2F0',
+                      }}>
+                        {pos}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </>
             ) : (
               <button onClick={() => logoUploadRef.current?.click()} disabled={savingLogo}

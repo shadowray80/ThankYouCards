@@ -11,6 +11,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView, PHOTO_FADE } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
+import { CoverLogo } from '@/components/cards/CoverLogo';
 import { LineIcon } from '@/components/ui/LineIcon';
 import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
 import { OCCASIONS } from '@/lib/occasions';
@@ -214,6 +215,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   card_image_url: imgUrl,
                   card_palette: cardPalette,
                   card_text_on_image: !imageOnly,
+                  card_logo_url: logoUrl,
+                  card_logo_scale: logoScale,
                 }}
                 contributions={[]}
                 messageAreaName={effectiveRecip}
@@ -279,6 +282,29 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                     <div style={{ fontSize: '.65rem', fontWeight: 800, color: cardPalette === p.id ? '#E8724A' : '#7A7585' }}>{p.name}</div>
                   </div>
                 ))}
+              </div>
+
+              {/* Team logo — bottom right of the photo; same upload + size setting as Corporate. */}
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>Team logo <span style={{ fontWeight: 600, letterSpacing: 0, textTransform: 'none', color: '#B0A8BC' }}>(optional)</span></div>
+                <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" style={{ display: 'none' }} onChange={handleLogoUpload} />
+                {logoUrl ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 10, padding: '8px 12px' }}>
+                      <img src={logoUrl} alt="" style={{ maxHeight: 28 * logoScale, maxWidth: 90 * logoScale, objectFit: 'contain' }} />
+                      <button onClick={() => { setLogoUrl(null); setLogoScale(1); }} style={{ marginLeft: 'auto', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '4px 10px', fontSize: '.72rem', fontWeight: 800, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>Remove</button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                      <span style={{ fontSize: '.72rem', fontWeight: 700, color: '#7A7585', whiteSpace: 'nowrap' }}>Logo size</span>
+                      <input type="range" min={0.5} max={3} step={0.1} value={logoScale} onChange={e => setLogoScale(Number(e.target.value))} style={{ flex: 1 }} />
+                      <span style={{ fontSize: '.72rem', fontWeight: 800, color: '#2A2A2A', width: 32 }}>{logoScale.toFixed(1)}×</span>
+                    </div>
+                  </>
+                ) : (
+                  <button onClick={() => logoUploadRef.current?.click()} disabled={logoUploading} style={{ width: '100%', background: '#fff', border: '2px dashed #E8E2F0', borderRadius: 10, padding: '11px', fontWeight: 700, fontSize: '.82rem', color: logoUploading ? '#B0A8BC' : '#7A7585', cursor: logoUploading ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    {logoUploading ? 'Uploading…' : 'Upload a logo (PNG or SVG)'}
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -465,6 +491,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
+
+              {logoUrl && <CoverLogo url={logoUrl} scale={logoScale} />}
 
               {/* Name/message/from — positioned to match CasualView's actual cover exactly
                   (bottom-anchored, left-aligned, stacked), so what you see while editing is
