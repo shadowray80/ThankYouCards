@@ -277,7 +277,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
       {/* ── Contributor bar ── */}
       {contributions.length > 0 && (
         <div style={{ background: '#fff', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: '1rem' }}>👥</span>
+          <TintedIcon src="/Icons/people.png" size={20} color="#2A2A2A" />
           <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#2A2A2A' }}>
             <strong style={{ color: palette.accent }}>{contributions.length}</strong>{' '}
             {contributions.length === 1 ? 'person' : 'people'} contributed
