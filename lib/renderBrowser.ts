@@ -19,26 +19,31 @@ export let emojiFontStatus = 'not-attempted';
 
 const EMOJI_FONT_URL = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/e20cbc2bbec1926686be9f9bee7d1d2cfa1fea0e/2D/fonts/NotoColorEmoji.ttf';
 
+async function ensureEmojiFont() {
+  const { existsSync, mkdirSync, writeFileSync } = await import('fs');
+  const target = '/tmp/fonts/NotoColorEmoji.ttf';
+  if (existsSync(target)) return;
+  const res = await fetch(EMOJI_FONT_URL);
+  if (!res.ok) throw new Error(`Emoji font download: HTTP ${res.status}`);
+  mkdirSync('/tmp/fonts', { recursive: true });
+  writeFileSync(target, Buffer.from(await res.arrayBuffer()));
+}
+
 export async function launchBrowser(): Promise<Browser> {
   if (process.env.VERCEL) {
     const chromium = (await import('@sparticuz/chromium')).default;
-    // Unpack Chrome first: that also unpacks its own fonts into /tmp/fonts, replacing anything
-    // already there — so the emoji font must be added afterwards.
+    // Unpack Chrome first — that sets up /tmp/fonts (its own fonts + font settings).
     const executablePath = await chromium.executablePath();
-    // The serverless Chrome has no emoji font — messages are full of them. Google's Noto
-    // Color Emoji (free licence). If it can't be fetched, cards still render, minus emoji.
+    // The serverless Chrome has no emoji font — messages are full of them. Add Google's Noto
+    // Color Emoji (free licence) to /tmp/fonts, a folder its font settings scan. (The package's
+    // own font() helper saves to $HOME/.fonts, which those settings only cover on AWS, not
+    // Vercel.) If it can't be fetched, cards still render, minus emoji.
     try {
-      const path = await chromium.font(EMOJI_FONT_URL);
-      emojiFontStatus = `ok:${path}`;
+      await ensureEmojiFont();
+      emojiFontStatus = 'ok';
     } catch (err) {
       emojiFontStatus = `failed:${err instanceof Error ? err.message : String(err)}`.slice(0, 300);
       console.error('Emoji font load failed:', err);
-    }
-    try {
-      const { readdirSync } = await import('fs');
-      emojiFontStatus += ` | /tmp/fonts: ${readdirSync('/tmp/fonts').join(',')}`;
-    } catch (err) {
-      emojiFontStatus += ` | /tmp/fonts unreadable: ${err instanceof Error ? err.message : String(err)}`;
     }
     return puppeteer.launch({
       args: chromium.args,
