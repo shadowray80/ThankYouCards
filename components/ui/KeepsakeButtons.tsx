@@ -10,7 +10,7 @@ import { toBlob } from 'html-to-image';
 // ("Save Image" → Photos). Phones only allow the share sheet straight after a tap, and building
 // a long image can take a few seconds, so it can't happen in one go.
 
-const MAX_PIXELS = 16_000_000; // stay under phone browsers' canvas size limits
+const MAX_PIXELS = 12_000_000; // stay safely under phone browsers' canvas size limits
 
 const buttonStyle: React.CSSProperties = {
   background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '11px 18px', fontFamily: "'Nunito',sans-serif",
@@ -34,12 +34,15 @@ export function KeepsakeButtons({ slug, preview, getCardElement, fileName, style
     try {
       const { width, height } = el.getBoundingClientRect();
       const pixelRatio = Math.min(2, Math.sqrt(MAX_PIXELS / (width * height)));
-      const blob = await toBlob(el, {
+      const options = {
         pixelRatio,
         backgroundColor: '#ffffff',
-        cacheBust: true,
-        filter: node => !(node instanceof HTMLElement && node.classList.contains('tyc-print-hide')),
-      });
+        filter: (node: HTMLElement) => !(node instanceof HTMLElement && node.classList.contains('tyc-print-hide')),
+      };
+      // Safari (iPhone) often leaves photos out of the first snapshot because they haven't
+      // loaded inside it yet — take a throwaway one first, then the real one.
+      await toBlob(el, options).catch(() => null);
+      const blob = await toBlob(el, options);
       if (!blob) throw new Error('No image');
       const f = new File([blob], `${fileName}.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [f] })) {

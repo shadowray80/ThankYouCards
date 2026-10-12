@@ -9,7 +9,10 @@ import { SHEET_W } from '@/lib/printLayout';
 const SANS = "'Nunito',sans-serif";
 
 // A4 landscape, no page margin (the card has its own safe margin built in), exact colours.
+// text-size-adjust: phones (iPhone Safari, Android Chrome) otherwise "boost" text on pages
+// wider than the screen — the A4 sheets are — making it print far too big.
 const PRINT_CSS = `
+html, body { -webkit-text-size-adjust: 100% !important; text-size-adjust: 100% !important; }
 @page { size: A4 landscape; margin: 0; }
 @media print {
   html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
