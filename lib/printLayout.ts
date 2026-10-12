@@ -11,8 +11,10 @@ export const CONTENT_H = SHEET_H - MARGIN * 2;
 export const COLUMN_GAP = 14;
 export const TILE_GAP = 12;
 
-// Largest first — the layout uses the biggest text size that fits in the fewest inside sheets.
-export const FONT_SIZES = [28, 26, 24, 22, 20, 18, 17, 16, 15, 14, 13, 12];
+// Text prints at the same size as the card on screen (1rem = 16px) — never scaled up or down.
+// A card with lots of messages just continues onto extra inside sheets. (The layout code below
+// still handles a list of sizes, largest first, if scaling is ever wanted again.)
+export const FONT_SIZES = [16];
 
 export function columnsPerPanel(messageCount: number): number {
   return messageCount <= 4 ? 1 : 2;
