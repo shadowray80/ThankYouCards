@@ -14,6 +14,9 @@ const LOCAL_CHROME = process.env.CHROME_PATH
       ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
       : '/usr/bin/google-chrome');
 
+// TEMPORARY diagnostic: how the emoji font load went, reported in an X-Emoji-Font header.
+export let emojiFontStatus = 'not-attempted';
+
 const EMOJI_FONT_URL = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/e20cbc2bbec1926686be9f9bee7d1d2cfa1fea0e/2D/fonts/NotoColorEmoji.ttf';
 
 export async function launchBrowser(): Promise<Browser> {
@@ -21,11 +24,24 @@ export async function launchBrowser(): Promise<Browser> {
     const chromium = (await import('@sparticuz/chromium')).default;
     // The serverless Chrome has no emoji font — messages are full of them. Google's Noto
     // Color Emoji (free licence). If it can't be fetched, cards still render, minus emoji.
-    await chromium.font(EMOJI_FONT_URL).catch(err => console.error('Emoji font load failed:', err));
+    try {
+      const path = await chromium.font(EMOJI_FONT_URL);
+      emojiFontStatus = `ok:${path}`;
+    } catch (err) {
+      emojiFontStatus = `failed:${err instanceof Error ? err.message : String(err)}`.slice(0, 300);
+      console.error('Emoji font load failed:', err);
+    }
+    const executablePath = await chromium.executablePath();
+    try {
+      const { readdirSync } = await import('fs');
+      emojiFontStatus += ` | /tmp/fonts: ${readdirSync('/tmp/fonts').join(',')} | FONTCONFIG_PATH=${process.env.FONTCONFIG_PATH ?? '-'}`;
+    } catch (err) {
+      emojiFontStatus += ` | /tmp/fonts unreadable: ${err instanceof Error ? err.message : String(err)}`;
+    }
     return puppeteer.launch({
       args: chromium.args,
       defaultViewport: null,
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: true,
     });
   }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withRenderedPage, cleanSlug } from '@/lib/renderPage';
-import { siteOrigin } from '@/lib/renderBrowser';
+import { siteOrigin, emojiFontStatus } from '@/lib/renderBrowser';
 
 export const maxDuration = 60;
 
@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'image/png',
         'Content-Disposition': `inline; filename="thankyoucards-${slug}.png"`,
         'Cache-Control': 'no-store',
+        'X-Emoji-Font': encodeURIComponent(emojiFontStatus),
       },
     });
   } catch (err) {
