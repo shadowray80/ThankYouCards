@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
@@ -48,7 +48,6 @@ export function ViewContent() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -115,8 +114,8 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div ref={cardRef} style={{ position: 'relative' }}>{watermark}<CasualView campaign={campaign} contributions={contributions} /></div>
-          <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
+          <div data-card-capture style={{ position: 'relative' }}>{watermark}<CasualView campaign={campaign} contributions={contributions} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} />
         </div>
       </>
     );
@@ -127,8 +126,8 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div ref={cardRef} style={{ position: 'relative' }}>{watermark}<CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
-          <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
+          <div data-card-capture style={{ position: 'relative' }}>{watermark}<CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} />
         </div>
       </>
     );
@@ -151,7 +150,7 @@ export function ViewContent() {
       {previewBar}
 
       {/* Card — straight in, no header */}
-      <div ref={cardRef} style={{ position: 'relative', maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
+      <div data-card-capture style={{ position: 'relative', maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
         {watermark}
         <CardScrollView
           theme={theme}
@@ -180,7 +179,7 @@ export function ViewContent() {
       </div>
 
       <div style={{ paddingTop: 14 }}>
-        <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
+        <KeepsakeButtons slug={slug} preview={isPreview} />
       </div>
 
       {/* Footer */}

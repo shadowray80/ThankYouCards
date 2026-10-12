@@ -99,7 +99,6 @@ function ManageContent() {
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
   const myCards                           = useMyCards();
-  const cardPreviewRef                    = useRef<HTMLDivElement>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -580,7 +579,7 @@ ${origin}/card/${slug}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>Card preview</div>
           </div>
-          <div ref={cardPreviewRef} style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+          <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
             {!isSent && <PreviewWatermark />}
             {campaign.card_style === 'casual' ? (
               <CasualView
@@ -625,8 +624,7 @@ ${origin}/card/${slug}
             Open full preview as recipient ↗
           </a>
           <KeepsakeButtons
-            slug={slug} preview={!isSent} getCardElement={() => cardPreviewRef.current}
-            fileName={`thankyoucards-${slug}`} style={{ padding: '10px 0 0' }}
+            slug={slug} preview={!isSent} style={{ padding: '10px 0 0' }}
           />
         </div>
 

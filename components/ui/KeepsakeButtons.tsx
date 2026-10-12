@@ -1,50 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { toBlob } from 'html-to-image';
 
-// Under a received card: "Print card" (the printable A5 card page) and "Save to Photos"
-// (the whole card, as seen on screen, saved as one long picture).
+// Under a card: "Print card" (the print page) and "Save to Photos" (the whole card as one long
+// picture). The picture is made by the website's server — phones can't be trusted to draw it
+// (iPhone Safari drops photos and fonts).
 //
-// Saving is two taps on phones: the first builds the image, the second opens the share sheet
-// ("Save Image" → Photos). Phones only allow the share sheet straight after a tap, and building
-// a long image can take a few seconds, so it can't happen in one go.
-
-const MAX_PIXELS = 12_000_000; // stay safely under phone browsers' canvas size limits
+// Saving is two taps on phones: the first fetches the picture, the second opens the share
+// sheet ("Save Image" → Photos). Phones only allow the share sheet straight after a tap, and
+// making the picture takes a few seconds, so it can't happen in one go.
 
 const buttonStyle: React.CSSProperties = {
   background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '11px 18px', fontFamily: "'Nunito',sans-serif",
   fontWeight: 800, fontSize: '.85rem', color: '#3A8FA0', cursor: 'pointer', textDecoration: 'none', display: 'inline-block',
 };
 
-export function KeepsakeButtons({ slug, preview, getCardElement, fileName, style }: {
-  style?: React.CSSProperties;
+export function KeepsakeButtons({ slug, preview, style }: {
   slug: string;
   preview?: boolean;
-  getCardElement: () => HTMLElement | null;
-  fileName: string;
+  style?: React.CSSProperties;
 }) {
   const [state, setState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
   const [file, setFile] = useState<File | null>(null);
+  const query = new URLSearchParams({ slug, ...(preview ? { preview: '1' } : {}) }).toString();
 
   async function prepare() {
-    const el = getCardElement();
-    if (!el) return;
     setState('preparing');
     try {
-      const { width, height } = el.getBoundingClientRect();
-      const pixelRatio = Math.min(2, Math.sqrt(MAX_PIXELS / (width * height)));
-      const options = {
-        pixelRatio,
-        backgroundColor: '#ffffff',
-        filter: (node: HTMLElement) => !(node instanceof HTMLElement && node.classList.contains('tyc-print-hide')),
-      };
-      // Safari (iPhone) often leaves photos out of the first snapshot because they haven't
-      // loaded inside it yet — take a throwaway one first, then the real one.
-      await toBlob(el, options).catch(() => null);
-      const blob = await toBlob(el, options);
-      if (!blob) throw new Error('No image');
-      const f = new File([blob], `${fileName}.png`, { type: 'image/png' });
+      const res = await fetch(`/api/render/image?${query}`);
+      if (!res.ok) throw new Error('Render failed');
+      const f = new File([await res.blob()], `thankyoucards-${slug}.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [f] })) {
         setFile(f);
         setState('ready');
@@ -70,9 +55,9 @@ export function KeepsakeButtons({ slug, preview, getCardElement, fileName, style
     if (!file) return;
     try {
       await navigator.share({ files: [file] });
-    } catch {
-      // Cancelled, or sharing refused — fall back to a normal download.
-      download(file);
+    } catch (err) {
+      // Cancelled by the person: do nothing. Sharing refused: fall back to a normal download.
+      if (!(err instanceof DOMException && err.name === 'AbortError')) download(file);
     }
     setState('idle');
     setFile(null);
