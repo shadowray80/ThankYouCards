@@ -58,7 +58,7 @@ export function MoreMenu() {
           cursor: 'pointer', fontFamily: "'Nunito',sans-serif", whiteSpace: 'nowrap',
         }}
       >
-        More
+        ☰ More
       </button>
 
       {open && (
