@@ -22,13 +22,19 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return timingSafeEqual(actual, expected);
 }
 
-// Starts a new login session for this email (one row per email, replaced on each login).
-// created_at must be reset here: the 30-day expiry in sessionIsValid() is measured from it.
+// Starts a new login session — one row per login, so each device stays logged in on its own.
+// Expired sessions for this email are cleared out at the same time (30-day expiry, measured
+// from created_at in sessionIsValid()).
 export async function createSession(email: string): Promise<{ session_token: string } | { error: string }> {
   const session_token = randomUUID();
+  await supabaseAdmin
+    .from('organiser_sessions')
+    .delete()
+    .eq('email', email)
+    .lt('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
   const { error } = await supabaseAdmin
     .from('organiser_sessions')
-    .upsert({ email, session_token, created_at: new Date().toISOString() }, { onConflict: 'email' });
+    .insert({ email, session_token, created_at: new Date().toISOString() });
   if (error) {
     console.error('Create session error:', error);
     return { error: error.message };
