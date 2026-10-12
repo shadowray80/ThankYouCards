@@ -11,6 +11,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView, PHOTO_FADE } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
+import { LineIcon } from '@/components/ui/LineIcon';
 import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
 import { OCCASIONS } from '@/lib/occasions';
 import { resizeImage } from '@/lib/resizeImage';
@@ -271,12 +272,12 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               // 'classic' (the original scroll-with-cover-photo style, "Classic OG") is
               // hidden from the picker for now — not deleted, just not offered. Un-comment
               // to bring it back.
-              // { id: 'classic'    as const, label: 'Classic',    emoji: '✉️', desc: 'Elegant scroll with cover photo' },
-              { id: 'casual'     as const, label: 'Classic',    emoji: '🎉', desc: 'Vibrant masonry with colourful cards' },
-              { id: 'corporate'  as const, label: 'Corporate',  emoji: '🏢', desc: 'Polished navy & gold, clean typography' },
-            ] as { id: 'classic' | 'casual' | 'corporate'; label: string; emoji: string; desc: string }[]).map(s => (
+              // { id: 'classic'    as const, label: 'Classic',    icon: 'Mail', desc: 'Elegant scroll with cover photo' },
+              { id: 'casual'     as const, label: 'Classic',    icon: 'Party Popper', desc: 'Vibrant masonry with colourful cards' },
+              { id: 'corporate'  as const, label: 'Corporate',  icon: 'Corporate', desc: 'Polished navy & gold, clean typography' },
+            ] as { id: 'classic' | 'casual' | 'corporate'; label: string; icon: string; desc: string }[]).map(s => (
               <div key={s.id} onClick={() => handleCardStyleChange(s.id)} style={{ flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center', border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0', background: cardStyle === s.id ? '#FDF0E8' : '#fff', transition: 'all .2s' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{s.emoji}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}><LineIcon name={s.icon} size={34} /></div>
                 <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A', marginBottom: 2 }}>{s.label}</div>
                 <div style={{ fontSize: '.7rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.4 }}>{s.desc}</div>
               </div>
