@@ -11,6 +11,7 @@ import { CardPicker } from '@/components/cards/CardPicker';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
+import { TintedIcon } from '@/components/ui/TintedIcon';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -401,7 +402,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 }}
                 title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
               >
-                {uploadingImg ? '…' : customImgUrl ? '✕' : '📷'}
+                {uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera.png" size={22} color="#5A5566" />}
               </div>
             }
             selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
