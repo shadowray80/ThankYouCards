@@ -119,7 +119,7 @@ function PrintContent() {
       </div>
 
       <div className="tyc-print-sheets" style={{ zoom, padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <PrintableCard campaign={campaign} contributions={contributions} mode={mode} flip={flip} onReady={({ insideSheets: n }) => setInsideSheets(n)} />
+        <PrintableCard campaign={campaign} contributions={contributions} mode={mode} flip={flip} watermark={campaign.status !== 'sent'} onReady={({ insideSheets: n }) => setInsideSheets(n)} />
       </div>
     </div>
   );

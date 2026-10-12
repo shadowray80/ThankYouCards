@@ -8,6 +8,7 @@ import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
+import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
 
 interface Campaign {
   id: string;
@@ -107,12 +108,14 @@ export function ViewContent() {
     </div>
   ) : null;
 
+  const watermark = campaign.status !== 'sent' ? <PreviewWatermark /> : null;
+
   if (campaign.card_style === 'casual') {
     return (
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div ref={cardRef}><CasualView campaign={campaign} contributions={contributions} /></div>
+          <div ref={cardRef} style={{ position: 'relative' }}>{watermark}<CasualView campaign={campaign} contributions={contributions} /></div>
           <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
         </div>
       </>
@@ -124,7 +127,7 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div ref={cardRef}><CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
+          <div ref={cardRef} style={{ position: 'relative' }}>{watermark}<CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
           <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
         </div>
       </>
@@ -148,7 +151,8 @@ export function ViewContent() {
       {previewBar}
 
       {/* Card — straight in, no header */}
-      <div ref={cardRef} style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
+      <div ref={cardRef} style={{ position: 'relative', maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
+        {watermark}
         <CardScrollView
           theme={theme}
           customImgUrl={campaign.card_image_url ?? undefined}

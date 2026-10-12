@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
+import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
 import {
   SHEET_W, SHEET_H, PANEL_W, MARGIN, CONTENT_W, CONTENT_H, COLUMN_GAP, TILE_GAP, FONT_SIZES,
   columnsPerPanel, columnWidth, headerAloneOnLeft, chooseLayout, type InsideSpread,
@@ -81,13 +82,14 @@ function loadRatio(url: string): Promise<number | null> {
 
 // ── Pieces ─────────────────────────────────────────────────────────────────────
 
-function Sheet({ children, rotate = false }: { children?: React.ReactNode; rotate?: boolean }) {
+function Sheet({ children, rotate = false, watermark = false }: { children?: React.ReactNode; rotate?: boolean; watermark?: boolean }) {
   return (
     <div className="tyc-sheet" style={{
       width: SHEET_W, height: SHEET_H, background: '#fff', display: 'flex', position: 'relative', overflow: 'hidden',
       transform: rotate ? 'rotate(180deg)' : undefined, boxShadow: '0 4px 24px rgba(0,0,0,.15)', marginBottom: 32,
     }}>
       {children}
+      {watermark && <PreviewWatermark />}
     </div>
   );
 }
@@ -214,7 +216,8 @@ function MessageTile({ m, index, fontSize, width, ratio, look }: {
 
 // ── The whole card ─────────────────────────────────────────────────────────────
 
-export function PrintableCard({ campaign, contributions, mode, flip, onReady }: {
+export function PrintableCard({ campaign, contributions, mode, flip, onReady, watermark = false }: {
+  watermark?: boolean;
   campaign: PrintCampaign;
   contributions: PrintContribution[];
   mode: PrintMode;
@@ -309,7 +312,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
   const insideSheets = layout.spreads.map((spread, si) => {
     const isLast = si === layout.spreads.length - 1;
     return (
-      <Sheet key={`in-${si}`} rotate={mode === 'double' && flip && si === 0}>
+      <Sheet key={`in-${si}`} rotate={mode === 'double' && flip && si === 0} watermark={watermark}>
         <Panel style={{ display: 'flex', flexDirection: 'column' }}>
           {spread.hasHeader && headerAlone ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}><InsideHeader c={campaign} look={look} /></div>
@@ -330,12 +333,12 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
 
   // Double-sided: each extra inside sheet gets a blank back, so it's its own folded insert.
   const pages: React.ReactNode[] = [
-    <Sheet key="out"><BackPanel /><FrontPanel c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} /></Sheet>,
+    <Sheet key="out" watermark={watermark}><BackPanel /><FrontPanel c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} /></Sheet>,
     insideSheets[0],
   ];
   insideSheets.slice(1).forEach((sheet, i) => {
     pages.push(sheet);
-    if (mode === 'double') pages.push(<Sheet key={`blank-${i}`} />);
+    if (mode === 'double') pages.push(<Sheet key={`blank-${i}`} watermark={watermark} />);
   });
   return <>{pages}</>;
 }

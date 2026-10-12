@@ -17,7 +17,8 @@ const buttonStyle: React.CSSProperties = {
   fontWeight: 800, fontSize: '.85rem', color: '#3A8FA0', cursor: 'pointer', textDecoration: 'none', display: 'inline-block',
 };
 
-export function KeepsakeButtons({ slug, preview, getCardElement, fileName }: {
+export function KeepsakeButtons({ slug, preview, getCardElement, fileName, style }: {
+  style?: React.CSSProperties;
   slug: string;
   preview?: boolean;
   getCardElement: () => HTMLElement | null;
@@ -75,7 +76,7 @@ export function KeepsakeButtons({ slug, preview, getCardElement, fileName }: {
   }
 
   return (
-    <div className="tyc-print-hide" style={{ maxWidth: 480, margin: '0 auto', padding: '0 14px 32px', display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+    <div className="tyc-print-hide" style={{ maxWidth: 480, margin: '0 auto', padding: '0 14px 32px', display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', ...style }}>
       <a href={`/print/${slug}${preview ? '?preview=1' : ''}`} style={buttonStyle}>Print card</a>
       {state === 'ready' ? (
         <button onClick={share} style={{ ...buttonStyle, background: '#3A8FA0', borderColor: '#3A8FA0', color: '#fff' }}>Tap to save to Photos</button>

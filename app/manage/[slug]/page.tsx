@@ -11,6 +11,8 @@ import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
 import { LineIcon } from '@/components/ui/LineIcon';
 import { TintedIcon } from '@/components/ui/TintedIcon';
+import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
+import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 import { Nav } from '@/components/ui/Nav';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -97,6 +99,7 @@ function ManageContent() {
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
   const myCards                           = useMyCards();
+  const cardPreviewRef                    = useRef<HTMLDivElement>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -577,7 +580,8 @@ ${origin}/card/${slug}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>Card preview</div>
           </div>
-          <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+          <div ref={cardPreviewRef} style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+            {!isSent && <PreviewWatermark />}
             {campaign.card_style === 'casual' ? (
               <CasualView
                 campaign={campaign}
@@ -620,6 +624,10 @@ ${origin}/card/${slug}
           >
             Open full preview as recipient ↗
           </a>
+          <KeepsakeButtons
+            slug={slug} preview={!isSent} getCardElement={() => cardPreviewRef.current}
+            fileName={`thankyoucards-${slug}`} style={{ padding: '10px 0 0' }}
+          />
         </div>
 
         {/* Edit card details */}
