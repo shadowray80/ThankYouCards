@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { TintedIcon } from '@/components/ui/TintedIcon';
+import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 
 interface Campaign {
   id: string;
@@ -46,6 +47,7 @@ export function ViewContent() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) return;
@@ -110,19 +112,8 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <CasualView campaign={campaign} contributions={contributions} />
-          <div className="tyc-print-hide" style={{ maxWidth: 480, margin: '0 auto', padding: '0 14px 32px', textAlign: 'center' }}>
-            <button
-              onClick={() => window.print()}
-              style={{
-                background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12,
-                padding: '11px 22px', fontFamily: "'Nunito',sans-serif", fontWeight: 800,
-                fontSize: '.85rem', color: '#3A8FA0', cursor: 'pointer',
-              }}
-            >
-              🖨️ Print or save as PDF
-            </button>
-          </div>
+          <div ref={cardRef}><CasualView campaign={campaign} contributions={contributions} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
         </div>
       </>
     );
@@ -133,19 +124,8 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} />
-          <div className="tyc-print-hide" style={{ maxWidth: 480, margin: '0 auto', padding: '0 14px 32px', textAlign: 'center' }}>
-            <button
-              onClick={() => window.print()}
-              style={{
-                background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12,
-                padding: '11px 22px', fontFamily: "'Nunito',sans-serif", fontWeight: 800,
-                fontSize: '.85rem', color: '#3A8FA0', cursor: 'pointer',
-              }}
-            >
-              🖨️ Print or save as PDF
-            </button>
-          </div>
+          <div ref={cardRef}><CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
         </div>
       </>
     );
@@ -168,7 +148,7 @@ export function ViewContent() {
       {previewBar}
 
       {/* Card — straight in, no header */}
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
+      <div ref={cardRef} style={{ maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
         <CardScrollView
           theme={theme}
           customImgUrl={campaign.card_image_url ?? undefined}
@@ -193,6 +173,10 @@ export function ViewContent() {
           Send a card!
           <TintedIcon src="/Icons/Send.png" size={20} color="#fff" />
         </a>
+      </div>
+
+      <div style={{ paddingTop: 14 }}>
+        <KeepsakeButtons slug={slug} preview={isPreview} getCardElement={() => cardRef.current} fileName={`thankyoucards-${slug}`} />
       </div>
 
       {/* Footer */}

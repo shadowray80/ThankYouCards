@@ -71,7 +71,12 @@ components/ui/Nav.tsx               Site top bar on every page: logo, LoginMenu,
 app/page.tsx                 Root — renders HomeView
 app/card/[slug]/page.tsx     Contributor entry point → renders ContribView
 app/view/[slug]/page.tsx     Recipient views the finished card → ViewContent
-app/view/[slug]/ViewContent.tsx  Actual card view logic
+app/view/[slug]/ViewContent.tsx  Actual card view logic. Under every card: Print card + Save to Photos (KeepsakeButtons)
+app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided (with "flip inside" switch) or
+                             single-sided (cover sheet + inside sheet). components/print/PrintableCard.tsx +
+                             lib/printLayout.ts (mm-exact layout; messages measured and packed into columns,
+                             never split; biggest text that fits the fewest inside sheets). Landscape cover →
+                             whole photo framed with names below; portrait → photo fills the front.
 app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY). Site top bar + card switcher dropdown
                              (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
 app/organiser/page.tsx       "Organiser view" (More menu): logged out → log-in form; logged in → newest card
@@ -299,7 +304,7 @@ PATCH actions available:
 | Email to organiser on creation | ✅ Live (Resend) |
 | Email the card (site-sent, Outlook-safe) | ✅ Live |
 | Image-only covers | ✅ Live |
-| Printable keepsake (casual + corporate) | ✅ Live — needs a better layout (see Plans) |
+| Printable A5 card + Save to Photos (all styles) | ✅ Live |
 | Brand kits + email/password login | ✅ Live |
 | Gift cards | ❌ Dropped (removed from solo flow) — a different gift offering is planned |
 | Scrapbook card style | 🔜 Planned |
@@ -326,8 +331,8 @@ Less is more.
    Zoho Mail free plan; Google Workspace later. Root domain has no MX yet; Resend uses `send.` so no clash.
 4. **Promotion** — Instagram (customer showcase exports 1080×1350 posts), testimonials from real cards
    (Coach Matt).
-5. **Better printable version** — one tall strip like the phone view, set out for A4, no message split
-   across pages.
+5. ~~Better printable version~~ — done 12 Oct: printable A5 card + Save to Photos. Later: a "post a printed
+   card" option via a print-on-demand company (same mm layout + 3mm bleed, A5 pages, their page order).
 
 ### Phase 2 — the gift shelf ("Add a little something")
 **End product:** a small shelf of 6–12 hand-picked gifts, mostly for **solo** card senders, shown on the

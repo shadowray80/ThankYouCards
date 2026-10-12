@@ -256,7 +256,7 @@ export function CorporateView({
           {campaign.occasion && (
             <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.45)', fontWeight: 600, marginBottom: 18 }}>— {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
-          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
+          <a href="/" className="tyc-print-hide" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: palette.accent, color: '#fff', borderRadius: 10, padding: '11px 24px', fontWeight: 800, fontSize: '.9rem', textDecoration: 'none', fontFamily: "'Nunito', sans-serif", marginTop: campaign.occasion ? 0 : 16 }}>
             Send a card!
             <TintedIcon src="/Icons/Send.png" size={18} color="#fff" />
           </a>
