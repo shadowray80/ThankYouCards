@@ -14,9 +14,6 @@ const LOCAL_CHROME = process.env.CHROME_PATH
       ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
       : '/usr/bin/google-chrome');
 
-// TEMPORARY diagnostic: how the emoji font load went, reported in an X-Emoji-Font header.
-export let emojiFontStatus = 'not-attempted';
-
 const EMOJI_FONT_URL = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/e20cbc2bbec1926686be9f9bee7d1d2cfa1fea0e/2D/fonts/NotoColorEmoji.ttf';
 
 async function ensureEmojiFont() {
@@ -38,13 +35,7 @@ export async function launchBrowser(): Promise<Browser> {
     // Color Emoji (free licence) to /tmp/fonts, a folder its font settings scan. (The package's
     // own font() helper saves to $HOME/.fonts, which those settings only cover on AWS, not
     // Vercel.) If it can't be fetched, cards still render, minus emoji.
-    try {
-      await ensureEmojiFont();
-      emojiFontStatus = 'ok';
-    } catch (err) {
-      emojiFontStatus = `failed:${err instanceof Error ? err.message : String(err)}`.slice(0, 300);
-      console.error('Emoji font load failed:', err);
-    }
+    await ensureEmojiFont().catch(err => console.error('Emoji font load failed:', err));
     return puppeteer.launch({
       args: chromium.args,
       defaultViewport: null,

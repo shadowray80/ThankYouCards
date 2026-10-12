@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { withRenderedPage, cleanSlug } from '@/lib/renderPage';
-import { siteOrigin, emojiFontStatus } from '@/lib/renderBrowser';
+import { siteOrigin } from '@/lib/renderBrowser';
 import { SHEET_W } from '@/lib/printLayout';
 
 export const maxDuration = 60;
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (asPng) {
       const png = await withRenderedPage(pageUrl, { width: Math.ceil(SHEET_W) + 48, height: 900, deviceScaleFactor: 1 }, '[data-print-ready]',
         async page => (await page.$('.tyc-render'))!.screenshot({ type: 'png' }));
-      return new Response(Buffer.from(png), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store', 'X-Emoji-Font': encodeURIComponent(emojiFontStatus) } });
+      return new Response(Buffer.from(png), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
     }
     const pdf = await withRenderedPage(pageUrl, { width: Math.ceil(SHEET_W), height: 900, deviceScaleFactor: 1 }, '[data-print-ready]',
       async page => {
@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="thankyoucards-${slug}.pdf"`,
         'Cache-Control': 'no-store',
-        'X-Emoji-Font': encodeURIComponent(emojiFontStatus),
       },
     });
   } catch (err) {

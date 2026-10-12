@@ -288,6 +288,13 @@ PATCH actions available:
   fields. Side effect: Android can't pinch-zoom.
 - **On-cover text** (name/cover message) and its placeholder prompts are white with a soft 3-layer
   text-shadow so they read on any photo; keep the editor and the final card renderers in sync.
+- **Print files and Save to Photos are made on the server** (`/api/render/print`, `/api/render/image`,
+  `lib/renderBrowser.ts`): a real Chrome (puppeteer-core 24.4.0 + @sparticuz/chromium 133.0.0 on Vercel —
+  keep the two versions in step; local Chrome in dev) opens `/print/[slug]?render=1` or `/view/[slug]` and
+  captures it. Phones can't be trusted to draw the card themselves (iPhone Safari dropped photos/fonts and
+  boosted text). The serverless Chrome has no emoji font: Noto Color Emoji is downloaded into `/tmp/fonts`
+  at launch (NOT via the package's `font()` helper — that saves to $HOME/.fonts, which isn't scanned on
+  Vercel). `next.config.ts` includes the chromium `bin/` files in the render functions.
 - **AGENTS.md** note: this repo uses Next.js 16 with breaking changes from earlier versions. Always check `node_modules/next/dist/docs/` for current API.
 
 ---
