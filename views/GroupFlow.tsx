@@ -11,6 +11,7 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView, PHOTO_FADE } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
+import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
 import { OCCASIONS } from '@/lib/occasions';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
@@ -82,6 +83,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
   const [giftType, setGiftType]             = useState('collect');
   const [showPreview, setShowPreview]       = useState(false);
+  // Image only: hides all text on the cover (editor, preview and the sent card) — same as solo.
+  const [imageOnly, setImageOnly]           = useState(false);
   // Default is 'casual' (shown to users as "Classic") since the original 'classic' style
   // is currently hidden from the picker — see the Card style section below.
   const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('casual');
@@ -189,7 +192,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_logo_scale: logoScale,
           card_logo_position: logoPosition,
           card_accent: accentColor,
-          card_text_on_image: recip.trim() !== '' || cardMsg.trim() !== '',
+          card_text_on_image: !imageOnly && (recip.trim() !== '' || cardMsg.trim() !== ''),
         }),
       });
       const json = await res.json();
@@ -225,6 +228,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   slug: '', recipient_name: recip, occasion, card_message: cardMsg, card_note: cardNote,
                   card_image_url: imgUrl,
                   card_palette: cardPalette,
+                  card_text_on_image: !imageOnly,
                 }}
                 contributions={[]}
                 messageAreaName={effectiveRecip}
@@ -476,10 +480,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             <div style={{ position: 'relative', overflow: 'hidden' }}>
               <img key={imgUrl} src={imgUrl} alt="" style={{ width: '100%', height: 'auto', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               <div style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.15)', borderRadius: 12, pointerEvents: 'none', zIndex: 2 }} />
-              <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
-                style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s', color: '#fff', fontWeight: 800 }}
-                title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-              >{uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera2.png" size={22} color="#fff" />}</div>
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
@@ -487,7 +487,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               {/* Name/message/from — positioned to match CasualView's actual cover exactly
                   (bottom-anchored, left-aligned, stacked), so what you see while editing is
                   what the recipient actually sees, not a different layout. */}
-              <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
+              <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: imageOnly ? 'none' : 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
                 <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
                   {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
@@ -521,7 +521,16 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
              it's always anchored exactly to the image's bottom edge with no measuring,
              and normal page scroll doubles as scrolling the picker. ── */}
         <div style={{ margin: '0 18px' }}>
-          <CardPicker selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+          <CardPicker
+            browseHeader
+            headerLead={<ImageOnlyButton imageOnly={imageOnly} onToggle={() => setImageOnly(v => !v)} />}
+            headerAction={
+              <PhotoButton
+                hasPhoto={!!customImgUrl} uploading={uploadingImg}
+                onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
+              />
+            }
+            selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
         </div>
 
         <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>

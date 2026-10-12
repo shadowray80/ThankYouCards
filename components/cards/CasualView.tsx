@@ -234,7 +234,7 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
               )}
             </>
           )}
-          {campaign.occasion && (
+          {showCoverText && campaign.occasion && (
             <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.72)', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>From {campaign.occasion.replace(/^From\s+/i, '')}</div>
           )}
         </div>

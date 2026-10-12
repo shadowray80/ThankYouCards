@@ -8,6 +8,7 @@ import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
+import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
@@ -373,37 +374,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
         <div style={{ margin: '0 18px' }}>
           <CardPicker
             browseHeader
-            headerLead={
-              <div
-                onClick={() => setImageOnly(v => !v)}
-                style={{
-                  height: 36, borderRadius: 18, padding: '0 14px', cursor: 'pointer',
-                  background: '#DDD6E6', color: '#5A5566', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
-                  display: 'grid', alignItems: 'center', justifyItems: 'center',
-                  fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 'clamp(.74rem, 3.2vw, .85rem)', whiteSpace: 'nowrap',
-                }}
-                title={imageOnly ? 'Show the name and message on the card' : 'Hide all text on the card'}
-              >
-                {/* Both labels share one grid cell so the pill is always as wide as the longer
-                    one — toggling never resizes it or shifts the neighbouring buttons. */}
-                <span style={{ gridArea: '1 / 1', visibility: imageOnly ? 'hidden' : 'visible' }}>Image only</span>
-                <span style={{ gridArea: '1 / 1', visibility: imageOnly ? 'visible' : 'hidden' }}>Show text</span>
-              </div>
-            }
+            headerLead={<ImageOnlyButton imageOnly={imageOnly} onToggle={() => setImageOnly(v => !v)} />}
             headerAction={
-              <div
-                onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
-                style={{
-                  width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer',
-                  background: customImgUrl ? '#E8724A' : '#DDD6E6',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,.15)',
-                  transition: 'background .2s', color: customImgUrl ? '#fff' : '#5A5566', fontWeight: 800,
-                }}
-                title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-              >
-                {uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera2.png" size={22} color="#5A5566" />}
-              </div>
+              <PhotoButton
+                hasPhoto={!!customImgUrl} uploading={uploadingImg}
+                onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
+              />
             }
             selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
         </div>
