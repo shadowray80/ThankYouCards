@@ -295,8 +295,8 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
 
         {/* Final CTAs */}
         <div style={{ paddingBottom: 50 }}>
-          <Btn variant="teal" full onClick={onSolo}><Icon src="/Icons/Send.png" size={20} white />Send a card now →</Btn>
-          <Btn variant="coral" full onClick={onGroup}><Icon src="/Icons/people.png" size={20} white />Create a group card →</Btn>
+          <Btn variant="teal" full onClick={onSolo}><Icon src="/Icons/Send.png" size={20} white />Send a card now</Btn>
+          <Btn variant="coral" full onClick={onGroup}><Icon src="/Icons/people.png" size={20} white />Create a group card</Btn>
         </div>
 
       </div>
