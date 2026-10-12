@@ -9,7 +9,7 @@ import { THEMES } from '@/lib/themes';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
-import { CorporateView } from '@/components/cards/CorporateView';
+import { CorporateView, PHOTO_FADE } from '@/components/cards/CorporateView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { OCCASIONS } from '@/lib/occasions';
 import { resizeImage } from '@/lib/resizeImage';
@@ -434,17 +434,15 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               </div>
 
               {/* Colour/photo side */}
-              <div style={{ width: '42%', flexShrink: 0, position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, ${corpPalette.headerTo}80, ${corpPalette.headerFrom}40)` }}>
+              <div style={{ width: '42%', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
                 {/* Placeholder image — faded to signal it's replaceable */}
                 {!customImgUrl && (
                   <>
-                    <img src="/Henry.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25 }} />
-                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 25%, ${corpPalette.headerFrom}60 55%, transparent 80%)` }} />
+                    <img src="/Henry.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25, ...PHOTO_FADE }} />
                   </>
                 )}
                 {customImgUrl && <>
-                  <img src={customImgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${corpPalette.headerFrom} 0%, ${corpPalette.headerFrom}C0 20%, transparent 60%)` }} />
+                  <img src={customImgUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...PHOTO_FADE }} />
                 </>}
                 <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
                 <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}

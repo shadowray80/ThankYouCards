@@ -123,6 +123,13 @@ function MessageCard({ c, index, wide, palette }: { c: Contribution; index: numb
   );
 }
 
+// The cover photo fades in from the left so it dissolves into whatever header colour is
+// behind it. (A colour overlay can't match the header's diagonal gradient, leaving a seam.)
+export const PHOTO_FADE: React.CSSProperties = {
+  WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,.1) 20%, rgba(0,0,0,.4) 45%, rgba(0,0,0,.75) 65%, #000 85%)',
+  maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,.1) 20%, rgba(0,0,0,.4) 45%, rgba(0,0,0,.75) 65%, #000 85%)',
+};
+
 export function CorporateView({
   campaign,
   contributions,
@@ -200,8 +207,7 @@ export function CorporateView({
           {/* Photo side */}
           {hasImage && (
             <div style={{ width: '45%', flexShrink: 0, position: 'relative' }}>
-              <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${palette.headerFrom} 0%, ${palette.headerFrom}E8 20%, ${palette.headerFrom}A0 45%, ${palette.headerFrom}40 65%, transparent 85%)` }} />
+              <img src={campaign.card_image_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...PHOTO_FADE }} />
             </div>
           )}
         </div>
