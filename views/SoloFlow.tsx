@@ -402,7 +402,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 }}
                 title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
               >
-                {uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera.png" size={22} color="#5A5566" />}
+                {uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera2.png" size={22} color="#5A5566" />}
               </div>
             }
             selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
@@ -506,7 +506,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 onClick={() => msgPhotoRef.current?.click()}
                 style={{ width: '100%', background: 'none', border: '2px dashed #D4C8EE', borderRadius: 10, padding: '11px', fontSize: '.82rem', fontWeight: 700, color: '#7A7585', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><TintedIcon src="/Icons/pencil.png" size={20} color="#7A7585" />Handwrite your message instead</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><TintedIcon src="/Icons/written.png" size={20} color="#7A7585" />Handwrite your message instead</span>
               </button>
             )}
           </div>

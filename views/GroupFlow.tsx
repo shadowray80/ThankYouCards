@@ -449,7 +449,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
                   style={{ position: 'absolute', bottom: 10, right: 10, zIndex: 5, width: 30, height: 30, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer', background: customImgUrl ? 'rgba(232,114,74,.9)' : 'rgba(255,255,255,.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: uploadingImg ? '.65rem' : '.8rem', boxShadow: '0 2px 8px rgba(0,0,0,.3)', color: '#fff', fontWeight: 800 }}
                   title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove photo' : 'Add a photo (optional)'}
-                >{uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera.png" size={18} color="#fff" />}</div>
+                >{uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera2.png" size={18} color="#fff" />}</div>
               </div>
             </div>
 
@@ -479,7 +479,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               <div onClick={() => uploadingImg ? undefined : customImgUrl ? setCustomImgUrl(null) : uploadRef.current?.click()}
                 style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: '50%', cursor: uploadingImg ? 'default' : 'pointer', background: customImgUrl ? 'rgba(232,114,74,0.9)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: uploadingImg ? '.7rem' : '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', transition: 'background .2s', color: '#fff', fontWeight: 800 }}
                 title={uploadingImg ? 'Uploading…' : customImgUrl ? 'Remove your photo' : 'Use your own photo'}
-              >{uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera.png" size={22} color="#fff" />}</div>
+              >{uploadingImg ? '…' : customImgUrl ? '✕' : <TintedIcon src="/Icons/Camera2.png" size={22} color="#fff" />}</div>
               <input ref={uploadRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
 
               <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
