@@ -22,6 +22,9 @@ const EMOJI_FONT_URL = 'https://raw.githubusercontent.com/googlefonts/noto-emoji
 export async function launchBrowser(): Promise<Browser> {
   if (process.env.VERCEL) {
     const chromium = (await import('@sparticuz/chromium')).default;
+    // Unpack Chrome first: that also unpacks its own fonts into /tmp/fonts, replacing anything
+    // already there — so the emoji font must be added afterwards.
+    const executablePath = await chromium.executablePath();
     // The serverless Chrome has no emoji font — messages are full of them. Google's Noto
     // Color Emoji (free licence). If it can't be fetched, cards still render, minus emoji.
     try {
@@ -31,10 +34,9 @@ export async function launchBrowser(): Promise<Browser> {
       emojiFontStatus = `failed:${err instanceof Error ? err.message : String(err)}`.slice(0, 300);
       console.error('Emoji font load failed:', err);
     }
-    const executablePath = await chromium.executablePath();
     try {
       const { readdirSync } = await import('fs');
-      emojiFontStatus += ` | /tmp/fonts: ${readdirSync('/tmp/fonts').join(',')} | FONTCONFIG_PATH=${process.env.FONTCONFIG_PATH ?? '-'}`;
+      emojiFontStatus += ` | /tmp/fonts: ${readdirSync('/tmp/fonts').join(',')}`;
     } catch (err) {
       emojiFontStatus += ` | /tmp/fonts unreadable: ${err instanceof Error ? err.message : String(err)}`;
     }
