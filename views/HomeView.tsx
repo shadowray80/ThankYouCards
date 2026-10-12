@@ -105,14 +105,11 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
         <div style={{ maxWidth: 440, margin: '0 auto' }}>
 
           {/* Tagline */}
-          <h1 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '2.2rem', color: '#2A2A2A', lineHeight: 1.15, marginBottom: 10 }}>
+          <h1 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '2.2rem', color: '#2A2A2A', lineHeight: 1.15, marginBottom: 28 }}>
             Say thank you to the{' '}
             <span style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '2.6rem', color: '#3A8FA0', fontWeight: 400 }}>legends</span>
             {' '}in your life
           </h1>
-          <p style={{ color: '#7A7585', fontSize: '.94rem', lineHeight: 1.65, marginBottom: 28, fontWeight: 600, maxWidth: 300, marginLeft: 'auto', marginRight: 'auto' }}>
-            Beautiful, personalised thank you cards - sent instantly, anywhere in the world.
-          </p>
 
           {/* Hero card mockup — live showcase examples, falls back to a static mockup */}
           {!showcaseReady ? (
@@ -208,8 +205,7 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
 
         {/* ── Testimonials ── */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 6 }}>It feels good to say thank you.</div>
-          <div style={{ textAlign: 'center', fontSize: '.85rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 24 }}>What people are saying</div>
+          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A', marginBottom: 24 }}>It feels good to say thank you.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { quote: "I organised our whole footy club's end-of-season card from my phone in about 5 minutes. Everyone added their own message and I didn't have to chase a single person.", name: 'Sarah M.', role: 'Group card organiser', color: '#EAF4FB', nameColor: '#3A8FA0' },
@@ -237,10 +233,9 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
       {/* Benefits */}
       <div style={{ padding: '32px 18px 0', maxWidth: 480, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 26 }}>
-          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.55rem', color: '#2A2A2A', marginBottom: 6 }}>
+          <div style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: '1.55rem', color: '#2A2A2A' }}>
             You&apos;re all set in 2 minutes!
           </div>
-          <div style={{ fontSize: '.88rem', color: '#7A7585', fontWeight: 600 }}>Curated and convenient, without a trip to the shops.</div>
         </div>
 
         {[
@@ -272,8 +267,7 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
 
         {/* Pricing */}
         <div style={{ marginBottom: 28 }}>
-          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', marginBottom: 5 }}>Simple pricing.</div>
-          <div style={{ textAlign: 'center', fontSize: '.86rem', color: '#7A7585', fontWeight: 600, marginBottom: 14 }}>Less than a card from the newsagent. Way better.</div>
+          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '1.3rem', marginBottom: 14 }}>Simple pricing.</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
             {/* Solo — free */}
