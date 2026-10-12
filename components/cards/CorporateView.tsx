@@ -216,7 +216,7 @@ export function CorporateView({
       {/* ── Contributor bar ── */}
       {contributions.length > 0 && (
         <div style={{ background: '#fff', borderBottom: '1px solid #EAEAEA', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: '.85rem' }}>👥</span>
+          <TintedIcon src="/Icons/people.png" size={20} color="#1A1A2E" />
           <span style={{ fontWeight: 700, fontSize: '.78rem', color: '#1A1A2E' }}>
             <strong style={{ color: palette.headerFrom }}>{contributions.length}</strong>{' '}
             {contributions.length === 1 ? 'colleague' : 'colleagues'} contributed
