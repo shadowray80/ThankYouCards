@@ -267,7 +267,7 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
           <div style={{ fontSize: '.86rem', lineHeight: 1.55, opacity: .9, fontWeight: 600, marginBottom: 14 }}>
             Share one link. Everyone adds their own message. No more chasing people down — they sign in their own time, from their phone.
           </div>
-          <Btn onClick={onGroup} style={{ background: '#fff', color: '#E8724A' }}>Set up a group card →</Btn>
+          <Btn onClick={onGroup} style={{ background: '#fff', color: '#E8724A' }}>Set up a group card</Btn>
         </div>
 
         {/* Pricing */}
