@@ -75,7 +75,7 @@ app/view/[slug]/ViewContent.tsx  Actual card view logic. Under every card: Print
 app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided (with "flip inside" switch) or
                              single-sided (cover sheet + inside sheet). components/print/PrintableCard.tsx +
                              lib/printLayout.ts (mm-exact layout; messages measured and packed into columns,
-                             never split; biggest text that fits the fewest inside sheets). Landscape cover →
+                             never split; text at the on-screen size (16px), extra inside sheets as needed). Landscape cover →
                              whole photo framed with names below; portrait → photo fills the front.
 app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY). Site top bar + card switcher dropdown
                              (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
