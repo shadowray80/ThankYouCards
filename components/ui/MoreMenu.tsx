@@ -58,7 +58,7 @@ export function MoreMenu() {
           cursor: 'pointer', fontFamily: "'Nunito',sans-serif", whiteSpace: 'nowrap',
         }}
       >
-        ☰ More
+        More
       </button>
 
       {open && (
@@ -75,10 +75,10 @@ export function MoreMenu() {
                   Organiser view
                 </a>
                 <button onClick={() => setShowCode(true)} style={itemStyle}>
-                  📬 Got a card code?
+                  Got a card code?
                 </button>
                 <a href="/contact" style={itemStyle}>
-                  💌 Contact us
+                  Contact us
                 </a>
               </>
             ) : (

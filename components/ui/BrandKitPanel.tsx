@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
+import { LineIcon } from '@/components/ui/LineIcon';
 
 interface BrandKit {
   id: string;
@@ -104,7 +105,7 @@ export function BrandKitPanel({
   return (
     <div style={{ marginTop: 14, background: '#F7F5FB', border: '1.5px solid #E8E2F0', borderRadius: 14, padding: '14px 16px' }}>
       <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 12 }}>
-        💾 Brand template
+        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><LineIcon name="Save" size={18} />Brand template</span>
       </div>
 
       {children}
@@ -135,7 +136,7 @@ export function BrandKitPanel({
                     title="Remove this saved template"
                     style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 10, padding: '0 12px', color: '#7A7585', fontWeight: 800, fontSize: '.78rem', cursor: removing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
                   >
-                    ✕
+                    Remove
                   </button>
                 )}
               </div>

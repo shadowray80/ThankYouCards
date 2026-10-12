@@ -66,7 +66,7 @@ export function EmailCardForm({ slug, token, isSolo, recipientName, fromName, ca
     return (
       <button onClick={() => setOpen(true)}
         style={{ width: '100%', background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '12px 16px', color: '#fff', fontWeight: 800, fontSize: '.92rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-        ✉️ Email the card
+        Email the card
       </button>
     );
   }

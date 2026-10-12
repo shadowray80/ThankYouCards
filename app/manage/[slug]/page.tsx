@@ -9,6 +9,8 @@ import { CORPORATE_PALETTES } from '@/lib/palettes';
 import { resizeImage } from '@/lib/resizeImage';
 import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
+import { LineIcon } from '@/components/ui/LineIcon';
+import { TintedIcon } from '@/components/ui/TintedIcon';
 import { Nav } from '@/components/ui/Nav';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -430,7 +432,7 @@ function ManageContent() {
             )}
             {daysLeft !== null && (
               <div style={{ background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>
-                {daysLeft > 0 ? `⏰ ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : '⏰ Deadline passed'}
+                {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : 'Deadline passed'}
               </div>
             )}
           </div>
@@ -442,7 +444,7 @@ function ManageContent() {
         {/* Send section — top when sent, bottom when not */}
         {isSent && (
           <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Ready to send!</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Fireworks" size={26} />Ready to send!</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
               Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
             </div>
@@ -477,7 +479,6 @@ function ManageContent() {
         {/* Email confirmation notice */}
         {campaign.organiser_email && (
           <div style={{ background: '#EAF4FB', border: '1.5px solid #C8E8F0', borderRadius: 12, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: 1 }}>✉️</span>
             <div style={{ fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, lineHeight: 1.5 }}>
               A confirmation email with your dashboard and contributor links has been sent to <strong>{campaign.organiser_email}</strong>
             </div>
@@ -500,7 +501,7 @@ function ManageContent() {
         {/* Share link — only shown before sending */}
         {!isSent && (
           <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>🔗 Share with contributors</div>
+            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>Share with contributors</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
                 {origin}/card/{slug}
@@ -539,7 +540,7 @@ ${origin}/card/${slug}
           const updateMsg = updateMsgEdit ?? defaultUpdateMsg;
           return (
             <div style={{ background: '#FFF4EC', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>💌 Send a reminder</div>
+              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>Send a reminder</div>
               <div style={{ fontSize: '.74rem', color: '#9A7A6A', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
                 A friendly nudge from TYC, not from you — edit it if you like, then share it back into the group.
               </div>
@@ -623,7 +624,7 @@ ${origin}/card/${slug}
 
         {/* Edit card details */}
         <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-          <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>✏️ Edit card</div>
+          <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>Edit card</div>
           <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>Changes are reflected in the preview above as soon as you save.</div>
 
           <div style={{ marginBottom: 12 }}>
@@ -700,7 +701,7 @@ ${origin}/card/${slug}
         {/* Corporate colour picker */}
         {campaign.card_style === 'corporate' && (
           <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🎨 Header colour</div>
+            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>Header colour</div>
             <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Change the colour of your card header anytime before sending.</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {CORPORATE_PALETTES.map(p => (
@@ -735,7 +736,7 @@ ${origin}/card/${slug}
           const corpPalette = CORPORATE_PALETTES.find(p => p.id === (campaign.card_palette ?? 'navy')) ?? CORPORATE_PALETTES[0];
           return (
             <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🖋 Text colour</div>
+              <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>Text colour</div>
               <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Used for the tagline and highlights throughout the card.</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', position: 'relative', overflow: 'hidden', background: campaign.card_accent ?? corpPalette.accent, border: '3px solid #fff', boxShadow: '0 0 0 2px #E8E2F0', flexShrink: 0 }}>
@@ -759,7 +760,7 @@ ${origin}/card/${slug}
         {/* Corporate logo upload */}
         {campaign.card_style === 'corporate' && (
           <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>🏢 Company logo</div>
+            <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A', marginBottom: 4 }}>Company logo</div>
             <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 10 }}>Upload a PNG logo to display in the card header. Transparent PNG works best.</div>
             <input ref={logoUploadRef} type="file" accept="image/png,image/svg+xml,image/webp" style={{ display: 'none' }} onChange={handleLogoUpload} />
             {campaign.card_logo_url ? (
@@ -876,7 +877,7 @@ ${origin}/card/${slug}
                       ) : (
                         <>
                           {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, lineHeight: 1.5, wordBreak: 'break-word' }}>&quot;{c.message}&quot;</div>}
-                          {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>📷 Photo</div>}
+                          {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>Photo</div>}
                         </>
                       )}
                     </div>
@@ -886,12 +887,12 @@ ${origin}/card/${slug}
                     {!isEditing && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
                         <button onClick={() => startEditContrib(c)} disabled={isBusy} title="Edit message"
-                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, width: 28, height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#7A7585', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          ✎
+                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '0 10px', height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#7A7585', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          Edit
                         </button>
                         <button onClick={() => deleteContrib(c.id)} disabled={isBusy} title="Remove"
-                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, width: 28, height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#E8724A', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {isBusy ? '…' : '🗑'}
+                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '0 10px', height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#E8724A', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {isBusy ? '…' : 'Delete'}
                         </button>
                       </div>
                     )}
@@ -905,7 +906,7 @@ ${origin}/card/${slug}
         {/* Send card section — only shown before sending; sent state is at top */}
         {!isSent && (
           <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}>🎉 Happy with the card?</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Party Popper" size={28} />Happy with the card?</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
               Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
             </div>
@@ -915,16 +916,16 @@ ${origin}/card/${slug}
             <button
               onClick={handlePay}
               disabled={paying}
-              style={{ width: '100%', background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
             >
-              {paying ? 'Redirecting…' : `Send the card — $15 →`}
+              {paying ? 'Redirecting…' : <>Send the card for $15<TintedIcon src="/Icons/Send.png" size={20} color="#fff" /></>}
             </button>
           </div>
         )}
 
         {/* Organiser link — bookmark / return access */}
         <div style={{ background: '#F7F5FB', border: '1.5px solid #E8E2F0', borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#7A7585', marginBottom: 4 }}>🔐 Your organiser link</div>
+          <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#7A7585', marginBottom: 4 }}>Your organiser link</div>
           <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 }}>
             Bookmark this to return to your dashboard at any time. Keep it private — anyone with this link can manage the card.
           </div>

@@ -31,7 +31,7 @@ export function LoginMenu() {
           whiteSpace: 'nowrap', maxWidth: 104, overflow: 'hidden', textOverflow: 'ellipsis',
         }}
       >
-        {session ? `👤 ${session.email.split('@')[0]}` : 'Log in'}
+        {session ? session.email.split('@')[0] : 'Log in'}
       </button>
 
       {open && (
@@ -53,7 +53,7 @@ export function LoginMenu() {
                     onClick={() => setOpen(false)}
                     style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 10, padding: '9px', color: '#7A7585', fontWeight: 800, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", textDecoration: 'none', textAlign: 'center', marginBottom: 8 }}
                   >
-                    ⚙ Admin
+                    Admin
                   </Link>
                 )}
                 <button
