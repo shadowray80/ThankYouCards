@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { withRenderedPage, cleanSlug, exportAllowed } from '@/lib/renderPage';
 import { siteOrigin } from '@/lib/renderBrowser';
 import { SHEET_W } from '@/lib/printLayout';
+import { PDFDocument, Duplex } from 'pdf-lib';
 
 export const maxDuration = 60;
 
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
   const preview = q.get('preview') === '1';
   const asPng = q.get('format') === 'png';
 
+  // Double-sided: flip=1 means the person's printer flips on the long edge (inside sheet printed
+  // upside down so it comes out right); flip=0 means short edge.
   const pageUrl = `${siteOrigin(request.url)}/print/${slug}?render=1&mode=${mode}&flip=${flip}${preview ? '&preview=1' : ''}`;
 
   try {
@@ -30,11 +33,18 @@ export async function GET(request: NextRequest) {
         async page => (await page.$('.tyc-render'))!.screenshot({ type: 'png' }));
       return new Response(Buffer.from(png), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
     }
-    const pdf = await withRenderedPage(pageUrl, { width: Math.ceil(SHEET_W), height: 900, deviceScaleFactor: 1 }, '[data-print-ready]',
+    const rendered = await withRenderedPage(pageUrl, { width: Math.ceil(SHEET_W), height: 900, deviceScaleFactor: 1 }, '[data-print-ready]',
       async page => {
         await page.emulateMediaType('print');
         return page.pdf({ preferCSSPageSize: true, printBackground: true });
       });
+    // Tell the print dialog which way to flip. Chrome's PDF viewer and Adobe Reader pre-set
+    // two-sided printing from this; viewers that ignore it are no worse off.
+    const doc = await PDFDocument.load(rendered);
+    const prefs = doc.catalog.getOrCreateViewerPreferences();
+    if (mode === 'double') prefs.setDuplex(flip === '1' ? Duplex.DuplexFlipLongEdge : Duplex.DuplexFlipShortEdge);
+    else prefs.setDuplex(Duplex.Simplex);
+    const pdf = await doc.save();
     return new Response(Buffer.from(pdf), {
       headers: {
         'Content-Type': 'application/pdf',

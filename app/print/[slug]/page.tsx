@@ -68,7 +68,8 @@ function PrintContent() {
 
   const [status, setStatus] = useState<'loading' | 'ok' | 'error' | 'not-sent' | 'locked'>('loading');
   const [mode, setMode] = useState<PrintMode>('double');
-  const [flip, setFlip] = useState(false);
+  const [edge, setEdge] = useState<'short' | 'long'>('short'); // double-sided: how the printer flips the sheet
+  const flip = edge === 'long';
   const [previewState, setPreviewState] = useState<'loading' | 'ok' | 'error'>('loading');
   // Phones: fetch the PDF and hand it to the share sheet (Print, Save to Files…) so nobody ends up
   // stranded on a bare PDF tab with no way back. Desktop browsers keep the plain link.
@@ -81,8 +82,8 @@ function PrintContent() {
     setPhoneShare(window.matchMedia('(pointer: coarse)').matches && !!navigator.canShare?.({ files: [probe] }));
   }, []);
 
-  // A different layout needs a fresh file.
-  useEffect(() => { setFileState('idle'); setPdfFile(null); }, [mode, flip]);
+  // A different layout needs a fresh file and a fresh preview.
+  useEffect(() => { setFileState('idle'); setPdfFile(null); setPreviewState('loading'); }, [mode, flip]);
 
   useEffect(() => {
     if (!slug || isRender) return;
@@ -117,7 +118,7 @@ function PrintContent() {
   const query = (extra: Record<string, string>) =>
     new URLSearchParams({ slug, ...(isPreview ? { preview: '1' } : {}), ...extra }).toString();
   const printFileUrl = `/api/render/print?${query({ mode, flip: flip ? '1' : '0' })}`;
-  const previewUrl = `/api/render/print?${query({ mode: 'single', format: 'png' })}`;
+  const previewUrl = `/api/render/print?${query({ mode, flip: flip ? '1' : '0', format: 'png' })}`;
 
   async function preparePdf() {
     setFileState('preparing');
@@ -167,10 +168,16 @@ function PrintContent() {
         </div>
 
         {mode === 'double' && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.82rem', fontWeight: 700, color: '#2A2A2A', marginBottom: 14, cursor: 'pointer' }}>
-            <input type="checkbox" checked={flip} onChange={e => setFlip(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#3A8FA0' }} />
-            Inside came out upside down? Flip it, then print again
-          </label>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: '.82rem', fontWeight: 800, color: '#2A2A2A', marginBottom: 6 }}>Your printer flips on the</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setEdge('short')} style={{ ...optionStyle(edge === 'short'), padding: '10px 14px', fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A' }}>Short edge</button>
+              <button onClick={() => setEdge('long')} style={{ ...optionStyle(edge === 'long'), padding: '10px 14px', fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A' }}>Long edge</button>
+            </div>
+            <div style={{ fontSize: '.74rem', color: '#7A7585', fontWeight: 600, marginTop: 6, lineHeight: 1.5 }}>
+              Choose the same in your print settings. The preview below shows the inside the way it will print.
+            </div>
+          </div>
         )}
 
         {phoneShare ? (

@@ -72,7 +72,8 @@ app/page.tsx                 Root — renders HomeView
 app/card/[slug]/page.tsx     Contributor entry point → renders ContribView
 app/view/[slug]/page.tsx     Recipient views the finished card → ViewContent
 app/view/[slug]/ViewContent.tsx  Actual card view logic. Under every card: Print card + Save to Photos (KeepsakeButtons)
-app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided (with "flip inside" switch) or
+app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided ("Your printer flips on the" Short/Long edge choice; long = inside sheet
+                             printed upside down; the PDF also carries /Duplex so Chrome/Adobe pre-set the dialog)  or
                              single-sided (cover sheet + inside sheet). components/print/PrintableCard.tsx +
                              lib/printLayout.ts (mm-exact layout; messages measured and packed into columns,
                              never split; text at the on-screen size (16px), extra inside sheets as needed). Landscape cover →
