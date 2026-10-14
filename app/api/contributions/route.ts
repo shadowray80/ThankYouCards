@@ -11,11 +11,15 @@ export async function POST(request: NextRequest) {
 
   const { data: campaign } = await supabaseAdmin
     .from('campaigns')
-    .select('status')
+    .select('status, deadline')
     .eq('id', campaign_id)
     .single();
 
-  if (!campaign || campaign.status !== 'open') {
+  // Group cards (they have a deadline) keep accepting messages after the organiser pays and
+  // sends — there are always stragglers, and the recipient's card just shows them too.
+  // Solo cards close once sent, so a free "solo" card can't be used to collect a group's messages.
+  const isGroup = !!campaign?.deadline;
+  if (!campaign || !(campaign.status === 'open' || (campaign.status === 'sent' && isGroup))) {
     return Response.json({ error: 'Campaign is no longer accepting contributions' }, { status: 409 });
   }
 

@@ -500,8 +500,8 @@ function ManageContent() {
           ))}
         </div>
 
-        {/* Share link — only shown before sending */}
-        {!isSent && (
+        {/* Share link — stays available after sending, for latecomers */}
+        {(
           <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
             <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>Share with contributors</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -515,16 +515,18 @@ function ManageContent() {
           </div>
         )}
 
-        {/* Send a reminder — only shown before sending. Framed as coming from TYC, not the
+        {/* Send a reminder — stays available after sending, for latecomers. Framed as coming from TYC, not the
             organiser, so re-sharing it doesn't feel like the organiser nagging their own
             friends/colleagues. Editable, and never persisted — it's regenerated fresh (with
             the current day-count and contributor count) every time the dashboard loads, and
             any edit only lasts for this visit. */}
-        {!isSent && (() => {
+        {(() => {
           const joinedLine = totalContributors > 0
             ? `A huge thank you to everyone who's already joined the card ❤️\n\nIf you'd like to be part of it too, we'd love to include your message.`
             : `We'd love to include your message — it only takes a minute.`;
-          const dayLine = daysLeft !== null
+          const dayLine = isSent
+            ? `${recipientName}'s card has already gone out, but there's still time to add your message — it'll appear on the card straight away.`
+            : daysLeft !== null
             ? (daysLeft > 0
                 ? `${recipientName}'s card is only ${daysLeft} day${daysLeft !== 1 ? 's' : ''} away, and it's already looking fantastic.`
                 : `${recipientName}'s card is ready to send any day now, and it's already looking fantastic.`)
