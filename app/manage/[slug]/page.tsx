@@ -258,6 +258,21 @@ function ManageContent() {
   };
 
   // Same live-preview-then-save-on-release pattern as the logo scale slider.
+  const saveDeadline = async (deadline: string) => {
+    const previous = campaign?.deadline ?? null;
+    setCampaign(prev => prev ? { ...prev, deadline } : prev);
+    const res = await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_deadline', deadline }),
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setCampaign(prev => prev ? { ...prev, deadline: previous } : prev);
+      window.alert(json.error || 'Couldn’t change the deadline. Please try again.');
+    }
+  };
+
   const saveAccent = async (accent: string | null) => {
     await fetch(`/api/manage/${slug}`, {
       method: 'PATCH',
@@ -479,12 +494,28 @@ function ManageContent() {
                 label: daysLeft === null ? 'No deadline' : daysLeft > 0 ? (daysLeft === 1 ? 'Day left' : 'Days left') : 'Deadline passed',
               },
             ].map(t => (
-              <div key={t.icon} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,.16)', borderRadius: 12, padding: '10px 14px' }}>
+              <div key={t.icon} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,.16)', borderRadius: 12, padding: '10px 14px' }}>
                 <TintedIcon src={t.icon} size={28} color="#fff" />
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '1.35rem', lineHeight: 1.1 }}>{t.value}</div>
                   <div style={{ fontSize: '.74rem', fontWeight: 700, color: 'rgba(255,255,255,.9)' }}>{t.label}</div>
                 </div>
+                {/* Tap the deadline tile to change the date — the phone's own date picker opens. */}
+                {t.icon === '/Icons/Calendar.png' && campaign.deadline && (
+                  <>
+                    <span style={{ position: 'absolute', top: 7, right: 9, opacity: .85 }}>
+                      <TintedIcon src="/Icons/written.png" size={14} color="#fff" />
+                    </span>
+                    <input
+                      type="date"
+                      aria-label="Change the deadline"
+                      value={campaign.deadline.slice(0, 10)}
+                      min={new Date().toISOString().slice(0, 10)}
+                      onChange={e => e.target.value && saveDeadline(e.target.value)}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                    />
+                  </>
+                )}
               </div>
             ))}
           </div>

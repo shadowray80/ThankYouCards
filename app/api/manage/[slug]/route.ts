@@ -45,7 +45,7 @@ export async function PATCH(
   const { token, action } = body;
 
   if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
-  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
+  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
@@ -55,6 +55,21 @@ export async function PATCH(
     .single();
 
   if (error || !campaign) return Response.json({ error: 'Not found or invalid token' }, { status: 404 });
+
+  // Change the contributor deadline (tap the "Days left" tile). Must stay set — a deadline is what
+  // marks a group card — and can't be in the past.
+  if (action === 'update_deadline') {
+    const { deadline } = body;
+    if (typeof deadline !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(deadline) || isNaN(Date.parse(deadline))) {
+      return Response.json({ error: 'Pick a date' }, { status: 400 });
+    }
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10); // allow for time zones
+    if (deadline < yesterday) return Response.json({ error: 'Pick a date that hasn’t passed' }, { status: 400 });
+    if (!campaign.deadline) return Response.json({ error: 'Only group cards have a deadline' }, { status: 400 });
+    const { error: updateError } = await supabaseAdmin.from('campaigns').update({ deadline }).eq('id', campaign.id);
+    if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+    return Response.json({ ok: true, deadline });
+  }
 
   if (action === 'update_card') {
     const { card_message, card_note, occasion, card_image_url, card_text_on_image } = body;
