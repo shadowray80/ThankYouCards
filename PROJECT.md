@@ -259,7 +259,7 @@ Layout (top to bottom, redesigned 14 Oct — a dashboard people return to, befor
 7. Edit card (cover/messages/photo + library designs, text-on-photo switch saves instantly, colours, logo,
    brand template) — text fields + photo use Save changes
 8. Your organiser link (+ one line: links were emailed)
-All sections soft white; colour only on the header and main buttons.
+All sections light blue (#EAF4FB, border #D3E6F2) on the cream page; white was too close to the background.
 
 PATCH actions available:
 - `update_card` — saves card_message, card_note, occasion, card_image_url, card_text_on_image

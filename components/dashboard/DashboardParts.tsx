@@ -42,7 +42,7 @@ export function Accordion({ icon, title, subtitle, open, onToggle, children }: {
   children?: React.ReactNode;
 }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 16, marginBottom: 10, border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)' }}>
+    <div style={{ background: '#EAF4FB', borderRadius: 16, marginBottom: 10, border: '1px solid #D3E6F2', boxShadow: '0 1px 3px rgba(60,50,100,.05)' }}>
       <button
         onClick={onToggle}
         aria-expanded={open}

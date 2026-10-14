@@ -600,7 +600,7 @@ function ManageContent() {
 
         {/* "Ready when you are": the business end. Before paying: faded send/print/save + the $15
             button. After paying (same block, same place): send it to the recipient, then keepsakes. */}
-        <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
+        <div style={{ background: '#EAF4FB', border: '1px solid #D3E6F2', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>
               <LineIcon name={isSent ? 'Fireworks' : 'Party Popper'} size={26} />
@@ -639,7 +639,7 @@ function ManageContent() {
                 imageUrl={campaign.card_image_url}
                 defaultSenderEmail={campaign.organiser_email}
               />
-              <div style={{ borderTop: '1px solid #F0ECF5', margin: '14px 0 12px' }} />
+              <div style={{ borderTop: '1px solid #D3E6F2', margin: '14px 0 12px' }} />
               <KeepsakeButtons slug={slug} openHref={`/view/${slug}?preview=1`} />
             </>
           ) : (
@@ -712,7 +712,7 @@ function ManageContent() {
                 const isEditing = editingContribId === c.id;
                 const isBusy = contribBusyId === c.id;
                 return (
-                  <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: isEditing ? 'flex-start' : 'center', padding: '10px 12px', borderTop: i === 0 ? 'none' : '1px solid #F0ECF5', position: 'relative' }}>
+                  <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: isEditing ? 'flex-start' : 'center', padding: '10px 12px', borderTop: i === 0 ? 'none' : '1px solid #D3E6F2', position: 'relative' }}>
                     {c.photo_url ? (
                       <img src={c.photo_url} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                     ) : (
@@ -1090,7 +1090,7 @@ ${origin}/card/${slug}
         </Accordion>
 
         {/* Organiser link — bookmark / return access */}
-        <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '14px 16px' }}>
+        <div style={{ background: '#EAF4FB', border: '1px solid #D3E6F2', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#7A7585', marginBottom: 4 }}>Your organiser link</div>
           <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 }}>
             Bookmark this to return to your dashboard at any time. Keep it private — anyone with this link can manage the card.
