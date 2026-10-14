@@ -512,6 +512,9 @@ function ManageContent() {
                       value={campaign.deadline.slice(0, 10)}
                       min={new Date().toISOString().slice(0, 10)}
                       onChange={e => e.target.value && saveDeadline(e.target.value)}
+                      // Desktop browsers only open the calendar from their small icon, so open it
+                      // for any click on the tile (phones already do this on tap).
+                      onClick={e => { try { e.currentTarget.showPicker(); } catch { /* already open, or unsupported */ } }}
                       style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
                     />
                   </>
