@@ -122,7 +122,7 @@ lib/cardTaxonomy.ts  Card library categories/tags/sports used by CardPicker filt
 
 ### Admin + accounts
 ```
-/admin, /admin/cards, /admin/showcase   Admin area (card library, home-page showcase). Access by ADMIN_EMAILS.
+/admin, /admin/cards, /admin/showcase   Admin area (card library, home-page gallery). Access by ADMIN_EMAILS.
                                         Card library = `cards` bucket + `cards` table. "Sync from my folder"
                                         (pick Tim's culled PC folder → preview → confirm) uploads new files via
                                         signed URLs and moves cards missing from the folder to Superseded
@@ -170,11 +170,20 @@ Brand kits + email/password login      Corporate users save colours/logo. Log in
 ### Customer card showcase
 Solo senders opt in with "Happy for us to feature this card (the cover and your message)" (`FeatureOptIn`,
 unticked by default) → `campaigns.feature_ok`. Group cards can't opt in (contributors never agreed to their
-messages being shared) — group examples on the homepage are made up in /admin/showcase. `/admin/customer-cards`
-lists opted-in sent solo cards: Add to homepage (copies cover + sender's message into `showcase_cards`),
+messages being shared). `/admin/customer-cards`
+lists opted-in sent solo cards: Add to homepage (links the card into the gallery, on the carousel),
 download an Instagram carousel (1080×1350: cover + message slide, `lib/instagramImage.ts`), dismiss.
 Columns `feature_ok`, `feature_dismissed`, `feature_exported_at`, `feature_showcase_id` from
 `scripts/customer_showcase.sql`.
+
+### Homepage gallery (`/admin/showcase`, `showcase_cards`)
+Tim makes example cards the normal way (solo or group, any style, no need to pay), pastes the link,
+"Add to gallery", then ticks "On homepage" (↑↓ order, Remove, carousel speed). Entries hold
+`campaign_id` (`scripts/showcase_linked_cards.sql`) and the homepage draws the real card live with
+`components/cards/LiveCard.tsx` (same renderer as the view page), so editing the card updates the homepage.
+Allowed (`lib/showcase.ts` canFeature): cards whose organiser_email is an admin, or opted-in sent solo cards.
+Never other people's group cards. Old entries from the retired builder (no campaign_id) still render from
+their copied fields until removed.
 
 ### `card_emails`
 Log of every "Email the card" send (`campaign_id`, `to_email`, `ip`, `created_at`), used for rate

@@ -2,10 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { CardScrollView } from '@/components/cards/CardScrollView';
-import { CasualView } from '@/components/cards/CasualView';
-import { CorporateView } from '@/components/cards/CorporateView';
-import { THEMES } from '@/lib/themes';
+import { LiveCard } from '@/components/cards/LiveCard';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 
@@ -115,7 +112,7 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div data-card-capture style={{ position: 'relative' }}><CasualView campaign={campaign} contributions={contributions} /></div>
+          <div data-card-capture style={{ position: 'relative' }}><LiveCard campaign={campaign} contributions={contributions} /></div>
           <KeepsakeButtons slug={slug} preview={isPreview} locked={exportsLocked} />
         </div>
       </>
@@ -127,24 +124,12 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div data-card-capture style={{ position: 'relative' }}><CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
+          <div data-card-capture style={{ position: 'relative' }}><LiveCard campaign={campaign} contributions={contributions} /></div>
           <KeepsakeButtons slug={slug} preview={isPreview} locked={exportsLocked} />
         </div>
       </>
     );
   }
-
-  const theme = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
-  const name = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
-  const hasGift = campaign.funded_amount > 0;
-
-  const isSolo = contributions.length <= 1;
-  // Solo cards store the occasion/theme label in `occasion`, not the sender — the
-  // signature comes from the contributor's own name instead. Fall back to '' (not
-  // undefined) so a blank message still routes to the solo branch below.
-  const soloMessage = isSolo && contributions.length === 1 ? contributions[0].message ?? '' : undefined;
-  const fromText = isSolo && contributions.length === 1 ? contributions[0].contributor_name : (campaign.occasion ?? undefined);
-  const groupMessages = isSolo ? [] : contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
 
   return (
     <div style={{ minHeight: '100dvh', background: 'linear-gradient(175deg,#EAF4FB 0%,#FDF0E8 55%,#F0ECFB 100%)', fontFamily: "'Nunito',sans-serif", paddingTop: previewBar ? 44 : 0 }}>
@@ -152,19 +137,7 @@ export function ViewContent() {
 
       {/* Card — straight in, no header */}
       <div data-card-capture style={{ position: 'relative', maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
-        <CardScrollView
-          theme={theme}
-          customImgUrl={campaign.card_image_url ?? undefined}
-          recipientName={name}
-          fromText={fromText}
-          message={campaign.card_message ?? ''}
-          messages={groupMessages}
-          soloMessage={soloMessage}
-          giftAmount={hasGift ? campaign.funded_amount : undefined}
-          landscapeCover
-          showCoverText={campaign.card_text_on_image ?? true}
-          alwaysShowCoverMessage={!isSolo}
-        />
+        <LiveCard campaign={campaign} contributions={contributions} />
       </div>
 
       {/* CTA button — full width of card */}

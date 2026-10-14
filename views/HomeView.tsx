@@ -7,6 +7,7 @@ import { MoreMenu } from '@/components/ui/MoreMenu';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
+import { LiveCard, type LiveCampaign, type LiveContribution } from '@/components/cards/LiveCard';
 import { THEMES } from '@/lib/themes';
 
 interface HomeViewProps {
@@ -37,6 +38,8 @@ interface ShowcaseCard {
   sender_name: string | null;
   solo_message: string | null;
   sample_messages: ShowcaseSampleMessage[];
+  // Gallery entries linked to a real card: drawn live from it (the fields above are then unused).
+  live?: { campaign: LiveCampaign; contributions: LiveContribution[] };
 }
 
 // Hand-drawn line icons from /public/Icons (black on transparent). `white` flips them for
@@ -127,7 +130,9 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
                 {showcase.map(c => (
                   <div key={c.id} style={{ flex: '0 0 100%', scrollSnapAlign: 'center', height: 750, overflow: 'hidden' }}>
                     <div style={{ transform: 'scale(0.88)', transformOrigin: 'top center' }}>
-                      {c.kind === 'group' && c.group_style === 'corporate' ? (
+                      {c.live ? (
+                        <LiveCard campaign={c.live.campaign} contributions={c.live.contributions} preview />
+                      ) : c.kind === 'group' && c.group_style === 'corporate' ? (
                         <CorporateView
                           campaign={{ slug: '', recipient_name: c.recipient_name, occasion: c.occasion, card_message: c.card_message, card_image_url: c.card_image_url, card_palette: c.card_palette, card_logo_url: c.card_logo_url }}
                           contributions={c.sample_messages}

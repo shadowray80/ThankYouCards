@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/requireAdmin';
 // Admin actions on an opted-in customer card:
 //   dismiss / undismiss  — hide it from (or bring it back to) the customer cards page
 //   mark_exported        — record that its Instagram image was downloaded
-//   add_to_homepage      — copy it (cover + the sender's message) into the homepage carousel, live
+//   add_to_homepage      — put it in the homepage gallery, on the carousel (drawn live from the card)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -42,6 +42,9 @@ export async function POST(
       if (existing) return Response.json({ error: 'Already on the homepage' }, { status: 409 });
     }
 
+    const { data: linked } = await supabaseAdmin.from('showcase_cards').select('id').eq('campaign_id', card.id).maybeSingle();
+    if (linked) return Response.json({ error: 'Already in the gallery' }, { status: 409 });
+
     const { data: last } = await supabaseAdmin
       .from('showcase_cards')
       .select('display_order')
@@ -49,28 +52,13 @@ export async function POST(
       .limit(1)
       .maybeSingle();
 
-    const { data: sender } = await supabaseAdmin
-      .from('contributions')
-      .select('contributor_name, message')
-      .eq('campaign_id', card.id)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
     const { data: showcase, error } = await supabaseAdmin
       .from('showcase_cards')
       .insert({
+        campaign_id: card.id,
         kind: 'solo',
         group_style: null,
         recipient_name: card.recipient_name,
-        occasion: card.occasion,
-        card_message: card.card_message,
-        card_image_url: card.card_image_url,
-        card_palette: card.card_palette,
-        card_logo_url: card.card_logo_url,
-        card_logo_scale: card.card_logo_scale ?? 1,
-        sender_name: sender?.contributor_name ?? null,
-        solo_message: sender?.message ?? null,
         sample_messages: [],
         display_order: (last?.display_order ?? 0) + 1,
         is_live: true,

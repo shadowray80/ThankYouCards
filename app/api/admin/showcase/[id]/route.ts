@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/requireAdmin';
 
+// A gallery entry: on/off the homepage carousel, or its place in the order.
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,25 +15,16 @@ export async function PATCH(
     return Response.json({ error: 'Not authorised' }, { status: 401 });
   }
 
-  const allowed = [
-    'kind', 'group_style', 'recipient_name', 'occasion', 'card_message', 'card_note',
-    'card_image_url', 'card_palette', 'card_logo_url', 'card_logo_scale', 'sender_name', 'solo_message',
-    'sample_messages', 'display_order', 'is_live',
-  ];
   const update: Record<string, unknown> = {};
-  for (const key of allowed) if (key in fields) update[key] = fields[key];
+  if (typeof fields.is_live === 'boolean') update.is_live = fields.is_live;
+  if (Number.isInteger(fields.display_order)) update.display_order = fields.display_order;
 
-  const { data, error } = await supabaseAdmin
-    .from('showcase_cards')
-    .update(update)
-    .eq('id', id)
-    .select()
-    .single();
-
+  const { error } = await supabaseAdmin.from('showcase_cards').update(update).eq('id', id);
   if (error) return Response.json({ error: error.message }, { status: 500 });
-  return Response.json({ card: data });
+  return Response.json({ ok: true });
 }
 
+// Take an entry out of the gallery. The card itself is untouched.
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
