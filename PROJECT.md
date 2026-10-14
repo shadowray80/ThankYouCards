@@ -249,9 +249,9 @@ The "on its way" waiting screen shows when `status !== 'sent'` and `?preview=1` 
 Layout (top to bottom, redesigned 14 Oct — a dashboard people return to, before and after paying):
 1. Teal header — card selector (dropdown when logged in), Signed / Days left (tap to change the deadline)
 2. **Card preview** accordion — whole cover + card message, messages in a fixed window; footer expands all
-3. **Unlock the card** block — before paying: Open full preview + locked Print/Save + "Unlock the card · $15";
+3. **Ready when you are** block (no padlocks, no "unlock" wording; Tim wants it friendly and warm) — before paying: faded Send/Email/Print/Save + "Make it official · $15";
    after paying (Stripe returns here with ?paid=1): "Send it to <name>" (link, Copy, Share, Email the card) +
-   Open full preview / Print / Save. Paying unlocks; nothing is sent to the recipient automatically.
+   Open full preview / Print / Save. Paying switches them on ("All set" chip); nothing is sent to the recipient automatically.
 4. Share with contributors (Copy + native Share) — stays after paying (late messages allowed)
 5. Contributors (time ago, ⋮ edit/remove, Add a message manually)
 6. Send a reminder (Copy + Share)
@@ -360,9 +360,9 @@ refresh/bell/lock) until Tim draws his own. Reminder stays copy/share (we can't 
 - Confirmation-email note: shrink to one line near the bottom (or remove) — Tim to decide.
 
 **Exports: lock exporting, not viewing — remove the preview watermark — DONE 14 Oct**
-(exportAllowed() in lib/renderPage.ts; KeepsakeButtons `locked`; print page shows "Printing unlocks…"):
-- Previews always full and clean. Solo: Print/Save free. Group: Print/Save unlock when the card is paid/sent
-  ("Unlocks when you send the card"). Print & Post later = paid add-on for both.
+(exportAllowed() in lib/renderPage.ts; KeepsakeButtons `locked`; print page shows "Ready to print once the card is finished"):
+- Previews always full and clean. Solo: Print/Save free. Group: Print/Save switch on when the card is paid/sent
+  (faded until then). Print & Post later = paid add-on for both.
 - Enforce on the server: /api/render/* refuse unpaid group cards (not just hidden buttons).
 
 **Solo cards in "My cards"**: solo cards made while logged in remember the account; Organiser view / My cards
