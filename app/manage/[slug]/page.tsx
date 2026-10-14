@@ -640,6 +640,17 @@ function ManageContent() {
             </>
           ) : (
             <>
+              {/* How it gets sent — shown locked, so it's clear what unlocking gives you */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                {[`Send to ${recipientName}`, 'Email the card'].map(label => (
+                  <span key={label} title="Unlocks when you unlock the card" style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px 8px', borderRadius: 12,
+                    border: '2px solid #E8E2F0', background: '#FAF9FC', color: '#B0A8BC', fontWeight: 800, fontSize: '.8rem', textAlign: 'center',
+                  }}>
+                    <UiIcon name="lock" size={15} />{label}
+                  </span>
+                ))}
+              </div>
               <KeepsakeButtons slug={slug} preview locked hideLockNote openHref={`/view/${slug}?preview=1`} />
               <button
                 onClick={handlePay}
