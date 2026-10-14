@@ -78,7 +78,7 @@ function PrintContent() {
       .then(json => {
         if (json.error) setStatus('error');
         else if (json.campaign.status === 'sent' || !json.campaign.deadline) setStatus('ok');
-        // An unpaid group card: printing unlocks when it's sent (the print file is refused until then).
+        // An unpaid group card: printing is ready once it's paid for (the print file is refused until then).
         else setStatus(isPreview ? 'locked' : 'not-sent');
       })
       .catch(() => setStatus('error'));
@@ -92,7 +92,7 @@ function PrintContent() {
     <div style={{ minHeight: '100dvh', background: '#F3F1F7' }}>
       <Nav onHome={() => router.push('/')} badge={null} />
       <div style={{ maxWidth: 420, margin: '60px auto', padding: '0 18px', textAlign: 'center', fontFamily: SANS }}>
-        <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#2A2A2A', marginBottom: 8 }}>Printing unlocks when you send the card</div>
+        <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#2A2A2A', marginBottom: 8 }}>Ready to print once the card is finished</div>
         <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.6 }}>
           Once the card is sent, you can print it at home or save it to your phone.
         </div>

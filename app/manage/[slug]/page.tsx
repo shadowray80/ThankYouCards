@@ -484,7 +484,7 @@ function ManageContent() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.7rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.92)' }}>
               Group card dashboard
-              {isSent && <span style={{ background: 'rgba(74,222,128,.35)', borderRadius: 10, padding: '2px 8px', letterSpacing: '.06em' }}>Unlocked</span>}
+              {isSent && <span style={{ background: 'rgba(74,222,128,.35)', borderRadius: 10, padding: '2px 8px', letterSpacing: '.06em' }}>All set</span>}
             </div>
             <button onClick={() => loadData(true)} disabled={refreshing}
               style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, color: '#fff', fontWeight: 800, fontSize: '.78rem', cursor: refreshing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
@@ -594,15 +594,15 @@ function ManageContent() {
           </div>
         </Accordion>
 
-        {/* Unlock the card — the business end. Before paying: preview + locked print/save + the $15
-            unlock. After paying (same block, same place): send it to the recipient, then keepsakes. */}
+        {/* "Ready when you are": the business end. Before paying: faded send/print/save + the $15
+            button. After paying (same block, same place): send it to the recipient, then keepsakes. */}
         <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>
               <LineIcon name={isSent ? 'Fireworks' : 'Party Popper'} size={26} />
-              {isSent ? `Send it to ${recipientName}` : 'Unlock the card'}
+              {isSent ? `Send it to ${recipientName}` : 'Ready when you are'}
             </div>
-            {isSent && <span style={{ background: '#E6F6EC', color: '#2F7A4C', borderRadius: 10, padding: '3px 10px', fontSize: '.72rem', fontWeight: 800 }}>Unlocked</span>}
+            {isSent && <span style={{ background: '#E6F6EC', color: '#2F7A4C', borderRadius: 10, padding: '3px 10px', fontSize: '.72rem', fontWeight: 800 }}>All set</span>}
           </div>
 
           {isSent ? (
@@ -640,14 +640,14 @@ function ManageContent() {
             </>
           ) : (
             <>
-              {/* How it gets sent — shown locked, so it's clear what unlocking gives you */}
+              {/* How it gets sent: shown softly faded, so it's clear what's coming */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                 {[`Send to ${recipientName}`, 'Email the card'].map(label => (
-                  <span key={label} title="Unlocks when you unlock the card" style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '11px 8px', borderRadius: 12,
-                    border: '2px solid #E8E2F0', background: '#FAF9FC', color: '#B0A8BC', fontWeight: 800, fontSize: '.8rem', textAlign: 'center',
+                  <span key={label} title="Ready once the card is finished" style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '11px 8px', borderRadius: 12, opacity: .45,
+                    border: '2px solid #D4C8EE', background: '#fff', color: '#7C5CBF', fontWeight: 800, fontSize: '.8rem', textAlign: 'center',
                   }}>
-                    <UiIcon name="lock" size={15} />{label}
+                    {label}
                   </span>
                 ))}
               </div>
@@ -657,11 +657,11 @@ function ManageContent() {
                 disabled={paying}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, marginTop: 14, background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
               >
-                {paying ? 'Redirecting…' : <><UiIcon name="lock" size={19} />Unlock the card · $15</>}
+                {paying ? 'Redirecting…' : 'Make it official · $15'}
               </button>
               <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
-                Unlocks sending it to {recipientName}, printing and saving.<br />
-                People can still add messages afterwards.
+                Send it to {recipientName}, print it, keep it forever.<br />
+                Late messages still welcome.
               </div>
             </>
           )}

@@ -29,7 +29,7 @@ export function KeepsakeButtons({ slug, preview, style, locked = false, hideLock
   preview?: boolean;
   style?: React.CSSProperties;
   locked?: boolean;
-  hideLockNote?: boolean; // when the surrounding block already explains the unlock
+  hideLockNote?: boolean; // when the surrounding block already explains what paying gives you
   openHref?: string;
 }) {
   const [state, setState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
@@ -79,15 +79,15 @@ export function KeepsakeButtons({ slug, preview, style, locked = false, hideLock
   const rowButton: React.CSSProperties = row
     ? { ...buttonStyle, flexDirection: 'column', padding: '9px 4px', fontSize: '.74rem', borderRadius: 12, gap: 4, minWidth: 0, textAlign: 'center', lineHeight: 1.2 }
     : buttonStyle;
-  const lockedStyle: React.CSSProperties = { ...rowButton, color: '#B0A8BC', cursor: 'default', background: '#FAF9FC' };
-  const lockIcon = <UiIcon name="lock" size={row ? 18 : 15} />;
+  // Before the card is paid for: the same buttons, softly faded (waiting their turn), no padlocks.
+  const waitingStyle: React.CSSProperties = { ...rowButton, opacity: .45, cursor: 'default' };
 
   const printButton = locked
-    ? <span style={lockedStyle} title="Unlocks when you send the card">{lockIcon}Print card</span>
+    ? <span style={waitingStyle} title="Ready once the card is finished">{row && <UiIcon name="print" size={18} />}Print card</span>
     : <a href={`/print/${slug}${preview ? '?preview=1' : ''}`} style={rowButton}>{row && <UiIcon name="print" size={18} />}Print card</a>;
 
   const saveButton = locked
-    ? <span style={lockedStyle} title="Unlocks when you send the card">{lockIcon}Save to Photos</span>
+    ? <span style={waitingStyle} title="Ready once the card is finished">{row && <TintedIcon src="/Icons/image.png" size={19} color={TEAL} />}Save to Photos</span>
     : state === 'ready'
       ? <button onClick={share} style={{ ...rowButton, background: TEAL, borderColor: TEAL, color: '#fff' }}>Tap to save to Photos</button>
       : (
@@ -107,8 +107,8 @@ export function KeepsakeButtons({ slug, preview, style, locked = false, hideLock
         {saveButton}
       </div>
       {locked && !hideLockNote && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 8, fontSize: '.74rem', fontWeight: 700, color: '#9A93A8', fontFamily: "'Nunito',sans-serif" }}>
-          <UiIcon name="lock" size={13} />Unlocks when you send the card
+        <div style={{ textAlign: 'center', marginTop: 8, fontSize: '.74rem', fontWeight: 700, color: '#9A93A8', fontFamily: "'Nunito',sans-serif" }}>
+          Print and save are ready once the card is finished
         </div>
       )}
     </div>
