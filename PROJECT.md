@@ -1,7 +1,7 @@
 # thankyoucards.au — Project Context
 
 > Hand this file to any new Claude conversation (Claude Code or the Claude app). It covers everything needed to pick up the work.
-> Last updated: 11 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
+> Last updated: 14 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
 
 ---
 
@@ -340,6 +340,34 @@ Less is more.
    (Coach Matt).
 5. ~~Better printable version~~ — done 12 Oct: printable A5 card + Save to Photos. Later: a "post a printed
    card" option via a print-on-demand company (same mm layout + 3mm bleed, A5 pages, their page order).
+
+### To-do pile (agreed 14 Oct, not started) — premium, intuitive, flexible
+**Organiser page redesign** (it's a dashboard people come back to, not a step-by-step form):
+- Compact teal header: card selector (title + "Appreciation · 12 October"; dropdown only when logged in),
+  Signed / Days left counters inside it, small Refresh icon. Drop the "ORGANISER VIEW" pill.
+- Order: overview → card preview (Open full preview; Print/Save quietly beside it) → invite contributors
+  (Copy + native Share button) → contributors with the reminder inside → Edit card **collapsed** (cover,
+  message, photo, colours, logo, brand template inside it) → Send the card for $15 → extras (organiser link).
+- After payment the "Ready to send" block (recipient link + Email the card) moves up under the header; everything
+  stays editable and the contributor link/reminder stay (late messages allowed — done 14 Oct).
+- Clearer pay wording: "Pay $15 to send the card to Lance. People can still add messages afterwards."
+- Admin toolbar (Tim only) → one compact "Admin ▾" menu; it overflows on iPhone.
+- Confirmation-email note: shrink to one line near the bottom (or remove) — Tim to decide.
+
+**Exports: lock exporting, not viewing — remove the preview watermark** (it kills trust and looks bad):
+- Previews always full and clean. Solo: Print/Save free. Group: Print/Save unlock when the card is paid/sent
+  ("Unlocks when you send the card"). Print & Post later = paid add-on for both.
+- Enforce on the server: /api/render/* refuse unpaid group cards (not just hidden buttons).
+
+**Solo cards in "My cards"**: solo cards made while logged in remember the account; Organiser view / My cards
+lists them as Sent (opens the card with Print/Save, no organiser page). Ties into birthday reminders later.
+
+**Later — event cards**: golf day, Christmas party, birthday… a QR code at the event, a live view (e.g. on a TV),
+messages/in-jokes/photos added during it, and a keepsake for everyone who was there (photo-heavy print layout).
+Cards are living things, not frozen at payment — keep designing that way.
+
+**Small leftovers**: printed solo inside to match the screen (centred italic message, "From Tim", no box);
+style-picker descriptions still say "masonry"; home page "Handwrite it if you want" still uses pencil.png.
 
 ### Phase 2 — the gift shelf ("Add a little something")
 **End product:** a small shelf of 6–12 hand-picked gifts, mostly for **solo** card senders, shown on the
