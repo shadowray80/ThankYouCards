@@ -475,7 +475,7 @@ function ManageContent() {
 
         {/* Send section — top when sent, bottom when not */}
         {isSent && (
-          <div style={{ background: 'linear-gradient(135deg,#F0ECFB,#E8E2F6)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
+          <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '18px 16px', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Fireworks" size={26} />Ready to send!</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
               Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
@@ -512,7 +512,7 @@ function ManageContent() {
         <Accordion
           icon={<TintedIcon src="/Icons/image.png" size={24} color="#5A5566" />}
           title="Card preview"
-          open={previewOpen} onToggle={() => setPreviewOpen(v => !v)} tint="#FFF7F2"
+          open={previewOpen} onToggle={() => setPreviewOpen(v => !v)}
         >
           <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
             {campaign.card_style === 'casual' ? (
@@ -571,7 +571,7 @@ function ManageContent() {
           icon={<TintedIcon src="/Icons/people.png" size={26} color="#3A8FA0" />}
           title="Share with contributors"
           subtitle={`Share this link with the group so they can add their messages, photos and jokes to ${recipientName}'s card.`}
-          open={shareOpen} onToggle={() => setShareOpen(v => !v)} tint="#EAF4FB"
+          open={shareOpen} onToggle={() => setShareOpen(v => !v)}
         >
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <div style={{ flex: 1, minWidth: 0, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 10, padding: '10px 12px' }}>
@@ -594,7 +594,7 @@ function ManageContent() {
           icon={<TintedIcon src="/Icons/people.png" size={26} color="#5A5566" />}
           title={`Contributors (${totalContributors})`}
           subtitle="Manage, edit or remove contributor messages."
-          open={contribOpen} onToggle={() => setContribOpen(v => !v)} tint="#F7F5FB"
+          open={contribOpen} onToggle={() => setContribOpen(v => !v)}
         >
           {contributions.length === 0 ? (
             <div style={{ background: '#fff', borderRadius: 12, padding: '16px', textAlign: 'center', color: '#B0A8BC', fontWeight: 700, fontSize: '.85rem', marginBottom: 8 }}>
@@ -712,7 +712,7 @@ ${origin}/card/${slug}
               icon={<UiIcon name="bell" size={22} />}
               title="Send a reminder"
               subtitle="A friendly nudge from TYC, not from you."
-              open={reminderOpen} onToggle={() => setReminderOpen(v => !v)} tint="#FFF4EC"
+              open={reminderOpen} onToggle={() => setReminderOpen(v => !v)}
             >
               <div style={{ fontSize: '.76rem', color: '#9A7A6A', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
                 Edit it if you like, then share it back into the group.
@@ -756,7 +756,7 @@ ${origin}/card/${slug}
           icon={<TintedIcon src="/Icons/written.png" size={24} color="#5A5566" />}
           title="Edit card"
           subtitle="Cover, message, photo, logo and settings."
-          open={editOpen} onToggle={() => setEditOpen(v => !v)} tint="#F7F5FB"
+          open={editOpen} onToggle={() => setEditOpen(v => !v)}
         >
         {/* Edit card details */}
         <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
@@ -979,7 +979,7 @@ ${origin}/card/${slug}
 
         {/* Send card section — only shown before sending; sent state is at top */}
         {!isSent && (
-          <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
+          <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '18px 16px', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Party Popper" size={28} />Ready to send?</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
               Pay $15 to send the card to {recipientName}. That also unlocks printing and saving it.
@@ -998,7 +998,7 @@ ${origin}/card/${slug}
         )}
 
         {/* Organiser link — bookmark / return access */}
-        <div style={{ background: '#F7F5FB', border: '1.5px solid #E8E2F0', borderRadius: 12, padding: '14px 16px' }}>
+        <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '14px 16px' }}>
           <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#7A7585', marginBottom: 4 }}>Your organiser link</div>
           <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 8, lineHeight: 1.5 }}>
             Bookmark this to return to your dashboard at any time. Keep it private — anyone with this link can manage the card.

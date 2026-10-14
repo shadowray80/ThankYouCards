@@ -31,18 +31,18 @@ export function UiIcon({ name, size = 18, style }: { name: UiIconName; size?: nu
 }
 
 // A collapsible dashboard section: icon, title, one-line description and a chevron; tap the
-// header to open or close it.
-export function Accordion({ icon, title, subtitle, open, onToggle, tint = '#fff', children }: {
+// header to open or close it. Every section is the same soft white — colour is kept for the
+// header and the main buttons.
+export function Accordion({ icon, title, subtitle, open, onToggle, children }: {
   icon: React.ReactNode;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   open: boolean;
   onToggle: () => void;
-  tint?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <div style={{ background: tint, borderRadius: 16, marginBottom: 10, border: '1.5px solid rgba(60,50,100,.06)' }}>
+    <div style={{ background: '#fff', borderRadius: 16, marginBottom: 10, border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)' }}>
       <button
         onClick={onToggle}
         aria-expanded={open}
