@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Lora, Dancing_Script } from "next/font/google";
+import { Nunito, Lora, Dancing_Script, Gelasio } from "next/font/google";
 import "./globals.css";
 import { AdminToolbar } from "@/components/ui/AdminToolbar";
 
@@ -24,6 +24,18 @@ const dancing = Dancing_Script({
   variable: "--font-dancing",
   weight: ["400", "600", "700"],
   display: "swap",
+});
+
+// Drawn to match Georgia's shapes and spacing: used wherever Georgia is missing (Android phones,
+// the server's Chrome that makes print files and Save to Photos images). Not preloaded, so
+// devices that have Georgia never download it.
+const gelasio = Gelasio({
+  subsets: ["latin"],
+  variable: "--font-gelasio",
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -58,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${nunito.variable} ${lora.variable} ${dancing.variable}`}>
+    <html lang="en" className={`${nunito.variable} ${lora.variable} ${dancing.variable} ${gelasio.variable}`}>
       <head>
         <link rel="icon" href="/TYC.png" />
         <link rel="apple-touch-icon" href="/TYC.png" />

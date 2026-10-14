@@ -225,17 +225,17 @@ export default function CardPickerGroupDevPage() {
               <div style={{ flex: 1, padding: '28px 18px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', zIndex: 2 }}>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 8 }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 10 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
                   <div ref={recipRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setRecip(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40 }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40 }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)' }}>Add a tagline…</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)' }}>Add a tagline…</div>}
                   <div ref={cardMsgRef} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={e => setCardMsg(e.currentTarget.textContent ?? '')}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: corpPalette.accent, caretColor: '#fff' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: corpPalette.accent, caretColor: '#fff' }}
                   />
                 </div>
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>From</div>

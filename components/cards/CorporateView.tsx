@@ -71,8 +71,8 @@ function MessageCard({ c, index, wide, palette }: { c: Contribution; index: numb
   if (wide) {
     return (
       <div style={{ ...base, background: '#fff', padding: '20px 20px 18px', boxShadow: '0 4px 18px rgba(0,0,0,.08)' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '5rem', lineHeight: 0.6, color: palette.accent, opacity: 0.7, marginBottom: 12, marginLeft: -3 }}>&ldquo;</div>
-        <p style={{ fontSize: '.95rem', color: '#1A1A2E', lineHeight: 1.75, fontWeight: 600, margin: '0 0 14px', fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>{msg}</p>
+        <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '5rem', lineHeight: 0.6, color: palette.accent, opacity: 0.7, marginBottom: 12, marginLeft: -3 }}>&ldquo;</div>
+        <p style={{ fontSize: '.95rem', color: '#1A1A2E', lineHeight: 1.75, fontWeight: 600, margin: '0 0 14px', fontFamily: 'Georgia, var(--font-gelasio), serif', fontStyle: 'italic' }}>{msg}</p>
         <div style={{ borderTop: `1.5px solid ${palette.accent}`, paddingTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 30, height: 30, borderRadius: '50%', background: palette.headerFrom, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.7rem', color: '#fff', flexShrink: 0 }}>
             {c.contributor_name.charAt(0).toUpperCase()}
@@ -87,7 +87,7 @@ function MessageCard({ c, index, wide, palette }: { c: Contribution; index: numb
   if (type === 0) {
     return (
       <div style={{ ...base, background: '#fff', borderLeft: `3px solid ${palette.accent}`, borderRadius: '0 12px 12px 0', padding: '13px 12px 13px 14px' }}>
-        <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px', fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>{msg}</p>
+        <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px', fontFamily: 'Georgia, var(--font-gelasio), serif', fontStyle: 'italic' }}>{msg}</p>
         <div style={{ fontSize: '.72rem', fontWeight: 800, color: palette.accent }}>— {c.contributor_name}</div>
       </div>
     );
@@ -116,7 +116,7 @@ function MessageCard({ c, index, wide, palette }: { c: Contribution; index: numb
   // Type 3 — subtle accent quotemark, white bg
   return (
     <div style={{ ...base, background: '#fff', padding: '13px 12px' }}>
-      <div style={{ fontFamily: 'Georgia, serif', fontSize: '2.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.22, marginBottom: 6, marginLeft: -2 }}>&ldquo;</div>
+      <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '2.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.22, marginBottom: 6, marginLeft: -2 }}>&ldquo;</div>
       <p style={{ fontSize: '.84rem', color: '#1A1A2E', lineHeight: 1.65, fontWeight: 600, margin: '0 0 8px' }}>{msg}</p>
       <div style={{ fontSize: '.72rem', fontWeight: 800, color: palette.accent }}>— {c.contributor_name}</div>
     </div>
@@ -184,11 +184,11 @@ export function CorporateView({
           {/* Text side */}
           <div style={{ flex: 1, padding: '40px 24px 32px', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
             <div style={{ fontSize: '.55rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)', marginBottom: 10 }}>TO</div>
-            <div style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(2rem, 9vw, 3.4rem)', color: '#fff', lineHeight: 1.05, marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(2rem, 9vw, 3.4rem)', color: '#fff', lineHeight: 1.05, marginBottom: 12 }}>
               {recipientName}
             </div>
             {campaign.card_message && (
-              <div style={{ color: palette.accent, fontSize: 'clamp(.85rem, 3.5vw, 1.15rem)', fontWeight: 700, lineHeight: 1.4, marginBottom: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+              <div style={{ color: palette.accent, fontSize: 'clamp(.85rem, 3.5vw, 1.15rem)', fontWeight: 700, lineHeight: 1.4, marginBottom: 8, fontFamily: 'Georgia, var(--font-gelasio), serif', fontStyle: 'italic' }}>
                 {campaign.card_message}
               </div>
             )}

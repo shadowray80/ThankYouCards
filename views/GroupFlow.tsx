@@ -409,19 +409,19 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
 
                 {/* Recipient */}
                 <div style={{ position: 'relative', marginBottom: 10 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
                   <div ref={recipEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={recipEditable.onInput} onCompositionStart={recipEditable.onCompositionStart} onCompositionEnd={recipEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
                   />
                 </div>
 
                 {/* Message */}
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)', lineHeight: 1.4 }}>Add a tagline…</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)', lineHeight: 1.4 }}>Add a tagline…</div>}
                   <div ref={cardMsgEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={cardMsgEditable.onInput} onCompositionStart={cardMsgEditable.onCompositionStart} onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
                   />
                 </div>
 

@@ -25,6 +25,7 @@ export interface PrintCampaign {
   card_logo_url: string | null;
   card_logo_scale: number | null;
   card_text_on_image: boolean | null;
+  card_logo_position?: string | null;
 }
 
 export interface PrintContribution {
@@ -37,8 +38,10 @@ export interface PrintContribution {
 export type PrintMode = 'double' | 'single';
 
 const SCRIPT = 'var(--font-dancing), cursive';
-const SERIF = 'var(--font-lora), Georgia, serif';
+const SERIF = 'var(--font-lora), Georgia, var(--font-gelasio), serif';
 const SANS = "'Nunito', sans-serif";
+const GEORGIA = 'Georgia, var(--font-gelasio), serif';
+const CLOSING_H = 124; // corporate: the coloured closing panel after the last message
 const TEXT_SHADOW = '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.6), 0 5px 30px rgba(0,0,0,.45)';
 const PHOTO_MAX_H = CONTENT_H * 0.55;
 
@@ -48,6 +51,8 @@ interface Look {
   headerTo: string;
   accent: string;
   tileBgs: string[];
+  cardLight: string;
+  accentLight: string;
 }
 
 function lookFor(c: PrintCampaign): Look {
@@ -55,10 +60,10 @@ function lookFor(c: PrintCampaign): Look {
     const p = c.card_palette?.startsWith('#')
       ? buildCustomPalette(c.card_palette)
       : CORPORATE_PALETTES.find(x => x.id === c.card_palette) ?? CORPORATE_PALETTES[0];
-    return { isCorporate: true, headerFrom: p.headerFrom, headerTo: p.headerTo, accent: c.card_accent ?? p.accent, tileBgs: ['#ffffff', p.cardLight, p.accentLight] };
+    return { isCorporate: true, headerFrom: p.headerFrom, headerTo: p.headerTo, accent: c.card_accent ?? p.accent, tileBgs: ['#ffffff', p.cardLight, p.accentLight], cardLight: p.cardLight, accentLight: p.accentLight };
   }
   const p = CASUAL_PALETTES.find(x => x.id === c.card_palette) ?? CASUAL_PALETTES[0];
-  return { isCorporate: false, headerFrom: p.headerFrom, headerTo: p.headerTo, accent: p.accent, tileBgs: p.cardBgs };
+  return { isCorporate: false, headerFrom: p.headerFrom, headerTo: p.headerTo, accent: p.accent, tileBgs: p.cardBgs, cardLight: '', accentLight: '' };
 }
 
 function capitalise(s: string) {
@@ -109,8 +114,8 @@ function BackPanel() {
 
 function CoverText({ c, from, look, onPhoto }: { c: PrintCampaign; from: string; look: Look; onPhoto: boolean }) {
   const shadow = onPhoto ? TEXT_SHADOW : undefined;
-  const nameFont = look.isCorporate ? 'Georgia, serif' : SCRIPT;
-  const tagFont = look.isCorporate ? 'Georgia, serif' : SCRIPT;
+  const nameFont = look.isCorporate ? 'Georgia, var(--font-gelasio), serif' : SCRIPT;
+  const tagFont = look.isCorporate ? 'Georgia, var(--font-gelasio), serif' : SCRIPT;
   return (
     <>
       <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 800, letterSpacing: '.22em', opacity: .8, textShadow: shadow }}>TO</div>
@@ -181,11 +186,154 @@ function FrontPanel({ c, from, look, ratio }: { c: PrintCampaign; from: string; 
   );
 }
 
+// ── Corporate pieces (match CorporateView on screen) ──────────────────────────
+
+function fromName(c: PrintCampaign): string {
+  return (c.occasion ?? '').replace(/^From\s+/i, '').trim();
+}
+
+function CorporateLogo({ c, maxH, maxW, align }: { c: PrintCampaign; maxH: number; maxW: number; align?: string | null }) {
+  if (!c.card_logo_url) return null;
+  const scale = c.card_logo_scale ?? 1;
+  return (
+    <div style={{ display: 'flex', justifyContent: align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start' }}>
+      <img src={c.card_logo_url} alt="" style={{ maxHeight: maxH * scale, maxWidth: maxW * scale, objectFit: 'contain', display: 'block' }} />
+    </div>
+  );
+}
+
+// The photo across the top, dissolving into the card colour, with the names and logo below it.
+function CorporateFront({ c, look, ratio }: { c: PrintCampaign; look: Look; ratio: number | null }) {
+  const img = c.card_image_url;
+  const photoH = img
+    ? (ratio && ratio > 1.1 ? Math.min(CONTENT_W / ratio + 40, CONTENT_H * 0.6) : CONTENT_H * 0.6)
+    : 0;
+  const fade = 'linear-gradient(to bottom, #000 0%, #000 55%, rgba(0,0,0,.55) 78%, transparent 100%)';
+  const from = fromName(c);
+  return (
+    <Panel>
+      <div style={{ height: '100%', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: `linear-gradient(135deg, ${look.headerFrom}, ${look.headerTo})` }}>
+        {img && (
+          <img src={img} alt="" style={{ width: '100%', height: photoH, objectFit: 'cover', display: 'block', flexShrink: 0, WebkitMaskImage: fade, maskImage: fade }} />
+        )}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: img ? '0 36px 30px' : '0 36px' }}>
+          <div style={{ fontFamily: SANS, fontSize: 11, fontWeight: 800, letterSpacing: '.22em', color: 'rgba(255,255,255,.5)', marginBottom: 8 }}>TO</div>
+          <div style={{ fontFamily: GEORGIA, fontSize: 50, color: '#fff', lineHeight: 1.05, overflowWrap: 'anywhere' }}>{capitalise(c.recipient_name)}</div>
+          {c.card_message && (
+            <div style={{ fontFamily: GEORGIA, fontStyle: 'italic', fontWeight: 700, fontSize: 20, color: look.accent, lineHeight: 1.35, marginTop: 10 }}>{c.card_message}</div>
+          )}
+          {from && <div style={{ fontFamily: SANS, fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,.6)', marginTop: 8 }}>{from}</div>}
+          {c.card_logo_url && <div style={{ marginTop: 18 }}><CorporateLogo c={c} maxH={52} maxW={170} align={c.card_logo_position} /></div>}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function CorporateBack({ c }: { c: PrintCampaign }) {
+  return (
+    <Panel style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: MARGIN + 18 }}>
+      {c.card_logo_url && <div style={{ marginBottom: 22 }}><CorporateLogo c={c} maxH={46} maxW={150} align="center" /></div>}
+      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 17, color: '#3A8FA0' }}>
+        thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: 13 }}>.au</span>
+      </div>
+    </Panel>
+  );
+}
+
+function CorporateClosing({ c, look }: { c: PrintCampaign; look: Look }) {
+  const from = fromName(c);
+  return (
+    <div style={{ height: CLOSING_H - 14, marginTop: 14, borderRadius: 14, background: `linear-gradient(135deg, ${look.headerFrom}, ${look.headerTo})`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px', overflow: 'hidden', boxSizing: 'border-box', flexShrink: 0 }}>
+      {c.card_message && <div style={{ fontFamily: SCRIPT, fontSize: 28, color: '#fff', lineHeight: 1.25 }}>{c.card_message}</div>}
+      {from && <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.55)', marginTop: 4 }}>— {from}</div>}
+    </div>
+  );
+}
+
+// Message tiles in the same four looks as the screen card, plus its featured quote.
+function CorporateTile({ m, index, total, fontSize, width, ratio, look }: {
+  m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look;
+}) {
+  const ink = '#1A1A2E';
+  const nameSize = Math.max(11, Math.round(fontSize * 0.78));
+  const box: React.CSSProperties = { width, boxSizing: 'border-box', marginBottom: TILE_GAP, borderRadius: 12 };
+  const whiteBox: React.CSSProperties = { ...box, background: '#fff', border: '1px solid #E6E6EE' };
+
+  if (m.photo_url) {
+    let photoW = width - 14, photoH = ratio ? photoW / ratio : photoW * 0.75;
+    if (photoH > PHOTO_MAX_H) { photoH = PHOTO_MAX_H; photoW = ratio ? photoH * ratio : photoW; }
+    return (
+      <div style={{ ...whiteBox, padding: '6px 6px 10px', boxShadow: '0 3px 12px rgba(0,0,0,.08)' }}>
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          <img src={m.photo_url} alt="" style={{ width: photoW, height: photoH, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+          {m.photo_label && (
+            <div style={{ position: 'absolute', top: 8, left: 8, background: look.headerFrom, color: '#fff', borderRadius: 20, padding: '4px 10px', fontFamily: SANS, fontSize: 11, fontWeight: 800 }}>{m.photo_label}</div>
+          )}
+        </div>
+        {m.message && <div style={{ fontFamily: SANS, fontWeight: 600, fontSize, lineHeight: 1.6, color: ink, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: '8px 8px 0' }}>{m.message}</div>}
+        <div style={{ fontFamily: SANS, fontSize: nameSize, fontWeight: 700, color: '#9A9090', textAlign: 'center', paddingTop: 6 }}>— {m.contributor_name}</div>
+      </div>
+    );
+  }
+
+  const text = m.message ?? '';
+  const featured = total > 3 && (index === 0 || index % 5 === 4);
+  if (featured) {
+    return (
+      <div style={{ ...whiteBox, padding: '18px 18px 14px', boxShadow: '0 3px 14px rgba(0,0,0,.06)' }}>
+        <div style={{ fontFamily: GEORGIA, fontSize: 64, lineHeight: 0.6, color: look.accent, opacity: 0.7, marginBottom: 10, marginLeft: -3 }}>&ldquo;</div>
+        <div style={{ fontFamily: GEORGIA, fontStyle: 'italic', fontWeight: 600, fontSize: fontSize * 1.05, lineHeight: 1.6, color: ink, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', marginBottom: 12 }}>{text}</div>
+        <div style={{ borderTop: `1.5px solid ${look.accent}`, paddingTop: 9, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 26, height: 26, borderRadius: '50%', background: look.headerFrom, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 800, fontSize: 11, color: '#fff', flexShrink: 0 }}>
+            {m.contributor_name.charAt(0).toUpperCase()}
+          </div>
+          <div style={{ fontFamily: SANS, fontSize: nameSize + 1, fontWeight: 800, color: ink }}>{m.contributor_name}</div>
+        </div>
+      </div>
+    );
+  }
+
+  const body: React.CSSProperties = { fontSize, lineHeight: 1.6, color: ink, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', marginBottom: 7 };
+  const name = (color: string) => <div style={{ fontFamily: SANS, fontSize: nameSize, fontWeight: 800, color }}>— {m.contributor_name}</div>;
+  switch (index % 4) {
+    case 0: // accent bar down the left, serif italic
+      return (
+        <div style={{ ...whiteBox, borderLeft: `3px solid ${look.accent}`, borderRadius: '0 12px 12px 0', padding: '13px 14px 13px 15px' }}>
+          <div style={{ ...body, fontFamily: GEORGIA, fontStyle: 'italic', fontWeight: 600 }}>{text}</div>
+          {name(look.accent)}
+        </div>
+      );
+    case 1: // handwritten
+      return (
+        <div style={{ ...box, background: look.accentLight, padding: '14px 14px' }}>
+          <div style={{ ...body, fontFamily: SCRIPT, fontSize: Math.round(fontSize * 1.3), lineHeight: 1.45, color: look.headerFrom }}>{text}</div>
+          {name(look.accent)}
+        </div>
+      );
+    case 2: // clean light card
+      return (
+        <div style={{ ...box, background: look.cardLight, padding: '13px 14px' }}>
+          <div style={{ ...body, fontFamily: SANS, fontWeight: 600 }}>{text}</div>
+          {name(look.headerFrom)}
+        </div>
+      );
+    default: // faint quote mark
+      return (
+        <div style={{ ...whiteBox, padding: '13px 14px' }}>
+          <div style={{ fontFamily: GEORGIA, fontSize: 40, lineHeight: 0.7, color: look.accent, opacity: 0.25, marginBottom: 5, marginLeft: -2 }}>&ldquo;</div>
+          <div style={{ ...body, fontFamily: SANS, fontWeight: 600 }}>{text}</div>
+          {name(look.accent)}
+        </div>
+      );
+  }
+}
+
 function InsideHeader({ c, look }: { c: PrintCampaign; look: Look }) {
   return (
     <div style={{ textAlign: 'center', paddingBottom: 18 }}>
       <div style={{ fontFamily: SANS, fontSize: 11, fontWeight: 800, letterSpacing: '.2em', color: '#999' }}>TO {c.recipient_name.toUpperCase()}</div>
-      {c.card_message && <div style={{ fontFamily: look.isCorporate ? 'Georgia, serif' : SCRIPT, fontStyle: look.isCorporate ? 'italic' : undefined, fontSize: look.isCorporate ? 26 : 38, color: look.isCorporate ? look.headerFrom : look.accent, lineHeight: 1.15, marginTop: 2 }}>{c.card_message}</div>}
+      {c.card_message && <div style={{ fontFamily: look.isCorporate ? GEORGIA : SCRIPT, fontStyle: look.isCorporate ? 'italic' : undefined, fontSize: look.isCorporate ? 26 : 38, color: look.isCorporate ? look.headerFrom : look.accent, lineHeight: 1.15, marginTop: 2 }}>{c.card_message}</div>}
       {c.card_note && <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: 14, color: '#555', marginTop: 6, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{c.card_note}</div>}
     </div>
   );
@@ -221,6 +369,10 @@ function MessageTile({ m, index, fontSize, width, ratio, look }: {
   );
 }
 
+function Tile(props: { m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look }) {
+  return props.look.isCorporate ? <CorporateTile {...props} /> : <MessageTile {...props} />;
+}
+
 // ── The whole card ─────────────────────────────────────────────────────────────
 
 export function PrintableCard({ campaign, contributions, mode, flip, onReady }: {
@@ -240,6 +392,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
     ? `${messages.length} messages${campaign.occasion ? ` · ${from.charAt(0).toLowerCase()}${from.slice(1)}` : ''}`
     : '';
 
+  const closing = look.isCorporate && (!!campaign.card_message || !!fromName(campaign));
   const [ratios, setRatios] = useState<Record<string, number | null> | null>(null);
   const [layout, setLayout] = useState<{ fontSize: number; spreads: InsideSpread[] } | null>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -267,7 +420,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
           .map(el => el.offsetHeight + TILE_GAP);
       }
       const headerH = (root.querySelector<HTMLElement>('[data-header]')?.offsetHeight ?? 0);
-      const footerH = footer ? 28 : 0;
+      const footerH = closing ? CLOSING_H : footer ? 28 : 0;
       setLayout(chooseLayout(heightsBySize, cols, headerH, footerH, headerAlone));
     }));
     return () => { cancelled = true; };
@@ -288,7 +441,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
               <div key={size} data-size={size} style={{ width: colW }}>
                 {messages.map((m, i) => (
                   <div key={i} data-tile>
-                    <MessageTile m={m} index={i} fontSize={size} width={colW} ratio={m.photo_url ? ratios[m.photo_url] ?? null : null} look={look} />
+                    <Tile m={m} index={i} total={messages.length} fontSize={size} width={colW} ratio={m.photo_url ? ratios[m.photo_url] ?? null : null} look={look} />
                   </div>
                 ))}
               </div>
@@ -307,7 +460,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
         {columns.map((col, ci) => (
           <div key={ci} style={{ width: colW }}>
             {col.map(i => (
-              <MessageTile key={i} m={messages[i]} index={i} fontSize={layout.fontSize} width={colW} ratio={messages[i].photo_url ? ratios[messages[i].photo_url!] ?? null : null} look={look} />
+              <Tile key={i} m={messages[i]} index={i} total={messages.length} fontSize={layout.fontSize} width={colW} ratio={messages[i].photo_url ? ratios[messages[i].photo_url!] ?? null : null} look={look} />
             ))}
           </div>
         ))}
@@ -331,7 +484,8 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
         </Panel>
         <Panel style={{ display: 'flex', flexDirection: 'column' }}>
           {renderColumns(spread, 1)}
-          {isLast && footer && <div style={{ height: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 700, color: '#999' }}>{footer}</div>}
+          {isLast && closing && <CorporateClosing c={campaign} look={look} />}
+          {isLast && !closing && footer && <div style={{ height: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 700, color: '#999' }}>{footer}</div>}
         </Panel>
       </Sheet>
     );
@@ -339,7 +493,12 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
 
   // Double-sided: each extra inside sheet gets a blank back, so it's its own folded insert.
   const pages: React.ReactNode[] = [
-    <Sheet key="out"><BackPanel /><FrontPanel c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} /></Sheet>,
+    <Sheet key="out">
+      {look.isCorporate ? <CorporateBack c={campaign} /> : <BackPanel />}
+      {look.isCorporate
+        ? <CorporateFront c={campaign} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />
+        : <FrontPanel c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />}
+    </Sheet>,
     insideSheets[0],
   ];
   insideSheets.slice(1).forEach((sheet, i) => {

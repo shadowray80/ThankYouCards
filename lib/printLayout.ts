@@ -52,12 +52,10 @@ export function packMessages(
   while (i < heights.length || spreads.length === 0) {
     const first = spreads.length === 0;
     const columns: number[][] = [];
+    const caps = columnCapacities(first, cols, headerHeight, footerHeight, headerAlone);
     for (let c = 0; c < cols * 2; c++) {
-      const onLeftPanel = c < cols;
-      if (first && onLeftPanel && headerAlone) { columns.push([]); continue; }
-      let capacity = CONTENT_H;
-      if (first && onLeftPanel) capacity -= headerHeight;
-      if (!onLeftPanel) capacity -= footerHeight;
+      if (caps[c] === 0) { columns.push([]); continue; }
+      const capacity = caps[c];
       const column: number[] = [];
       let used = 0;
       while (i < heights.length && (used + heights[i] <= capacity || column.length === 0)) {
@@ -73,28 +71,41 @@ export function packMessages(
   return spreads;
 }
 
-// Evens out the last inside sheet so leftover messages spread across all its columns
-// instead of bunching on the left. Only used when the card runs to more than one sheet.
-function balanceLastSpread(spreads: InsideSpread[], heights: number[], footerHeight: number, cols: number) {
-  if (spreads.length < 2) return;
+// How tall each column of a spread can be: the header takes room on the first spread's left
+// panel (or all of it, for a card with only a message or two); the footer on the right panel.
+function columnCapacities(first: boolean, cols: number, headerHeight: number, footerHeight: number, headerAlone: boolean): number[] {
+  return Array.from({ length: cols * 2 }, (_, c) => {
+    const onLeftPanel = c < cols;
+    if (first && onLeftPanel && headerAlone) return 0;
+    let capacity = CONTENT_H;
+    if (first && onLeftPanel) capacity -= headerHeight;
+    if (!onLeftPanel) capacity -= footerHeight;
+    return capacity;
+  });
+}
+
+// Evens out the last inside sheet so its messages spread across all its columns (both pages)
+// instead of bunching on the left, each column filled to the same share of its room.
+function balanceLastSpread(spreads: InsideSpread[], heights: number[], headerHeight: number, footerHeight: number, cols: number, headerAlone: boolean) {
   const last = spreads[spreads.length - 1];
+  const caps = columnCapacities(spreads.length === 1, cols, headerHeight, footerHeight, headerAlone);
+  const usable = caps.map((cap, c) => cap > 0 ? c : -1).filter(c => c >= 0);
   const items = last.columns.flat();
-  const total = items.reduce((sum, i) => sum + heights[i], 0);
-  const target = total / last.columns.length;
+  if (items.length === 0 || usable.length === 0) return;
+  const share = items.reduce((sum, i) => sum + heights[i], 0) / usable.reduce((sum, c) => sum + caps[c], 0);
   const columns: number[][] = last.columns.map(() => []);
-  let c = 0, used = 0;
+  let u = 0, used = 0;
   for (const i of items) {
-    const capacity = CONTENT_H - (c >= cols ? footerHeight : 0);
-    const isLastColumn = c === columns.length - 1;
-    if (!isLastColumn && columns[c].length > 0 && (used + heights[i] / 2 > target || used + heights[i] > capacity)) {
-      c++; used = 0;
+    const c = usable[u];
+    const isLastColumn = u === usable.length - 1;
+    if (!isLastColumn && columns[c].length > 0 && (used + heights[i] / 2 > share * caps[c] || used + heights[i] > caps[c])) {
+      u++; used = 0;
     }
-    columns[c].push(i);
+    columns[usable[u]].push(i);
     used += heights[i];
   }
   // Only take the balanced version if every column still fits.
-  const fits = columns.every((col, ci) =>
-    col.reduce((sum, i) => sum + heights[i], 0) <= CONTENT_H - (ci >= cols ? footerHeight : 0));
+  const fits = columns.every((col, ci) => col.reduce((sum, i) => sum + heights[i], 0) <= caps[ci]);
   if (fits) last.columns = columns;
 }
 
@@ -112,11 +123,11 @@ export function chooseLayout(
   for (const size of FONT_SIZES) {
     const spreads = packMessages(heightsBySize[size], cols, headerHeight, footerHeight, headerAlone);
     if (spreads.length <= sheetsNeeded) {
-      balanceLastSpread(spreads, heightsBySize[size], footerHeight, cols);
+      balanceLastSpread(spreads, heightsBySize[size], headerHeight, footerHeight, cols, headerAlone);
       return { fontSize: size, spreads };
     }
   }
   const spreads = packMessages(heightsBySize[smallest], cols, headerHeight, footerHeight, headerAlone);
-  balanceLastSpread(spreads, heightsBySize[smallest], footerHeight, cols);
+  balanceLastSpread(spreads, heightsBySize[smallest], headerHeight, footerHeight, cols, headerAlone);
   return { fontSize: smallest, spreads };
 }

@@ -116,7 +116,7 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
   if (wide) {
     return (
       <div style={{ ...base, background: '#fff', padding: '20px 22px 22px', boxShadow: '0 4px 20px rgba(0,0,0,.09)' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '6rem', lineHeight: 0.65, color: palette.accent, opacity: 0.9, marginBottom: 10, marginLeft: -4, userSelect: 'none' }}>&ldquo;</div>
+        <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '6rem', lineHeight: 0.65, color: palette.accent, opacity: 0.9, marginBottom: 10, marginLeft: -4, userSelect: 'none' }}>&ldquo;</div>
         <p style={{ fontSize: '1rem', color: '#1A1A1A', lineHeight: 1.7, fontWeight: 700, margin: '0 0 16px' }}>{msg}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
@@ -136,7 +136,7 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
   if (type === 0) {
     return (
       <div style={{ ...base, background: '#fff' }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '3.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.18, marginBottom: 4, marginLeft: -2 }}>&ldquo;</div>
+        <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '3.8rem', lineHeight: 0.7, color: palette.accent, opacity: 0.18, marginBottom: 4, marginLeft: -2 }}>&ldquo;</div>
         <p style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 12px' }}>{msg}</p>
         <div style={{ fontSize: '.78rem', fontWeight: 800, color: palette.accent }}>– {c.contributor_name}</div>
       </div>

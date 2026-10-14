@@ -78,6 +78,9 @@ app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided ("Y
                              lib/printLayout.ts (mm-exact layout; messages measured and packed into columns,
                              never split; text at the on-screen size (16px), extra inside sheets as needed). Landscape cover →
                              whole photo framed with names below; portrait → photo fills the front.
+                             Corporate prints in its own look (CorporateFront/Back/Tile/Closing in PrintableCard):
+                             photo fading into the card colour, logo on front + back, the screen's tile styles,
+                             coloured closing panel. Messages are spread evenly over both inside pages.
 app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY). Site top bar + card switcher dropdown
                              (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
 app/organiser/page.tsx       "Organiser view" (More menu): logged out → log-in form; logged in → newest card
@@ -298,6 +301,8 @@ PATCH actions available:
   boosted text). The serverless Chrome has no emoji font: Noto Color Emoji is downloaded into `/tmp/fonts`
   at launch (NOT via the package's `font()` helper — that saves to $HOME/.fonts, which isn't scanned on
   Vercel). `next.config.ts` includes the chromium `bin/` files in the render functions.
+- **Georgia isn't everywhere** (Android, the server's Chrome). Always write `'Georgia, var(--font-gelasio), serif'`;
+  Gelasio (Georgia look-alike, app/layout.tsx, not preloaded) fills in.
 - **AGENTS.md** note: this repo uses Next.js 16 with breaking changes from earlier versions. Always check `node_modules/next/dist/docs/` for current API.
 
 ---

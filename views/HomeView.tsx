@@ -213,7 +213,7 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
               { quote: "My Mum lives in the UK and I never know what to send her. I made her a card in 3 minutes and she called me crying happy tears. Thank you, Thank You Cards!", name: 'Liam T.', role: 'Solo card sender', color: '#FDF0E8', nameColor: '#E8724A' },
             ].map((t, i) => (
               <div key={i} style={{ background: t.color, borderRadius: 16, padding: '20px 18px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ fontFamily: 'Georgia, serif', fontSize: '5.5rem', lineHeight: 1, color: t.nameColor, opacity: 0.18, position: 'absolute', top: -8, left: 12, fontWeight: 900, userSelect: 'none' }}>&ldquo;</div>
+                <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '5.5rem', lineHeight: 1, color: t.nameColor, opacity: 0.18, position: 'absolute', top: -8, left: 12, fontWeight: 900, userSelect: 'none' }}>&ldquo;</div>
                 <div style={{ fontSize: '.88rem', color: '#2A2A2A', lineHeight: 1.65, fontWeight: 600, fontStyle: 'italic', marginBottom: 14 }}>{t.quote}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.nameColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
