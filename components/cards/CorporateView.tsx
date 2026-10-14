@@ -242,7 +242,7 @@ export function CorporateView({
       {/* ── Masonry grid ── */}
       {tiles.length === 0 ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: '#9A9AB0', fontWeight: 700 }}>
-          No messages yet — check back soon!
+          No messages yet. Check back soon!
         </div>
       ) : (
         <div className="tyc-print-grid" style={{ padding: '14px 12px 4px', columns: 2, columnGap: '10px' }}>

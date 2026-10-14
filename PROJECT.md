@@ -369,6 +369,8 @@ lists them as Sent (opens the card with Print/Save, no organiser page). Ties int
 **Later — event cards**: golf day, Christmas party, birthday… a QR code at the event, a live view (e.g. on a TV),
 messages/in-jokes/photos added during it, and a keepsake for everyone who was there (photo-heavy print layout).
 Cards are living things, not frozen at payment — keep designing that way.
+Plus: let **recipients / attendees order a printed copy** (print-on-demand) themselves — a big event could
+mean many paid prints. Ties in with the "post a printed card" idea (same mm layout + bleed).
 
 **Small leftovers**: printed solo inside to match the screen (centred italic message, "From Tim", no box);
 style-picker descriptions still say "masonry"; home page "Handwrite it if you want" still uses pencil.png.

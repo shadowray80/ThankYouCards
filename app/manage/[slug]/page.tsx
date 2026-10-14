@@ -141,6 +141,8 @@ function ManageContent() {
   const [editImageUploading, setEditImageUploading] = useState(false);
   const [previewOpen, setPreviewOpen]     = useState(true);
   const [showAllMessages, setShowAllMessages] = useState(false);
+  const [clipAt, setClipAt]               = useState<number | null>(null);
+  const previewRef                        = useRef<HTMLDivElement>(null);
   const [shareOpen, setShareOpen]         = useState(true);
   const [contribOpen, setContribOpen]     = useState(false);
   const [reminderOpen, setReminderOpen]   = useState(false);
@@ -156,6 +158,25 @@ function ManageContent() {
       localStorage.setItem('tyc_manage', JSON.stringify(sessions));
     }
   }, [slug, token]);
+
+  // Card preview: show the cover and card message in full, then a fixed-height window onto the
+  // messages (the footer opens it up). Re-measured as images load or messages change.
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const MESSAGE_WINDOW = 380;
+    const measure = () => {
+      const grid = el.querySelector<HTMLElement>('.tyc-print-grid');
+      const messagesTop = grid ? grid.getBoundingClientRect().top - el.getBoundingClientRect().top : 560;
+      const limit = Math.round(messagesTop + MESSAGE_WINDOW);
+      setClipAt(el.scrollHeight > limit + 40 ? limit : null);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    Array.from(el.children).forEach(child => observer.observe(child));
+    return () => observer.disconnect();
+  }, [contributions, campaign, previewOpen]);
 
   const loadData = (isRefresh = false) => {
     if (!slug || !token) { setError('Invalid link'); setLoading(false); return; }
@@ -424,8 +445,7 @@ function ManageContent() {
     : null;
   const totalContributors = contributions.length;
   const previewContributions = contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }));
-  const shownContributions = showAllMessages ? previewContributions : previewContributions.slice(0, 4);
-  const hiddenCount = previewContributions.length - shownContributions.length;
+  const isClipped = clipAt !== null && !showAllMessages;
 
   return (
     <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif" }}>
@@ -515,13 +535,13 @@ function ManageContent() {
           open={previewOpen} onToggle={() => setPreviewOpen(v => !v)}
         >
           <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+           <div ref={previewRef} style={{ position: 'relative', overflow: 'hidden', maxHeight: isClipped ? clipAt! : undefined }}>
             {campaign.card_style === 'casual' ? (
-              <CasualView campaign={campaign} contributions={shownContributions} allContributions={previewContributions} preview />
+              <CasualView campaign={campaign} contributions={previewContributions} preview />
             ) : campaign.card_style === 'corporate' ? (
               <CorporateView
                 campaign={campaign}
-                contributions={shownContributions}
-                allContributions={previewContributions}
+                contributions={previewContributions}
                 preview
                 logoScale={campaign.card_logo_scale ?? 1}
                 logoPosition={campaign.card_logo_position ?? 'left'}
@@ -534,28 +554,30 @@ function ManageContent() {
                 recipientName={recipientName}
                 fromText={campaign.occasion ?? undefined}
                 message={campaign.card_message ?? ''}
-                messages={shownContributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
+                messages={previewContributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
                 landscapeCover
                 showCoverText={campaign.card_text_on_image ?? true}
                 alwaysShowCoverMessage
               />
             )}
+            {isClipped && <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 90, background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.95))', pointerEvents: 'none' }} />}
+           </div>
             {/* Footer doubles as the "show all messages" toggle */}
             <button
               onClick={() => setShowAllMessages(v => !v)}
-              disabled={hiddenCount === 0 && !showAllMessages}
+              disabled={clipAt === null}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg,#2E7E90,#3A8FA0)',
-                border: 'none', padding: '12px 16px', color: '#fff', cursor: hiddenCount === 0 && !showAllMessages ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif",
+                border: 'none', padding: '12px 16px', color: '#fff', cursor: clipAt === null ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif",
               }}
             >
               <span style={{ flex: 1, textAlign: 'center' }}>
                 <span style={{ display: 'block', fontWeight: 800, fontSize: '1rem' }}>thank<span style={{ color: '#F09070' }}>you</span>cards.au</span>
                 <span style={{ display: 'block', fontSize: '.7rem', color: 'rgba(255,255,255,.8)', fontWeight: 600 }}>
-                  {hiddenCount > 0 && !showAllMessages ? `+${hiddenCount} more message${hiddenCount === 1 ? '' : 's'} · tap to show all` : 'A card thoughtfully chosen just for you.'}
+                  {isClipped ? `Tap to see all ${totalContributors} message${totalContributors === 1 ? '' : 's'}` : 'A card thoughtfully chosen just for you.'}
                 </span>
               </span>
-              {(hiddenCount > 0 || showAllMessages) && (
+              {clipAt !== null && (
                 <UiIcon name="chevrons-down" size={20} style={{ transform: showAllMessages ? 'rotate(180deg)' : undefined, transition: 'transform .2s' }} />
               )}
             </button>

@@ -318,7 +318,7 @@ export function CasualView({ campaign, contributions, allContributions, preview,
       {/* ── Masonry grid ── */}
       {tiles.length === 0 ? (
         <div style={{ padding: '40px 24px', textAlign: 'center', color: '#7A7585', fontWeight: 700 }}>
-          No messages yet — check back soon!
+          No messages yet. Check back soon!
         </div>
       ) : (
         <div className="tyc-print-grid" style={{ padding: '16px 14px 4px', columns: 2, columnGap: '12px' }}>
