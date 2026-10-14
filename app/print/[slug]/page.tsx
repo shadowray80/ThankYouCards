@@ -70,6 +70,19 @@ function PrintContent() {
   const [mode, setMode] = useState<PrintMode>('double');
   const [flip, setFlip] = useState(false);
   const [previewState, setPreviewState] = useState<'loading' | 'ok' | 'error'>('loading');
+  // Phones: fetch the PDF and hand it to the share sheet (Print, Save to Files…) so nobody ends up
+  // stranded on a bare PDF tab with no way back. Desktop browsers keep the plain link.
+  const [phoneShare, setPhoneShare] = useState(false);
+  const [fileState, setFileState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const probe = new File([''], 'card.pdf', { type: 'application/pdf' });
+    setPhoneShare(window.matchMedia('(pointer: coarse)').matches && !!navigator.canShare?.({ files: [probe] }));
+  }, []);
+
+  // A different layout needs a fresh file.
+  useEffect(() => { setFileState('idle'); setPdfFile(null); }, [mode, flip]);
 
   useEffect(() => {
     if (!slug || isRender) return;
@@ -106,6 +119,30 @@ function PrintContent() {
   const printFileUrl = `/api/render/print?${query({ mode, flip: flip ? '1' : '0' })}`;
   const previewUrl = `/api/render/print?${query({ mode: 'single', format: 'png' })}`;
 
+  async function preparePdf() {
+    setFileState('preparing');
+    try {
+      const res = await fetch(printFileUrl);
+      if (!res.ok) throw new Error('Render failed');
+      setPdfFile(new File([await res.blob()], `thankyoucards-${slug}.pdf`, { type: 'application/pdf' }));
+      setFileState('ready');
+    } catch {
+      setFileState('error');
+    }
+  }
+
+  async function sharePdf() {
+    if (!pdfFile) return;
+    try {
+      await navigator.share({ files: [pdfFile] });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return; // closed the share sheet: keep the file ready
+      setFileState('error');
+    }
+  }
+
+  const mainButton: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'center', background: '#3A8FA0', border: 'none', borderRadius: 12, padding: '14px', color: '#fff', fontWeight: 800, fontSize: '1rem', textDecoration: 'none', cursor: 'pointer', fontFamily: SANS };
+
   return (
     <div style={{ minHeight: '100dvh', background: '#F3F1F7' }}>
       <Nav onHome={() => router.push('/')} badge={null} />
@@ -136,15 +173,31 @@ function PrintContent() {
           </label>
         )}
 
-        <a
-          href={printFileUrl} target="_blank" rel="noopener"
-          style={{ display: 'block', textAlign: 'center', background: '#3A8FA0', borderRadius: 12, padding: '14px', color: '#fff', fontWeight: 800, fontSize: '1rem', textDecoration: 'none' }}
-        >
-          Open print file
-        </a>
-        <div style={{ fontSize: '.74rem', color: '#7A7585', fontWeight: 600, marginTop: 8, textAlign: 'center', lineHeight: 1.5 }}>
-          It takes a few seconds to prepare. On a phone, tap Share, then Print.
-        </div>
+        {phoneShare ? (
+          <>
+            {fileState === 'ready'
+              ? <button onClick={sharePdf} style={mainButton}>Print or save</button>
+              : (
+                <button onClick={preparePdf} disabled={fileState === 'preparing'} style={{ ...mainButton, ...(fileState === 'preparing' ? { background: '#B0A8BC', cursor: 'default' } : {}) }}>
+                  {fileState === 'preparing' ? 'Preparing…' : 'Get print file'}
+                </button>
+              )}
+            <div style={{ fontSize: '.74rem', color: fileState === 'error' ? '#E8724A' : '#7A7585', fontWeight: 600, marginTop: 8, textAlign: 'center', lineHeight: 1.5 }}>
+              {fileState === 'error'
+                ? 'Couldn’t get the print file. Please try again.'
+                : fileState === 'ready'
+                  ? 'Choose Print, or Save to Files to print later.'
+                  : 'It takes a few seconds to prepare.'}
+            </div>
+          </>
+        ) : (
+          <>
+            <a href={printFileUrl} target="_blank" rel="noopener" style={mainButton}>Open print file</a>
+            <div style={{ fontSize: '.74rem', color: '#7A7585', fontWeight: 600, marginTop: 8, textAlign: 'center', lineHeight: 1.5 }}>
+              It takes a few seconds to prepare. It opens in a new tab, ready to print or save.
+            </div>
+          </>
+        )}
 
         <div style={{ marginTop: 22, background: '#fff', borderRadius: 12, padding: 10, boxShadow: '0 4px 24px rgba(0,0,0,.08)' }}>
           {previewState !== 'ok' && (
