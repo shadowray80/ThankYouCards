@@ -342,6 +342,9 @@ Less is more.
    card" option via a print-on-demand company (same mm layout + 3mm bleed, A5 pages, their page order).
 
 ### To-do pile (agreed 14 Oct, not started) — premium, intuitive, flexible
+**Organiser page redesign — DONE 14 Oct** (built from Tim's mock-up; notes kept for reference).
+Accordions in components/dashboard/DashboardParts.tsx; placeholder line icons (print/open/share/
+refresh/bell/lock) until Tim draws his own. Reminder stays copy/share (we can't know who hasn't signed).
 **Organiser page redesign** (it's a dashboard people come back to, not a step-by-step form):
 - Compact teal header: card selector (title + "Appreciation · 12 October"; dropdown only when logged in),
   Signed / Days left counters inside it, small Refresh icon. Drop the "ORGANISER VIEW" pill.
@@ -354,7 +357,8 @@ Less is more.
 - Admin toolbar (Tim only) → one compact "Admin ▾" menu; it overflows on iPhone.
 - Confirmation-email note: shrink to one line near the bottom (or remove) — Tim to decide.
 
-**Exports: lock exporting, not viewing — remove the preview watermark** (it kills trust and looks bad):
+**Exports: lock exporting, not viewing — remove the preview watermark — DONE 14 Oct**
+(exportAllowed() in lib/renderPage.ts; KeepsakeButtons `locked`; print page shows "Printing unlocks…"):
 - Previews always full and clean. Solo: Print/Save free. Group: Print/Save unlock when the card is paid/sent
   ("Unlocks when you send the card"). Print & Post later = paid add-on for both.
 - Enforce on the server: /api/render/* refuse unpaid group cards (not just hidden buttons).

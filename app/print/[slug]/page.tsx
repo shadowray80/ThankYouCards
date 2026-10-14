@@ -50,8 +50,7 @@ function RenderOnly({ slug }: { slug: string }) {
       <div className="tyc-render" data-print-ready={ready ? '1' : undefined}>
         {campaign && (
           <PrintableCard
-            campaign={campaign} contributions={contributions} mode={mode} flip={flip}
-            watermark={campaign.status !== 'sent'} onReady={() => setReady(true)}
+            campaign={campaign} contributions={contributions} mode={mode} flip={flip} onReady={() => setReady(true)}
           />
         )}
       </div>
@@ -67,7 +66,7 @@ function PrintContent() {
   const isPreview = searchParams.get('preview') === '1';
   const isRender = searchParams.get('render') === '1';
 
-  const [status, setStatus] = useState<'loading' | 'ok' | 'error' | 'not-sent'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ok' | 'error' | 'not-sent' | 'locked'>('loading');
   const [mode, setMode] = useState<PrintMode>('double');
   const [flip, setFlip] = useState(false);
   const [previewState, setPreviewState] = useState<'loading' | 'ok' | 'error'>('loading');
@@ -78,7 +77,9 @@ function PrintContent() {
       .then(r => r.json())
       .then(json => {
         if (json.error) setStatus('error');
-        else setStatus(json.campaign.status !== 'sent' && !isPreview ? 'not-sent' : 'ok');
+        else if (json.campaign.status === 'sent' || !json.campaign.deadline) setStatus('ok');
+        // An unpaid group card: printing unlocks when it's sent (the print file is refused until then).
+        else setStatus(isPreview ? 'locked' : 'not-sent');
       })
       .catch(() => setStatus('error'));
   }, [slug, isRender, isPreview]);
@@ -87,6 +88,17 @@ function PrintContent() {
 
   if (status === 'error') return <div style={{ padding: 32, fontFamily: SANS, fontWeight: 700, color: '#E8724A' }}>This card link isn&apos;t valid.</div>;
   if (status === 'loading') return <div style={{ padding: 32, fontFamily: SANS, fontWeight: 700, color: '#7A7585' }}>Loading your card…</div>;
+  if (status === 'locked') return (
+    <div style={{ minHeight: '100dvh', background: '#F3F1F7' }}>
+      <Nav onHome={() => router.push('/')} badge={null} />
+      <div style={{ maxWidth: 420, margin: '60px auto', padding: '0 18px', textAlign: 'center', fontFamily: SANS }}>
+        <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#2A2A2A', marginBottom: 8 }}>Printing unlocks when you send the card</div>
+        <div style={{ fontSize: '.85rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.6 }}>
+          Once the card is sent, you can print it at home or save it to your phone.
+        </div>
+      </div>
+    </div>
+  );
   if (status === 'not-sent') return <div style={{ padding: 32, fontFamily: SANS, fontWeight: 700, color: '#3A8FA0' }}>This card hasn&apos;t been sent yet.</div>;
 
   const query = (extra: Record<string, string>) =>

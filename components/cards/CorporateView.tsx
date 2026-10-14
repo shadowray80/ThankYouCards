@@ -133,6 +133,7 @@ export const PHOTO_FADE: React.CSSProperties = {
 export function CorporateView({
   campaign,
   contributions,
+  allContributions,
   preview,
   noHeader,
   logoScale = 1,
@@ -140,6 +141,7 @@ export function CorporateView({
 }: {
   campaign: Campaign;
   contributions: Contribution[];
+  allContributions?: Contribution[];
   preview?: boolean;
   noHeader?: boolean;
   logoScale?: number;
@@ -153,8 +155,11 @@ export function CorporateView({
   const palette: CorporatePalette = campaign.card_accent ? { ...rawPalette, accent: campaign.card_accent } : rawPalette;
   const recipientName  = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
   const hasImage       = !!campaign.card_image_url;
-  const visibleAvatars = contributions.slice(0, MAX_AVATARS);
-  const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
+  // `allContributions`: everyone who signed, when only some messages are shown (the dashboard's
+  // short preview) — the count and avatars still reflect the whole card.
+  const everyone       = allContributions ?? contributions;
+  const visibleAvatars = everyone.slice(0, MAX_AVATARS);
+  const overflowCount  = Math.max(0, everyone.length - MAX_AVATARS);
 
   const hasEnoughForWide = contributions.length > 3;
   let textIdx  = 0;
@@ -214,12 +219,12 @@ export function CorporateView({
       )}
 
       {/* ── Contributor bar ── */}
-      {contributions.length > 0 && (
+      {everyone.length > 0 && (
         <div style={{ background: '#fff', borderBottom: '1px solid #EAEAEA', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <TintedIcon src="/Icons/people.png" size={20} color="#1A1A2E" />
           <span style={{ fontWeight: 700, fontSize: '.78rem', color: '#1A1A2E' }}>
-            <strong style={{ color: palette.headerFrom }}>{contributions.length}</strong>{' '}
-            {contributions.length === 1 ? 'colleague' : 'colleagues'} contributed
+            <strong style={{ color: palette.headerFrom }}>{everyone.length}</strong>{' '}
+            {everyone.length === 1 ? 'colleague' : 'colleagues'} contributed
           </span>
           <div style={{ marginLeft: 'auto', display: 'flex' }}>
             {visibleAvatars.map((c, i) => (

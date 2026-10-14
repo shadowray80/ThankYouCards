@@ -11,7 +11,7 @@ import { EmailCardForm } from '@/components/forms/EmailCardForm';
 import { BrandKitPanel } from '@/components/ui/BrandKitPanel';
 import { LineIcon } from '@/components/ui/LineIcon';
 import { TintedIcon } from '@/components/ui/TintedIcon';
-import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
+import { Accordion, UiIcon, timeAgo } from '@/components/dashboard/DashboardParts';
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 import { Nav } from '@/components/ui/Nav';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
@@ -39,6 +39,7 @@ interface Campaign {
   card_accent: string | null;
   card_text_on_image: boolean | null;
   card_occasion: string | null;
+  created_at?: string;
 }
 
 interface Contribution {
@@ -51,40 +52,56 @@ interface Contribution {
   created_at: string;
 }
 
-// Logged-in organisers: switch between their group cards. Current (still collecting) first,
-// then previous (sent) ones.
-function CardSwitcher({ cards, currentSlug }: { cards: MyCard[]; currentSlug: string }) {
+// The card selector at the top of the dashboard: "Lance's card / Appreciation · 12 October 2026".
+// Logged-in organisers with other cards get a dropdown (Current, then Previous); the native select
+// sits invisibly over the box, so the phone's own picker opens.
+function CardSelector({ cards, currentSlug, title, subtitle }: {
+  cards: MyCard[] | null;
+  currentSlug: string;
+  title: string;
+  subtitle: string;
+}) {
   const label = (c: MyCard) =>
     `${c.recipient_name}${c.card_occasion ? ` · ${c.card_occasion}` : ''} · ${new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
-  const current = cards.filter(c => c.status !== 'sent');
-  const previous = cards.filter(c => c.status === 'sent');
-  const isListed = cards.some(c => c.slug === currentSlug);
+  const choices = cards ?? [];
+  const canSwitch = choices.some(c => c.slug !== currentSlug);
+  const current = choices.filter(c => c.status !== 'sent');
+  const previous = choices.filter(c => c.status === 'sent');
+  const isListed = choices.some(c => c.slug === currentSlug);
 
   return (
-    <select
-      value={isListed ? currentSlug : ''}
-      onChange={e => {
-        const card = cards.find(c => c.slug === e.target.value);
-        if (card) window.location.href = manageUrl(card);
-      }}
-      aria-label="Your cards"
-      style={{
-        maxWidth: '62%', background: 'rgba(255,255,255,.18)', border: '1.5px solid rgba(255,255,255,.45)', borderRadius: 10,
-        padding: '6px 10px', color: '#fff', fontWeight: 800, fontSize: '.85rem', fontFamily: "'Nunito',sans-serif", cursor: 'pointer',
-      }}
-    >
-      {!isListed && <option value="" style={{ color: '#2A2A2A' }}>Your cards…</option>}
-      {current.length > 0 && (
-        <optgroup label="Current" style={{ color: '#2A2A2A' }}>
-          {current.map(c => <option key={c.slug} value={c.slug} style={{ color: '#2A2A2A' }}>{label(c)}</option>)}
-        </optgroup>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 12, padding: '10px 14px' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 800, fontSize: '1.02rem', color: '#2A2A2A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+        {subtitle && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 1 }}>{subtitle}</div>}
+      </div>
+      {canSwitch && (
+        <>
+          <UiIcon name="chevron-down" size={20} style={{ color: '#5A5566' }} />
+          <select
+            value={isListed ? currentSlug : ''}
+            onChange={e => {
+              const card = choices.find(c => c.slug === e.target.value);
+              if (card) window.location.assign(manageUrl(card));
+            }}
+            aria-label="Switch to another of your cards"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+          >
+            {!isListed && <option value="">Your cards…</option>}
+            {current.length > 0 && (
+              <optgroup label="Current">
+                {current.map(c => <option key={c.slug} value={c.slug}>{label(c)}</option>)}
+              </optgroup>
+            )}
+            {previous.length > 0 && (
+              <optgroup label="Previous">
+                {previous.map(c => <option key={c.slug} value={c.slug}>{label(c)}</option>)}
+              </optgroup>
+            )}
+          </select>
+        </>
       )}
-      {previous.length > 0 && (
-        <optgroup label="Previous" style={{ color: '#2A2A2A' }}>
-          {previous.map(c => <option key={c.slug} value={c.slug} style={{ color: '#2A2A2A' }}>{label(c)}</option>)}
-        </optgroup>
-      )}
-    </select>
+    </div>
   );
 }
 
@@ -122,6 +139,13 @@ function ManageContent() {
   const [savingCard, setSavingCard]       = useState(false);
   const [cardSaved, setCardSaved]         = useState(false);
   const [editImageUploading, setEditImageUploading] = useState(false);
+  const [previewOpen, setPreviewOpen]     = useState(true);
+  const [showAllMessages, setShowAllMessages] = useState(false);
+  const [shareOpen, setShareOpen]         = useState(true);
+  const [contribOpen, setContribOpen]     = useState(false);
+  const [reminderOpen, setReminderOpen]   = useState(false);
+  const [editOpen, setEditOpen]           = useState(false);
+  const [menuOpenId, setMenuOpenId]       = useState<string | null>(null);
   const logoUploadRef      = useRef<HTMLInputElement>(null);
   const editImageUploadRef = useRef<HTMLInputElement>(null);
 
@@ -176,6 +200,14 @@ function ManageContent() {
     navigator.clipboard.writeText(`${origin}/card/${slug}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareText = async (text: string, fallback: () => void, url?: string) => {
+    if (navigator.share) {
+      try { await navigator.share(url ? { text, url } : { text }); return; }
+      catch (err) { if (err instanceof DOMException && err.name === 'AbortError') return; }
+    }
+    fallback();
   };
 
   const copyRecipientLink = () => {
@@ -387,61 +419,59 @@ function ManageContent() {
   const isSent        = campaign.status === 'sent' || paidParam;
   const theme         = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const recipientName = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
-  const deadlineStr   = campaign.deadline
-    ? new Date(campaign.deadline).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
   const daysLeft = campaign.deadline
     ? Math.ceil((new Date(campaign.deadline).getTime() - Date.now()) / 86400000)
     : null;
-  const messages          = contributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }));
   const totalContributors = contributions.length;
+  const previewContributions = contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }));
+  const shownContributions = showAllMessages ? previewContributions : previewContributions.slice(0, 4);
+  const hiddenCount = previewContributions.length - shownContributions.length;
 
   return (
     <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif" }}>
 
       <Nav onHome={() => router.push('/')} badge={null} />
 
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', padding: '18px 20px 16px' }}>
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            {myCards && myCards.length > 0 ? (
-              <CardSwitcher cards={myCards} currentSlug={slug} />
-            ) : (
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#fff' }}>Organiser view</div>
-            )}
-            <div style={{ background: isSent ? 'rgba(74,222,128,.3)' : 'rgba(255,255,255,.2)', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', letterSpacing: '.04em' }}>
-              {isSent ? '✓ SENT' : 'ORGANISER VIEW'}
+      {/* Header — card selector + the two counters */}
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '12px 14px 0' }}>
+        <div style={{ background: 'linear-gradient(135deg,#3A8FA0,#5AAFBF)', borderRadius: 18, padding: 14, color: '#fff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.7rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.92)' }}>
+              Group card dashboard
+              {isSent && <span style={{ background: 'rgba(74,222,128,.35)', borderRadius: 10, padding: '2px 8px', letterSpacing: '.06em' }}>Sent</span>}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
             <button onClick={() => loadData(true)} disabled={refreshing}
-              style={{ background: '#E8724A', border: 'none', borderRadius: 20, padding: '4px 12px', fontSize: '.72rem', fontWeight: 800, color: '#fff', cursor: refreshing ? 'default' : 'pointer', letterSpacing: '.04em', fontFamily: "'Nunito',sans-serif" }}>
-              {refreshing ? 'Refreshing…' : 'Refresh ↻'}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, color: '#fff', fontWeight: 800, fontSize: '.78rem', cursor: refreshing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+              <UiIcon name="refresh" size={15} />{refreshing ? 'Refreshing…' : 'Refresh'}
             </button>
           </div>
-
-          <div style={{ fontWeight: 800, fontSize: '1.3rem', color: '#fff', marginBottom: 4 }}>
-            {recipientName}&apos;s card
-          </div>
-
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {campaign.occasion && (
-              <div style={{ background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>
-                {campaign.occasion}
+          <CardSelector
+            cards={myCards} currentSlug={slug}
+            title={`${recipientName}'s card`}
+            subtitle={[campaign.card_occasion, campaign.created_at ? new Date(campaign.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ')}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+            {[
+              { icon: '/Icons/people.png', value: String(totalContributors), label: 'Signed' },
+              {
+                icon: '/Icons/Calendar.png',
+                value: daysLeft === null ? '—' : daysLeft > 0 ? String(daysLeft) : '0',
+                label: daysLeft === null ? 'No deadline' : daysLeft > 0 ? (daysLeft === 1 ? 'Day left' : 'Days left') : 'Deadline passed',
+              },
+            ].map(t => (
+              <div key={t.icon} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,.16)', borderRadius: 12, padding: '10px 14px' }}>
+                <TintedIcon src={t.icon} size={28} color="#fff" />
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '1.35rem', lineHeight: 1.1 }}>{t.value}</div>
+                  <div style={{ fontSize: '.74rem', fontWeight: 700, color: 'rgba(255,255,255,.9)' }}>{t.label}</div>
+                </div>
               </div>
-            )}
-            {daysLeft !== null && (
-              <div style={{ background: 'rgba(255,255,255,.15)', borderRadius: 20, padding: '4px 10px', fontSize: '.74rem', color: 'rgba(255,255,255,.9)', fontWeight: 700 }}>
-                {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : 'Deadline passed'}
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 18px 40px' }}>
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '12px 14px 40px' }}>
 
         {/* Send section — top when sent, bottom when not */}
         {isSent && (
@@ -478,42 +508,177 @@ function ManageContent() {
           </div>
         )}
 
-        {/* Email confirmation notice */}
-        {campaign.organiser_email && (
-          <div style={{ background: '#EAF4FB', border: '1.5px solid #C8E8F0', borderRadius: 12, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, lineHeight: 1.5 }}>
-              A confirmation email with your dashboard and contributor links has been sent to <strong>{campaign.organiser_email}</strong>
-            </div>
+        {/* Card preview — the whole cover and a couple of messages; the footer expands to all of them */}
+        <Accordion
+          icon={<TintedIcon src="/Icons/image.png" size={24} color="#5A5566" />}
+          title="Card preview"
+          open={previewOpen} onToggle={() => setPreviewOpen(v => !v)} tint="#FFF7F2"
+        >
+          <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
+            {campaign.card_style === 'casual' ? (
+              <CasualView campaign={campaign} contributions={shownContributions} allContributions={previewContributions} preview />
+            ) : campaign.card_style === 'corporate' ? (
+              <CorporateView
+                campaign={campaign}
+                contributions={shownContributions}
+                allContributions={previewContributions}
+                preview
+                logoScale={campaign.card_logo_scale ?? 1}
+                logoPosition={campaign.card_logo_position ?? 'left'}
+              />
+            ) : (
+              <CardScrollView
+                theme={theme}
+                imgIdx={0}
+                customImgUrl={campaign.card_image_url ?? undefined}
+                recipientName={recipientName}
+                fromText={campaign.occasion ?? undefined}
+                message={campaign.card_message ?? ''}
+                messages={shownContributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
+                landscapeCover
+                showCoverText={campaign.card_text_on_image ?? true}
+                alwaysShowCoverMessage
+              />
+            )}
+            {/* Footer doubles as the "show all messages" toggle */}
+            <button
+              onClick={() => setShowAllMessages(v => !v)}
+              disabled={hiddenCount === 0 && !showAllMessages}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg,#2E7E90,#3A8FA0)',
+                border: 'none', padding: '12px 16px', color: '#fff', cursor: hiddenCount === 0 && !showAllMessages ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif",
+              }}
+            >
+              <span style={{ flex: 1, textAlign: 'center' }}>
+                <span style={{ display: 'block', fontWeight: 800, fontSize: '1rem' }}>thank<span style={{ color: '#F09070' }}>you</span>cards.au</span>
+                <span style={{ display: 'block', fontSize: '.7rem', color: 'rgba(255,255,255,.8)', fontWeight: 600 }}>
+                  {hiddenCount > 0 && !showAllMessages ? `+${hiddenCount} more message${hiddenCount === 1 ? '' : 's'} · tap to show all` : 'A card thoughtfully chosen just for you.'}
+                </span>
+              </span>
+              {(hiddenCount > 0 || showAllMessages) && (
+                <UiIcon name="chevrons-down" size={20} style={{ transform: showAllMessages ? 'rotate(180deg)' : undefined, transition: 'transform .2s' }} />
+              )}
+            </button>
           </div>
-        )}
+          <KeepsakeButtons
+            slug={slug} preview={!isSent} locked={!isSent}
+            openHref={`/view/${slug}?preview=1`} style={{ marginTop: 10 }}
+          />
+        </Accordion>
 
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-          {[
-            { label: 'Signed', value: totalContributors },
-            { label: 'Days left', value: daysLeft !== null ? (daysLeft > 0 ? daysLeft : '—') : '∞' },
-          ].map(s => (
-            <div key={s.label} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
-              <div style={{ fontWeight: 800, fontSize: '1.3rem', color: '#2A2A2A' }}>{s.value}</div>
-              <div style={{ fontSize: '.68rem', fontWeight: 700, color: '#B0A8BC', textTransform: 'uppercase', letterSpacing: '.05em', marginTop: 2 }}>{s.label}</div>
+        {/* Share with contributors — stays available after sending, for latecomers */}
+        <Accordion
+          icon={<TintedIcon src="/Icons/people.png" size={26} color="#3A8FA0" />}
+          title="Share with contributors"
+          subtitle={`Share this link with the group so they can add their messages, photos and jokes to ${recipientName}'s card.`}
+          open={shareOpen} onToggle={() => setShareOpen(v => !v)} tint="#EAF4FB"
+        >
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ flex: 1, minWidth: 0, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 10, padding: '10px 12px' }}>
+              {origin}/card/{slug}
             </div>
-          ))}
-        </div>
-
-        {/* Share link — stays available after sending, for latecomers */}
-        {(
-          <div style={{ background: '#EAF4FB', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-            <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 6 }}>Share with contributors</div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <div style={{ flex: 1, fontSize: '.78rem', color: '#3A8FA0', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 8, padding: '8px 10px' }}>
-                {origin}/card/{slug}
-              </div>
-              <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
+            <button onClick={copyShareLink} style={{ background: '#3A8FA0', border: 'none', borderRadius: 10, padding: '10px 16px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
+              {copied ? 'Copied' : 'Copy'}
+            </button>
           </div>
-        )}
+          <button
+            onClick={() => shareText(`Add your message to ${recipientName}'s card`, copyShareLink, `${origin}/card/${slug}`)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#2E7E90', border: 'none', borderRadius: 10, padding: '11px', color: '#fff', fontWeight: 800, fontSize: '.88rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+          >
+            <UiIcon name="share" size={17} />Share link
+          </button>
+        </Accordion>
+
+        {/* Contributors — who's signed, with edit / remove, and adding one on someone's behalf */}
+        <Accordion
+          icon={<TintedIcon src="/Icons/people.png" size={26} color="#5A5566" />}
+          title={`Contributors (${totalContributors})`}
+          subtitle="Manage, edit or remove contributor messages."
+          open={contribOpen} onToggle={() => setContribOpen(v => !v)} tint="#F7F5FB"
+        >
+          {contributions.length === 0 ? (
+            <div style={{ background: '#fff', borderRadius: 12, padding: '16px', textAlign: 'center', color: '#B0A8BC', fontWeight: 700, fontSize: '.85rem', marginBottom: 8 }}>
+              No one has signed yet. Share the link to get started.
+            </div>
+          ) : (
+            <div style={{ background: '#fff', borderRadius: 12, overflow: 'visible', marginBottom: 8 }}>
+              {contributions.map((c, i) => {
+                const isEditing = editingContribId === c.id;
+                const isBusy = contribBusyId === c.id;
+                return (
+                  <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: isEditing ? 'flex-start' : 'center', padding: '10px 12px', borderTop: i === 0 ? 'none' : '1px solid #F0ECF5', position: 'relative' }}>
+                    {c.photo_url ? (
+                      <img src={c.photo_url} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
+                        {c.contributor_name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: '.85rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
+                      {isEditing ? (
+                        <div style={{ marginTop: 6 }}>
+                          <textarea
+                            value={editingContribText}
+                            onChange={e => setEditingContribText(e.target.value)}
+                            rows={3}
+                            autoFocus
+                            style={{ width: '100%', border: '2px solid #3A8FA0', borderRadius: 8, padding: '8px 10px', fontFamily: "'Nunito',sans-serif", fontSize: '.82rem', color: '#2A2A2A', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+                          />
+                          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                            <button onClick={saveEditContrib} disabled={isBusy}
+                              style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '6px 12px', color: '#fff', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                              {isBusy ? 'Saving…' : 'Save'}
+                            </button>
+                            <button onClick={() => setEditingContribId(null)} disabled={isBusy}
+                              style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#7A7585', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {c.message ?? (c.photo_url ? 'Photo' : '')}
+                        </div>
+                      )}
+                    </div>
+                    {!isEditing && (
+                      <>
+                        <div style={{ fontSize: '.7rem', color: '#B0A8BC', fontWeight: 700, flexShrink: 0 }}>{timeAgo(c.created_at)}</div>
+                        <button
+                          onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)} disabled={isBusy}
+                          aria-label={`Options for ${c.contributor_name}'s message`}
+                          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: '#7A7585', flexShrink: 0 }}
+                        >
+                          {isBusy ? '…' : <UiIcon name="more" size={18} />}
+                        </button>
+                        {menuOpenId === c.id && (
+                          <>
+                            <div onClick={() => setMenuOpenId(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                            <div style={{ position: 'absolute', right: 10, top: '100%', marginTop: -6, zIndex: 41, background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 10, boxShadow: '0 8px 24px rgba(60,50,100,.15)', overflow: 'hidden', minWidth: 130 }}>
+                              <button onClick={() => { setMenuOpenId(null); startEditContrib(c); }}
+                                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '10px 14px', fontWeight: 700, fontSize: '.82rem', color: '#2A2A2A', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                                Edit message
+                              </button>
+                              <button onClick={() => { setMenuOpenId(null); deleteContrib(c.id); }}
+                                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', borderTop: '1px solid #F0ECF5', padding: '10px 14px', fontWeight: 700, fontSize: '.82rem', color: '#E8724A', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                                Remove
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <a href={`/card/${slug}`} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 10, padding: '9px', color: '#3A8FA0', fontWeight: 800, fontSize: '.8rem', textDecoration: 'none' }}>
+            <UiIcon name="plus" size={15} />Add a message manually
+          </a>
+        </Accordion>
 
         {/* Send a reminder — stays available after sending, for latecomers. Framed as coming from TYC, not the
             organiser, so re-sharing it doesn't feel like the organiser nagging their own
@@ -543,10 +708,14 @@ ${origin}/card/${slug}
 — sent via thankyoucards.au 💌`;
           const updateMsg = updateMsgEdit ?? defaultUpdateMsg;
           return (
-            <div style={{ background: '#FFF4EC', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>Send a reminder</div>
-              <div style={{ fontSize: '.74rem', color: '#9A7A6A', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
-                A friendly nudge from TYC, not from you — edit it if you like, then share it back into the group.
+            <Accordion
+              icon={<UiIcon name="bell" size={22} />}
+              title="Send a reminder"
+              subtitle="A friendly nudge from TYC, not from you."
+              open={reminderOpen} onToggle={() => setReminderOpen(v => !v)} tint="#FFF4EC"
+            >
+              <div style={{ fontSize: '.76rem', color: '#9A7A6A', fontWeight: 600, marginBottom: 8, lineHeight: 1.4 }}>
+                Edit it if you like, then share it back into the group.
               </div>
               <textarea
                 value={updateMsg}
@@ -561,9 +730,15 @@ ${origin}/card/${slug}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={() => { navigator.clipboard.writeText(updateMsg); setCopiedUpdate(true); setTimeout(() => setCopiedUpdate(false), 2000); }}
-                  style={{ flex: 1, background: '#E8724A', border: 'none', borderRadius: 10, padding: '10px 0', color: '#fff', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                  style={{ flex: 1, background: '#fff', border: '2px solid #E8724A', borderRadius: 10, padding: '9px 0', color: '#E8724A', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
                 >
-                  {copiedUpdate ? '✓ Copied!' : 'Copy'}
+                  {copiedUpdate ? 'Copied' : 'Copy'}
+                </button>
+                <button
+                  onClick={() => shareText(updateMsg, () => { navigator.clipboard.writeText(updateMsg); setCopiedUpdate(true); setTimeout(() => setCopiedUpdate(false), 2000); })}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#E8724A', border: 'none', borderRadius: 10, padding: '10px 0', color: '#fff', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                >
+                  <UiIcon name="share" size={16} />Share
                 </button>
                 {updateMsgEdit !== null && (
                   <button onClick={() => setUpdateMsgEdit(null)}
@@ -572,68 +747,20 @@ ${origin}/card/${slug}
                   </button>
                 )}
               </div>
-            </div>
+            </Accordion>
           );
         })()}
 
-        {/* Card preview */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase' }}>Card preview</div>
-          </div>
-          <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(60,50,100,.14)' }}>
-            {!isSent && <PreviewWatermark />}
-            {campaign.card_style === 'casual' ? (
-              <CasualView
-                campaign={campaign}
-                contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
-                preview
-              />
-            ) : campaign.card_style === 'corporate' ? (
-              <CorporateView
-                campaign={campaign}
-                contributions={contributions.map(c => ({ contributor_name: c.contributor_name, message: c.message, photo_url: c.photo_url, photo_label: c.photo_label }))}
-                preview
-                logoScale={campaign.card_logo_scale ?? 1}
-                logoPosition={campaign.card_logo_position ?? 'left'}
-              />
-            ) : (
-              <CardScrollView
-                theme={theme}
-                imgIdx={0}
-                customImgUrl={campaign.card_image_url ?? undefined}
-                recipientName={recipientName}
-                fromText={campaign.occasion ?? undefined}
-                message={campaign.card_message ?? ''}
-                messages={messages}
-                landscapeCover
-                showCoverText={campaign.card_text_on_image ?? true}
-                alwaysShowCoverMessage
-              />
-            )}
-          </div>
-          <a
-            href={`/view/${slug}?preview=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'block', textAlign: 'center', marginTop: 10,
-              background: '#fff', border: '2px solid #E8E2F0', borderRadius: 10,
-              padding: '10px', fontWeight: 800, fontSize: '.85rem',
-              color: '#3A8FA0', textDecoration: 'none',
-            }}
-          >
-            Open full preview as recipient ↗
-          </a>
-          <KeepsakeButtons
-            slug={slug} preview={!isSent} style={{ padding: '10px 0 0' }}
-          />
-        </div>
-
+        {/* Edit card — cover, messages, photo, colours, logo and brand template, collapsed */}
+        <Accordion
+          icon={<TintedIcon src="/Icons/written.png" size={24} color="#5A5566" />}
+          title="Edit card"
+          subtitle="Cover, message, photo, logo and settings."
+          open={editOpen} onToggle={() => setEditOpen(v => !v)} tint="#F7F5FB"
+        >
         {/* Edit card details */}
         <div style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
-          <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A', marginBottom: 4 }}>Edit card</div>
-          <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>Changes are reflected in the preview above as soon as you save.</div>
+          <div style={{ fontSize: '.74rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 14 }}>Changes show in the card preview as soon as you save.</div>
 
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: '.68rem', fontWeight: 800, color: '#7A7585', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 5 }}>Cover message</label>
@@ -848,85 +975,14 @@ ${origin}/card/${slug}
           </div>
         )}
 
-        {/* Contributor list */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: '.72rem', fontWeight: 800, color: '#7A7585', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 10 }}>
-            Contributors ({totalContributors})
-          </div>
-          {contributions.length === 0 ? (
-            <div style={{ background: '#F7F5FB', borderRadius: 12, padding: '20px', textAlign: 'center', color: '#B0A8BC', fontWeight: 700, fontSize: '.88rem' }}>
-              No one has signed yet — share the link above!
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {contributions.map(c => {
-                const isEditing = editingContribId === c.id;
-                const isBusy = contribBusyId === c.id;
-                return (
-                  <div key={c.id} style={{ background: '#fff', border: '2px solid #E8E2F0', borderRadius: 12, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#3A8FA0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.85rem', color: '#fff', flexShrink: 0 }}>
-                      {c.contributor_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontWeight: 800, fontSize: '.88rem', color: '#2A2A2A' }}>{c.contributor_name}</div>
-                      {isEditing ? (
-                        <div style={{ marginTop: 6 }}>
-                          <textarea
-                            value={editingContribText}
-                            onChange={e => setEditingContribText(e.target.value)}
-                            rows={3}
-                            autoFocus
-                            style={{ width: '100%', border: '2px solid #3A8FA0', borderRadius: 8, padding: '8px 10px', fontFamily: "'Nunito',sans-serif", fontSize: '.82rem', color: '#2A2A2A', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
-                          />
-                          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                            <button onClick={saveEditContrib} disabled={isBusy}
-                              style={{ background: '#3A8FA0', border: 'none', borderRadius: 8, padding: '6px 12px', color: '#fff', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                              {isBusy ? 'Saving…' : 'Save'}
-                            </button>
-                            <button onClick={() => setEditingContribId(null)} disabled={isBusy}
-                              style={{ background: 'none', border: '2px solid #E8E2F0', borderRadius: 8, padding: '6px 12px', color: '#7A7585', fontWeight: 800, fontSize: '.74rem', cursor: isBusy ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2, lineHeight: 1.5, wordBreak: 'break-word' }}>&quot;{c.message}&quot;</div>}
-                          {c.photo_url && !c.message && <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 2 }}>Photo</div>}
-                        </>
-                      )}
-                    </div>
-                    {c.photo_url && (
-                      <img src={c.photo_url} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                    )}
-                    {!isEditing && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
-                        <button onClick={() => startEditContrib(c)} disabled={isBusy} title="Edit message"
-                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '0 10px', height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#7A7585', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          Edit
-                        </button>
-                        <button onClick={() => deleteContrib(c.id)} disabled={isBusy} title="Remove"
-                          style={{ background: 'none', border: '1.5px solid #E8E2F0', borderRadius: 8, padding: '0 10px', height: 28, cursor: isBusy ? 'default' : 'pointer', color: '#E8724A', fontSize: '.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {isBusy ? '…' : 'Delete'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        </Accordion>
 
         {/* Send card section — only shown before sending; sent state is at top */}
         {!isSent && (
           <div style={{ background: 'linear-gradient(135deg,#FDF0E8,#FAE4D4)', borderRadius: 14, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Party Popper" size={28} />Happy with the card?</div>
-            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 6, lineHeight: 1.5 }}>
-              Once everyone has signed, pay $15 to unlock the recipient link and send the card to {recipientName}.
-            </div>
-            <div style={{ fontSize: '.75rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 16 }}>
-              Contributors can still sign after you pay.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Party Popper" size={28} />Ready to send?</div>
+            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
+              Pay $15 to send the card to {recipientName}. That also unlocks printing and saving it.
             </div>
             <button
               onClick={handlePay}
@@ -935,6 +991,9 @@ ${origin}/card/${slug}
             >
               {paying ? 'Redirecting…' : <>Send the card for $15<TintedIcon src="/Icons/Send.png" size={20} color="#fff" /></>}
             </button>
+            <div style={{ fontSize: '.75rem', color: '#C07A5A', fontWeight: 600, marginTop: 10, textAlign: 'center' }}>
+              People can still add messages after it&apos;s sent.
+            </div>
           </div>
         )}
 
@@ -953,6 +1012,11 @@ ${origin}/card/${slug}
             </button>
           </div>
         </div>
+        {campaign.organiser_email && (
+          <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
+            These links were also emailed to {campaign.organiser_email}.
+          </div>
+        )}
 
       </div>
     </div>

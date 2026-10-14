@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { withRenderedPage, cleanSlug } from '@/lib/renderPage';
+import { withRenderedPage, cleanSlug, exportAllowed } from '@/lib/renderPage';
 import { siteOrigin } from '@/lib/renderBrowser';
 import { SHEET_W } from '@/lib/printLayout';
 
@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams;
   const slug = cleanSlug(q.get('slug'));
   if (!slug) return Response.json({ error: 'Missing card' }, { status: 400 });
+  if (!(await exportAllowed(slug))) {
+    return Response.json({ error: 'This unlocks when the card is sent' }, { status: 403 });
+  }
 
   const mode = q.get('mode') === 'single' ? 'single' : 'double';
   const flip = q.get('flip') === '1' ? '1' : '0';

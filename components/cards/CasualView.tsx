@@ -182,11 +182,14 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
   );
 }
 
-export function CasualView({ campaign, contributions, preview, noHeader, messageAreaName, messageAreaCoverMessage, messageAreaOccasion }: { campaign: Campaign; contributions: Contribution[]; preview?: boolean; noHeader?: boolean; messageAreaName?: string; messageAreaCoverMessage?: string; messageAreaOccasion?: string }) {
+export function CasualView({ campaign, contributions, allContributions, preview, noHeader, messageAreaName, messageAreaCoverMessage, messageAreaOccasion }: { campaign: Campaign; contributions: Contribution[]; allContributions?: Contribution[]; preview?: boolean; noHeader?: boolean; messageAreaName?: string; messageAreaCoverMessage?: string; messageAreaOccasion?: string }) {
   const palette        = CASUAL_PALETTES.find(p => p.id === (campaign.card_palette ?? 'sky')) ?? CASUAL_PALETTES[0];
   const recipientName  = campaign.recipient_name ? campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1) : '';
-  const visibleAvatars = contributions.slice(0, MAX_AVATARS);
-  const overflowCount  = Math.max(0, contributions.length - MAX_AVATARS);
+  // `allContributions`: everyone who signed, when only some messages are shown (the dashboard's
+  // short preview) — the count and avatars still reflect the whole card.
+  const everyone       = allContributions ?? contributions;
+  const visibleAvatars = everyone.slice(0, MAX_AVATARS);
+  const overflowCount  = Math.max(0, everyone.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
   const showCoverText  = campaign.card_text_on_image ?? true;
 
@@ -279,12 +282,12 @@ export function CasualView({ campaign, contributions, preview, noHeader, message
       })()}
 
       {/* ── Contributor bar ── */}
-      {contributions.length > 0 && (
+      {everyone.length > 0 && (
         <div style={{ background: '#fff', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <TintedIcon src="/Icons/people.png" size={20} color="#2A2A2A" />
           <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#2A2A2A' }}>
-            <strong style={{ color: palette.accent }}>{contributions.length}</strong>{' '}
-            {contributions.length === 1 ? 'person' : 'people'} contributed
+            <strong style={{ color: palette.accent }}>{everyone.length}</strong>{' '}
+            {everyone.length === 1 ? 'person' : 'people'} contributed
           </span>
           <div style={{ marginLeft: 'auto', display: 'flex' }}>
             {visibleAvatars.map((c, i) => (

@@ -8,7 +8,6 @@ import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
-import { PreviewWatermark } from '@/components/ui/PreviewWatermark';
 
 interface Campaign {
   id: string;
@@ -29,6 +28,7 @@ interface Campaign {
   funded_amount: number;
   target_amount: number | null;
   status: string;
+  deadline?: string | null;
 }
 
 interface Contribution {
@@ -107,15 +107,16 @@ export function ViewContent() {
     </div>
   ) : null;
 
-  const watermark = campaign.status !== 'sent' ? <PreviewWatermark /> : null;
+  // An unpaid group card (only reachable via the organiser's ?preview=1): exports stay locked.
+  const exportsLocked = campaign.status !== 'sent' && !!campaign.deadline;
 
   if (campaign.card_style === 'casual') {
     return (
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div data-card-capture style={{ position: 'relative' }}>{watermark}<CasualView campaign={campaign} contributions={contributions} /></div>
-          <KeepsakeButtons slug={slug} preview={isPreview} />
+          <div data-card-capture style={{ position: 'relative' }}><CasualView campaign={campaign} contributions={contributions} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} locked={exportsLocked} />
         </div>
       </>
     );
@@ -126,8 +127,8 @@ export function ViewContent() {
       <>
         {previewBar}
         <div style={previewBar ? { paddingTop: 44 } : undefined}>
-          <div data-card-capture style={{ position: 'relative' }}>{watermark}<CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
-          <KeepsakeButtons slug={slug} preview={isPreview} />
+          <div data-card-capture style={{ position: 'relative' }}><CorporateView campaign={campaign} contributions={contributions} logoScale={campaign.card_logo_scale ?? 1} logoPosition={campaign.card_logo_position ?? 'left'} /></div>
+          <KeepsakeButtons slug={slug} preview={isPreview} locked={exportsLocked} />
         </div>
       </>
     );
@@ -151,7 +152,6 @@ export function ViewContent() {
 
       {/* Card — straight in, no header */}
       <div data-card-capture style={{ position: 'relative', maxWidth: 480, margin: '0 auto', padding: '16px 16px 0' }}>
-        {watermark}
         <CardScrollView
           theme={theme}
           customImgUrl={campaign.card_image_url ?? undefined}
@@ -179,7 +179,7 @@ export function ViewContent() {
       </div>
 
       <div style={{ paddingTop: 14 }}>
-        <KeepsakeButtons slug={slug} preview={isPreview} />
+        <KeepsakeButtons slug={slug} preview={isPreview} locked={exportsLocked} />
       </div>
 
       {/* Footer */}
