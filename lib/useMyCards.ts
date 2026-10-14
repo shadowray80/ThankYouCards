@@ -9,6 +9,7 @@ export interface MyCard {
   recipient_name: string;
   card_occasion: string | null;
   status: string;
+  deadline: string | null;
   created_at: string;
 }
 

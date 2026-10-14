@@ -66,8 +66,12 @@ function CardSelector({ cards, currentSlug, title, subtitle }: {
     `${c.recipient_name}${c.card_occasion ? ` · ${c.card_occasion}` : ''} · ${new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
   const choices = cards ?? [];
   const canSwitch = choices.some(c => c.slug !== currentSlug);
-  const current = choices.filter(c => c.status !== 'sent');
-  const previous = choices.filter(c => c.status === 'sent');
+  // Paying doesn't finish a card (messages keep coming in), so a card stays Current until its
+  // deadline has passed.
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local time
+  const isPrevious = (c: MyCard) => !!c.deadline && c.deadline < today;
+  const current = choices.filter(c => !isPrevious(c));
+  const previous = choices.filter(isPrevious);
   const isListed = choices.some(c => c.slug === currentSlug);
 
   return (

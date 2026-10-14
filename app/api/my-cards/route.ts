@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('campaigns')
-    .select('slug, organiser_token, recipient_name, card_occasion, status, created_at')
+    .select('slug, organiser_token, recipient_name, card_occasion, status, deadline, created_at')
     // Case-insensitive exact match: escape LIKE wildcards so an email can't act as a pattern.
     .ilike('organiser_email', email.replace(/[\\%_]/g, c => '\\' + c))
     .not('deadline', 'is', null)
