@@ -13,6 +13,7 @@ import { LineIcon } from '@/components/ui/LineIcon';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { Accordion, UiIcon, timeAgo } from '@/components/dashboard/DashboardParts';
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
+import { CardPicker } from '@/components/cards/CardPicker';
 import { Nav } from '@/components/ui/Nav';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -258,6 +259,16 @@ function ManageContent() {
   };
 
   // Same live-preview-then-save-on-release pattern as the logo scale slider.
+  const saveCoverText = async (show: boolean) => {
+    setEditShowCoverText(show);
+    setCampaign(prev => prev ? { ...prev, card_text_on_image: show } : prev);
+    await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_cover_text', card_text_on_image: show }),
+    });
+  };
+
   const saveDeadline = async (deadline: string) => {
     const previous = campaign?.deadline ?? null;
     setCampaign(prev => prev ? { ...prev, deadline } : prev);
@@ -866,16 +877,22 @@ ${origin}/card/${slug}
                 {editImageUploading ? 'Uploading…' : '+ Upload cover photo'}
               </button>
             )}
+            {campaign.card_style !== 'corporate' && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginBottom: 6 }}>Or choose one of our designs:</div>
+                <CardPicker browseHeader selectedUrl={editImageUrl ?? ''} onSelect={url => setEditImageUrl(url)} />
+              </div>
+            )}
           </div>
 
           {campaign.card_style !== 'corporate' && (
             <div
-              onClick={() => setEditShowCoverText(v => !v)}
+              onClick={() => saveCoverText(!editShowCoverText)}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, cursor: 'pointer' }}
             >
               <div>
                 <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A' }}>Show name &amp; text on photo</div>
-                <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginTop: 1 }}>Turn off if the photo is busy — name &amp; text move below it instead</div>
+                <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginTop: 1 }}>Turn off if the photo is busy. The name and text move below it instead.</div>
               </div>
               <div style={{ width: 38, height: 22, borderRadius: 14, position: 'relative', flexShrink: 0, background: editShowCoverText ? '#4CAF82' : '#D1C8DC', transition: 'background .2s' }}>
                 <div style={{ position: 'absolute', top: 3, left: editShowCoverText ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)', transition: 'left .2s' }} />

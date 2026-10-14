@@ -45,7 +45,7 @@ export async function PATCH(
   const { token, action } = body;
 
   if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
-  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
+  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline', 'update_cover_text'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
@@ -69,6 +69,16 @@ export async function PATCH(
     const { error: updateError } = await supabaseAdmin.from('campaigns').update({ deadline }).eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true, deadline });
+  }
+
+  // "Show name & text on photo" — saved as soon as it's switched.
+  if (action === 'update_cover_text') {
+    const { error: updateError } = await supabaseAdmin
+      .from('campaigns')
+      .update({ card_text_on_image: body.card_text_on_image !== false })
+      .eq('id', campaign.id);
+    if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+    return Response.json({ ok: true });
   }
 
   if (action === 'update_card') {
