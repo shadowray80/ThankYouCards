@@ -484,7 +484,7 @@ function ManageContent() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.7rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,.92)' }}>
               Group card dashboard
-              {isSent && <span style={{ background: 'rgba(74,222,128,.35)', borderRadius: 10, padding: '2px 8px', letterSpacing: '.06em' }}>Sent</span>}
+              {isSent && <span style={{ background: 'rgba(74,222,128,.35)', borderRadius: 10, padding: '2px 8px', letterSpacing: '.06em' }}>Unlocked</span>}
             </div>
             <button onClick={() => loadData(true)} disabled={refreshing}
               style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', padding: 0, color: '#fff', fontWeight: 800, fontSize: '.78rem', cursor: refreshing ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}>
@@ -537,41 +537,6 @@ function ManageContent() {
       </div>
 
       <div style={{ maxWidth: 480, margin: '0 auto', padding: '12px 14px 40px' }}>
-
-        {/* Send section — top when sent, bottom when not */}
-        {isSent && (
-          <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Fireworks" size={26} />Ready to send!</div>
-            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
-              Share this link directly with {recipientName} — they&apos;ll see the full card with all the messages.
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-              <div style={{ flex: 1, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, wordBreak: 'break-all', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 8, padding: '8px 10px' }}>
-                {origin}/view/{slug}
-              </div>
-              <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontWeight: 800, fontSize: '.8rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
-                {copiedRecipient ? '✓ Copied!' : 'Copy'}
-              </button>
-            </div>
-            <a href={`/view/${slug}`} target="_blank"
-              style={{ display: 'block', textAlign: 'center', color: '#7C5CBF', fontWeight: 700, fontSize: '.82rem', textDecoration: 'none' }}>
-              Preview what {recipientName} will see →
-            </a>
-            <div style={{ marginTop: 14 }}>
-              <EmailCardForm
-                slug={slug}
-                token={token}
-                isSolo={false}
-                recipientName={recipientName}
-                fromName={(campaign.occasion ?? '').replace(/^From\s+/i, '')}
-                cardOccasion={campaign.card_occasion}
-                messageCount={totalContributors}
-                imageUrl={campaign.card_image_url}
-                defaultSenderEmail={campaign.organiser_email}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Card preview — the whole cover and a couple of messages; the footer expands to all of them */}
         <Accordion
@@ -627,11 +592,70 @@ function ManageContent() {
               )}
             </button>
           </div>
-          <KeepsakeButtons
-            slug={slug} preview={!isSent} locked={!isSent}
-            openHref={`/view/${slug}?preview=1`} style={{ marginTop: 10 }}
-          />
         </Accordion>
+
+        {/* Unlock the card — the business end. Before paying: preview + locked print/save + the $15
+            unlock. After paying (same block, same place): send it to the recipient, then keepsakes. */}
+        <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>
+              <LineIcon name={isSent ? 'Fireworks' : 'Party Popper'} size={26} />
+              {isSent ? `Send it to ${recipientName}` : 'Unlock the card'}
+            </div>
+            {isSent && <span style={{ background: '#E6F6EC', color: '#2F7A4C', borderRadius: 10, padding: '3px 10px', fontSize: '.72rem', fontWeight: 800 }}>Unlocked</span>}
+          </div>
+
+          {isSent ? (
+            <>
+              <div style={{ fontSize: '.8rem', color: '#7A7585', fontWeight: 600, marginBottom: 10, lineHeight: 1.5 }}>
+                Send {recipientName}{' '}this link. They&apos;ll see the full card with every message, including any that arrive later.
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ flex: 1, minWidth: 0, fontSize: '.78rem', color: '#7C5CBF', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: '#fff', border: '1.5px solid #D4C8EE', borderRadius: 10, padding: '10px 12px' }}>
+                  {origin}/view/{slug}
+                </div>
+                <button onClick={copyRecipientLink} style={{ background: '#7C5CBF', border: 'none', borderRadius: 10, padding: '10px 16px', color: '#fff', fontWeight: 800, fontSize: '.82rem', cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: "'Nunito',sans-serif" }}>
+                  {copiedRecipient ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <button
+                onClick={() => shareText(`A card for ${recipientName}`, copyRecipientLink, `${origin}/view/${slug}`)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#7C5CBF', border: 'none', borderRadius: 10, padding: '11px', color: '#fff', fontWeight: 800, fontSize: '.88rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif", marginBottom: 10 }}
+              >
+                <UiIcon name="share" size={17} />Share link
+              </button>
+              <EmailCardForm
+                slug={slug}
+                token={token}
+                isSolo={false}
+                recipientName={recipientName}
+                fromName={(campaign.occasion ?? '').replace(/^From\s+/i, '')}
+                cardOccasion={campaign.card_occasion}
+                messageCount={totalContributors}
+                imageUrl={campaign.card_image_url}
+                defaultSenderEmail={campaign.organiser_email}
+              />
+              <div style={{ borderTop: '1px solid #F0ECF5', margin: '14px 0 12px' }} />
+              <KeepsakeButtons slug={slug} openHref={`/view/${slug}?preview=1`} />
+            </>
+          ) : (
+            <>
+              <KeepsakeButtons slug={slug} preview locked hideLockNote openHref={`/view/${slug}?preview=1`} />
+              <button
+                onClick={handlePay}
+                disabled={paying}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, marginTop: 14, background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
+              >
+                {paying ? 'Redirecting…' : <><UiIcon name="lock" size={19} />Unlock the card · $15</>}
+              </button>
+              <div style={{ fontSize: '.78rem', color: '#7A7585', fontWeight: 600, marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
+                Unlocks sending it to {recipientName}, printing and saving.<br />
+                People can still add messages afterwards.
+              </div>
+            </>
+          )}
+        </div>
+
 
         {/* Share with contributors — stays available after sending, for latecomers */}
         <Accordion
@@ -1049,26 +1073,6 @@ ${origin}/card/${slug}
         )}
 
         </Accordion>
-
-        {/* Send card section — only shown before sending; sent state is at top */}
-        {!isSent && (
-          <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '18px 16px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 4 }}><LineIcon name="Party Popper" size={28} />Ready to send?</div>
-            <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, marginBottom: 14, lineHeight: 1.5 }}>
-              Pay $15 to send the card to {recipientName}. That also unlocks printing and saving it.
-            </div>
-            <button
-              onClick={handlePay}
-              disabled={paying}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: paying ? '#B0A8BC' : '#E8724A', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontWeight: 800, fontSize: '1rem', cursor: paying ? 'default' : 'pointer', fontFamily: "'Nunito',sans-serif" }}
-            >
-              {paying ? 'Redirecting…' : <>Send the card for $15<TintedIcon src="/Icons/Send.png" size={20} color="#fff" /></>}
-            </button>
-            <div style={{ fontSize: '.75rem', color: '#C07A5A', fontWeight: 600, marginTop: 10, textAlign: 'center' }}>
-              People can still add messages after it&apos;s sent.
-            </div>
-          </div>
-        )}
 
         {/* Organiser link — bookmark / return access */}
         <div style={{ background: '#fff', border: '1px solid #ECE8F1', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '14px 16px' }}>

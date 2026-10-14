@@ -24,11 +24,12 @@ const buttonStyle: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
 };
 
-export function KeepsakeButtons({ slug, preview, style, locked = false, openHref }: {
+export function KeepsakeButtons({ slug, preview, style, locked = false, hideLockNote = false, openHref }: {
   slug: string;
   preview?: boolean;
   style?: React.CSSProperties;
   locked?: boolean;
+  hideLockNote?: boolean; // when the surrounding block already explains the unlock
   openHref?: string;
 }) {
   const [state, setState] = useState<'idle' | 'preparing' | 'ready' | 'error'>('idle');
@@ -105,7 +106,7 @@ export function KeepsakeButtons({ slug, preview, style, locked = false, openHref
         {printButton}
         {saveButton}
       </div>
-      {locked && (
+      {locked && !hideLockNote && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 8, fontSize: '.74rem', fontWeight: 700, color: '#9A93A8', fontFamily: "'Nunito',sans-serif" }}>
           <UiIcon name="lock" size={13} />Unlocks when you send the card
         </div>

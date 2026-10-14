@@ -246,22 +246,24 @@ The "on its way" waiting screen shows when `status !== 'sent'` and `?preview=1` 
 
 **Group cards only.** Access requires the `organiser_token` in the URL (`?token=...`).
 
-Sections (top to bottom):
-1. Header with status badge + refresh button
-2. "Ready to send" section (shown after sending) — recipient link Copy button + ✉️ Email the card
-3. Email confirmation notice
-4. Stats (contributors, days left)
-5. Contributor share link (shown before sending)
-6. Card preview (live, updates on save)
-7. **Edit card** — card message, from text, cover photo
-8. **Header colour** (corporate only) — palette swatches + custom colour picker
-9. **Company logo** (corporate only) — upload/replace/remove
-10. Contributors list
-11. **Send the card — $15 →** button (shown before sending)
-12. Organiser link (bookmark/return access)
+Layout (top to bottom, redesigned 14 Oct — a dashboard people return to, before and after paying):
+1. Teal header — card selector (dropdown when logged in), Signed / Days left (tap to change the deadline)
+2. **Card preview** accordion — whole cover + card message, messages in a fixed window; footer expands all
+3. **Unlock the card** block — before paying: Open full preview + locked Print/Save + "Unlock the card · $15";
+   after paying (Stripe returns here with ?paid=1): "Send it to <name>" (link, Copy, Share, Email the card) +
+   Open full preview / Print / Save. Paying unlocks; nothing is sent to the recipient automatically.
+4. Share with contributors (Copy + native Share) — stays after paying (late messages allowed)
+5. Contributors (time ago, ⋮ edit/remove, Add a message manually)
+6. Send a reminder (Copy + Share)
+7. Edit card (cover/messages/photo + library designs, text-on-photo switch saves instantly, colours, logo,
+   brand template) — text fields + photo use Save changes
+8. Your organiser link (+ one line: links were emailed)
+All sections soft white; colour only on the header and main buttons.
 
 PATCH actions available:
-- `update_card` — saves card_message, occasion, card_image_url
+- `update_card` — saves card_message, card_note, occasion, card_image_url, card_text_on_image
+- `update_cover_text` — saves card_text_on_image on its own (the instant switch)
+- `update_deadline` — new deadline (must stay set, not in the past)
 - `update_palette` — saves card_palette
 - `update_logo` — saves card_logo_url
 - `mark_sent` — flips status to 'sent'
