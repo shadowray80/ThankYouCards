@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Theme, CardMessage, THEMES } from '@/lib/themes';
+import { coverTextCss, DEFAULT_COVER_TEXT, type CoverTextStyle } from '@/lib/coverText';
 
 interface CardScrollViewProps {
   theme?: Theme;
@@ -20,6 +21,8 @@ interface CardScrollViewProps {
   messageAreaName?: string; // overrides recipientName just for the recap panel below the cover
   alwaysShowCoverMessage?: boolean; // always recap the cover message below, even when it's also shown on the photo
   messageAreaCoverMessage?: string; // overrides message just for the recap panel below the cover
+  coverText?: CoverTextStyle; // font / colour / outline of the name + cover message on the photo
+  signOff?: string;           // solo card: "Love from", "Lots of love"… before the sender's name
 }
 
 const AVATAR_COLORS = ['#3A8FA0', '#E8724A', '#7C5CBF', '#5A9070', '#C9933A', '#D94E7A', '#4A7CBF', '#8F5A3A'];
@@ -32,6 +35,16 @@ function avatarColor(name: string): string {
 
 function initials(name: string): string {
   return name.replace(/\s*\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// A solo card's sign-off, like a paper card: "Love from" then the name in script.
+function SoloSignature({ signOff, name }: { signOff: string; name: string }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '.98rem', color: '#7A7585' }}>{signOff}</div>
+      <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: '1.9rem', color: '#2A2A2A', lineHeight: 1.15 }}>{name}</div>
+    </div>
+  );
 }
 
 function MessageBubble({ m, index }: { m: CardMessage; index: number }) {
@@ -77,7 +90,7 @@ function MessageBubble({ m, index }: { m: CardMessage; index: number }) {
   );
 }
 
-export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover, showCoverText = true, messageAreaName, alwaysShowCoverMessage = false, messageAreaCoverMessage }: CardScrollViewProps) {
+export function CardScrollView({ theme, imgIdx, recipientName, fromText, message, soloMessage, soloPhotoData, messages, giftAmount, onAddMessage, customImgUrl, landscapeCover, showCoverText = true, messageAreaName, alwaysShowCoverMessage = false, messageAreaCoverMessage, coverText = DEFAULT_COVER_TEXT, signOff = 'From' }: CardScrollViewProps) {
   const t = theme || THEMES[0];
   const imgUrl = customImgUrl || t.imgs[imgIdx ?? 0];
   const name = recipientName || null;
@@ -106,12 +119,9 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
           <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px' }}>
             <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
             <div style={{
-              fontFamily: 'var(--font-dancing), cursive',
-              fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-              lineHeight: 1.1,
               letterSpacing: '.01em',
-              color: '#fff',
-              textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
+              ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
+              lineHeight: 1.1,
             }}>
               {name}
             </div>
@@ -126,11 +136,8 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
           }}>
             {msg && (
               <div style={{
-                fontFamily: 'var(--font-dancing), cursive',
-                fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                color: '#fff',
+                ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
                 lineHeight: 1.2,
-                textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
               }}>
                 {msg}
               </div>
@@ -193,21 +200,19 @@ export function CardScrollView({ theme, imgIdx, recipientName, fromText, message
         soloPhotoData ? (
           <div style={{ background: '#fff' }}>
             <img src={soloPhotoData} alt="Handwritten message" style={{ width: '100%', height: 'auto', display: 'block' }} />
-            {from && <div style={{ padding: '12px 22px 18px', fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>}
+            {from && <div style={{ padding: '12px 22px 18px' }}><SoloSignature signOff={signOff} name={from} /></div>}
           </div>
         ) : soloMessage ? (
           <div style={{ background: '#fff', padding: '22px 22px 24px' }}>
             <div style={{ fontFamily: "'Lora',serif", fontStyle: 'italic', fontSize: '1.08rem', lineHeight: 1.75, color: '#2A2A2A', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
               {soloMessage}
             </div>
-            {from && (
-              <div style={{ marginTop: 14, fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>
-            )}
+            {from && <div style={{ marginTop: 14 }}><SoloSignature signOff={signOff} name={from} /></div>}
           </div>
         ) : from ? (
           /* No written message — just the signature, if there is one */
           <div style={{ background: '#fff', padding: '18px 22px 22px' }}>
-            <div style={{ fontSize: '1rem', color: '#7A7585', fontWeight: 700 }}>From {from}</div>
+            <SoloSignature signOff={signOff} name={from} />
           </div>
         ) : null
       ) : (

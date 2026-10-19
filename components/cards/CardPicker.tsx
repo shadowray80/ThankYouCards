@@ -96,7 +96,7 @@ export function CardPicker({ selectedUrl, onSelect, browseHeader = false, header
       <div
         onClick={() => setExpanded(v => !v)}
         style={{
-          cursor: 'pointer', padding: browseHeader ? '14px 12px' : '14px 18px',
+          cursor: 'pointer', padding: browseHeader ? '14px 8px' : '14px 18px',
           display: 'flex', alignItems: 'center', justifyContent: browseHeader ? 'center' : 'space-between', gap: 8,
           borderBottom: expanded ? '1px solid #F0EDF5' : 'none',
         }}
@@ -110,7 +110,7 @@ export function CardPicker({ selectedUrl, onSelect, browseHeader = false, header
             transition: 'background .25s ease',
           }}>
             <span style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 800, fontSize: 'clamp(.78rem, 3.4vw, .95rem)', color: expanded ? '#B8532F' : '#2C7A4B', padding: '0 10px 0 14px', whiteSpace: 'nowrap', transition: 'color .25s ease' }}>
-              Browse designs
+              Designs
             </span>
             {toggleCircle}
           </div>

@@ -12,6 +12,9 @@ import { LineIcon } from '@/components/ui/LineIcon';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { Accordion, UiIcon } from '@/components/dashboard/DashboardParts';
 import { resizeImage } from '@/lib/resizeImage';
+import { CoverTextPicker } from '@/components/cards/CoverTextPicker';
+import { coverTextFrom, type CoverTextStyle } from '@/lib/coverText';
+import { SignOffInput } from '@/components/ui/SignOffInput';
 
 export interface SoloCampaign extends LiveCampaign {
   feature_ok: boolean | null;
@@ -32,7 +35,7 @@ const field: React.CSSProperties = { width: '100%', border: '2px solid #E8E2F0',
 // The organiser page for a solo card (one made while logged in, opened from My cards). Same look
 // as the group dashboard, minus contributors, deadline and payment: the finished card, sending
 // it, print / save, the editor, and the "feature this card" tick.
-export function SoloDashboard({ campaign, contribution, slug, token, selector, onCampaignChange, onContributionChange }: {
+export function SoloDashboard({ campaign, contribution, slug, token, selector, onCampaignChange, onContributionChange, onCoverStyleChange }: {
   campaign: SoloCampaign;
   contribution: SoloContribution | null;
   slug: string;
@@ -40,6 +43,7 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
   selector: React.ReactNode;
   onCampaignChange: (next: SoloCampaign) => void;
   onContributionChange: (next: SoloContribution) => void;
+  onCoverStyleChange: (style: CoverTextStyle) => void; // saves straight away
 }) {
   const router = useRouter();
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://thankyoucards.au';
@@ -55,6 +59,7 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
   const [editCover, setEditCover]     = useState(campaign.card_message ?? '');
   const [editMessage, setEditMessage] = useState(contribution?.message ?? '');
   const [editFrom, setEditFrom]       = useState(fromName);
+  const [editSignOff, setEditSignOff] = useState(campaign.card_sign_off ?? '');
   const [editImageUrl, setEditImageUrl] = useState(campaign.card_image_url);
   const [uploading, setUploading]     = useState(false);
   const [saving, setSaving]           = useState(false);
@@ -118,6 +123,7 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
         action: 'update_card', recipient_name: editTo.trim(), card_message: editCover.trim() || null,
         card_note: campaign.card_note, occasion: campaign.occasion, card_image_url: editImageUrl,
         card_text_on_image: campaign.card_text_on_image ?? true,
+        card_sign_off: editSignOff.trim(),
       });
       let messageOk = true;
       if (contribution) {
@@ -130,7 +136,7 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
         messageOk = res.ok;
         if (res.ok) onContributionChange({ ...contribution, message: contribution.photo_url ? contribution.message : (editMessage.trim() || null), contributor_name: editFrom.trim() || contribution.contributor_name });
       }
-      if (cardRes.ok) onCampaignChange({ ...campaign, recipient_name: editTo.trim(), card_message: editCover.trim() || null, card_image_url: editImageUrl });
+      if (cardRes.ok) onCampaignChange({ ...campaign, recipient_name: editTo.trim(), card_message: editCover.trim() || null, card_image_url: editImageUrl, card_sign_off: editSignOff.trim() || null });
       if (cardRes.ok && messageOk) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
       else setSaveError('Some changes didn’t save. Please try again.');
     } finally {
@@ -168,7 +174,8 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
         </Accordion>
 
         {/* Send it, then keepsakes */}
-        <div style={{ background: '#EAF4FB', border: '1px solid #D3E6F2', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
+        {/* Peach, not blue: the recipient block must never be mistaken for the contributor one */}
+        <div style={{ background: '#FDF0E8', border: '1px solid #F0D0B8', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A', marginBottom: 12 }}>
             <LineIcon name="Fireworks" size={26} />
             Send it to {recipientName}
@@ -195,7 +202,7 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
             fromName={fromName}
             imageUrl={campaign.card_image_url}
           />
-          <div style={{ borderTop: '1px solid #D3E6F2', margin: '14px 0 12px' }} />
+          <div style={{ borderTop: '1px solid #F0D0B8', margin: '14px 0 12px' }} />
           <KeepsakeButtons slug={slug} openHref={`/view/${slug}`} />
         </div>
 
@@ -231,9 +238,15 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
               )}
             </div>
 
-            <div style={{ marginBottom: 14 }}>
-              <label style={label}>From</label>
-              <input value={editFrom} onChange={e => setEditFrom(e.target.value)} placeholder="Your name" style={field} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={label}>Sign-off</label>
+                <SignOffInput value={editSignOff} onChange={setEditSignOff} align="left" style={{ ...field, fontWeight: 400 }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={label}>Name</label>
+                <input value={editFrom} onChange={e => setEditFrom(e.target.value)} placeholder="Your name" style={field} />
+              </div>
             </div>
 
             <div style={{ marginBottom: 14 }}>
@@ -262,6 +275,14 @@ export function SoloDashboard({ campaign, contribution, slug, token, selector, o
                 <div style={{ position: 'absolute', top: 3, left: showCoverText ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)', transition: 'left .2s' }} />
               </div>
             </div>
+
+            {showCoverText && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A' }}>Font &amp; colour</div>
+                <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginTop: 1 }}>For the name and message on the photo. Saves as you pick.</div>
+                <CoverTextPicker value={coverTextFrom(campaign)} onChange={onCoverStyleChange} />
+              </div>
+            )}
 
             {saveError && <div style={{ fontSize: '.78rem', color: '#E8724A', fontWeight: 700, marginBottom: 8 }}>{saveError}</div>}
             <button onClick={saveChanges} disabled={saving}

@@ -4,6 +4,7 @@ import React from 'react';
 import { CASUAL_PALETTES, CasualPalette } from '@/lib/palettes';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { CoverLogo } from '@/components/cards/CoverLogo';
+import { coverTextCss, coverTextFrom } from '@/lib/coverText';
 
 interface Campaign {
   slug: string;
@@ -14,6 +15,9 @@ interface Campaign {
   card_image_url: string | null;
   card_palette: string | null;
   card_text_on_image?: boolean | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
   card_logo_url?: string | null;
   card_logo_scale?: number | null;
 }
@@ -112,12 +116,12 @@ function MessageCard({ c, index, palette, wide }: { c: Contribution; index: numb
     ...(wide ? { columnSpan: 'all' } : {}),
   };
 
-  // Wide card — spans both columns, large featured quote
+  // Wide card — spans both columns: a long message, given room and a larger font
   if (wide) {
     return (
-      <div style={{ ...base, background: '#fff', padding: '20px 22px 22px', boxShadow: '0 4px 20px rgba(0,0,0,.09)' }}>
-        <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '6rem', lineHeight: 0.65, color: palette.accent, opacity: 0.9, marginBottom: 10, marginLeft: -4, userSelect: 'none' }}>&ldquo;</div>
-        <p style={{ fontSize: '1rem', color: '#1A1A1A', lineHeight: 1.7, fontWeight: 700, margin: '0 0 16px' }}>{msg}</p>
+      <div style={{ ...base, background: '#fff', padding: '18px 22px 20px', boxShadow: '0 4px 20px rgba(0,0,0,.09)' }}>
+        <div style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: '3.6rem', lineHeight: 0.6, color: palette.accent, opacity: 0.9, marginBottom: 6, marginLeft: -3, userSelect: 'none' }}>&ldquo;</div>
+        <p style={{ fontSize: '1.08rem', color: '#1A1A1A', lineHeight: 1.65, fontWeight: 600, margin: '0 0 14px' }}>{msg}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
@@ -192,8 +196,12 @@ export function CasualView({ campaign, contributions, allContributions, preview,
   const overflowCount  = Math.max(0, everyone.length - MAX_AVATARS);
   const hasImage       = !!campaign.card_image_url;
   const showCoverText  = campaign.card_text_on_image ?? true;
+  const coverText      = coverTextFrom(campaign);
 
-  const hasEnoughForWide = contributions.length > 3;
+  // Only long messages get the wide tile (a short one would sit in a big empty box), and never
+  // two close together, so the grid keeps its two-column rhythm.
+  const WIDE_MIN_CHARS = 120;
+  let lastWide = -Infinity;
   let textIdx  = 0;
   let photoIdx = 0;
   const tiles = contributions.flatMap((c, i) => {
@@ -201,7 +209,8 @@ export function CasualView({ campaign, contributions, allContributions, preview,
     if (c.photo_url) result.push(<PhotoCard key={`${i}-photo`} c={c} index={photoIdx++} palette={palette} />);
     if (c.message) {
       const idx  = textIdx++;
-      const wide = hasEnoughForWide && (idx === 0 || idx % 5 === 4);
+      const wide = c.message.length >= WIDE_MIN_CHARS && idx - lastWide >= 3;
+      if (wide) lastWide = idx;
       result.push(<MessageCard key={`${i}-msg`} c={c} index={idx} palette={palette} wide={wide} />);
     }
     return result;
@@ -230,11 +239,11 @@ export function CasualView({ campaign, contributions, allContributions, preview,
           {showCoverText && recipientName && (
             <>
               <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>TO</div>
-              <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', color: '#fff', lineHeight: 1, textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', marginBottom: 8 }}>
+              <div style={{ ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1, marginBottom: 8 }}>
                 {recipientName}
               </div>
               {campaign.card_message && (
-                <div style={{ fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', color: 'rgba(255,255,255,.92)', lineHeight: 1.3, textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', marginBottom: 6 }}>
+                <div style={{ ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3, marginBottom: 6 }}>
                   {campaign.card_message}
                 </div>
               )}

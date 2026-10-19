@@ -14,6 +14,8 @@ import { CardPicker } from '@/components/cards/CardPicker';
 import { CoverLogo } from '@/components/cards/CoverLogo';
 import { LineIcon } from '@/components/ui/LineIcon';
 import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
+import { CoverTextButton, CoverTextPicker } from '@/components/cards/CoverTextPicker';
+import { coverTextCss, coverTextFields, DEFAULT_COVER_TEXT, type CoverTextStyle } from '@/lib/coverText';
 import { OCCASIONS } from '@/lib/occasions';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
@@ -71,6 +73,9 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const [showPreview, setShowPreview]       = useState(false);
   // Image only: hides all text on the cover (editor, preview and the sent card) — same as solo.
   const [imageOnly, setImageOnly]           = useState(false);
+  // "Aa": the cover text's font, colour and outline (Classic and Casual).
+  const [coverText, setCoverText]           = useState<CoverTextStyle>(DEFAULT_COVER_TEXT);
+  const [coverTextOpen, setCoverTextOpen]   = useState(false);
   // Default is 'casual' (shown to users as "Classic") since the original 'classic' style
   // is currently hidden from the picker — see the Card style section below.
   const [cardStyle, setCardStyle]           = useState<'classic' | 'casual' | 'corporate'>('casual');
@@ -179,6 +184,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
           card_logo_position: logoPosition,
           card_accent: accentColor,
           card_text_on_image: !imageOnly && (recip.trim() !== '' || cardMsg.trim() !== ''),
+          ...(cardStyle !== 'corporate' ? coverTextFields(coverText) : {}),
         }),
       });
       const json = await res.json();
@@ -215,6 +221,7 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                   card_image_url: imgUrl,
                   card_palette: cardPalette,
                   card_text_on_image: !imageOnly,
+                  card_font: coverText.font, card_text_color: coverText.color, card_text_stroke: coverText.stroke,
                   card_logo_url: logoUrl,
                   card_logo_scale: logoScale,
                 }}
@@ -245,6 +252,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 messageAreaCoverMessage={effectiveCardMsg}
                 messages={[]}
                 landscapeCover
+                showCoverText={!imageOnly}
+                coverText={coverText}
               />
             )}
           </div>
@@ -500,17 +509,17 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               <div style={{ position: 'absolute', inset: 0, zIndex: 3, display: imageOnly ? 'none' : 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 24px 28px' }}>
                 <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
-                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
+                  {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1, whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
                   <div ref={recipEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
                     onInput={recipEditable.onInput} onCompositionStart={recipEditable.onCompositionStart} onCompositionEnd={recipEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(3rem, 13vw, 4.5rem)', lineHeight: 1, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                    style={{ outline: 'none', cursor: 'text', textTransform: 'capitalize', ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1, caretColor: coverText.color, minWidth: 40 }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 6 }}>
-                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)' }}>Cover Message</div>}
+                  {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3 }}>Cover Message</div>}
                   <div ref={cardMsgEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
                     onInput={cardMsgEditable.onInput} onCompositionStart={cardMsgEditable.onCompositionStart} onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'var(--font-dancing), cursive', fontSize: 'clamp(1.4rem, 6vw, 2rem)', lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)', caretColor: '#fff', wordBreak: 'break-word' }}
+                    style={{ outline: 'none', cursor: 'text', ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3, caretColor: coverText.color, wordBreak: 'break-word' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
@@ -535,12 +544,16 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
             browseHeader
             headerLead={<ImageOnlyButton imageOnly={imageOnly} onToggle={() => setImageOnly(v => !v)} />}
             headerAction={
-              <PhotoButton
-                hasPhoto={!!customImgUrl} uploading={uploadingImg}
-                onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
-              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                {!imageOnly && <CoverTextButton open={coverTextOpen} onToggle={() => setCoverTextOpen(v => !v)} />}
+                <PhotoButton
+                  hasPhoto={!!customImgUrl} uploading={uploadingImg}
+                  onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
+                />
+              </div>
             }
             selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+          {coverTextOpen && !imageOnly && <CoverTextPicker value={coverText} onChange={setCoverText} />}
         </div>
 
         <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>

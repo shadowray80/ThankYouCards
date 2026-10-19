@@ -84,6 +84,8 @@ app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided ("Y
 app/manage/[slug]/page.tsx   Organiser dashboard (group cards; solo cards get SoloDashboard). Site top bar + card switcher dropdown
                              (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
 app/organiser/page.tsx       "Organiser view" (More menu): logged out → log-in form; logged in → newest card
+app/how-it-works/            How it works + About (More menu, home link). Embeds /manage/example in a phone
+                             frame: a read-only made-up card (lib/exampleCard.ts), never touches the DB
 ```
 
 ### Card renderers
@@ -161,6 +163,8 @@ Brand kits + email/password login      Corporate users save colours/logo. Log in
 | `card_text_on_image` | bool | false = "Image only" cover (name/message not drawn on the photo) |
 | `card_note` | text | Longer personal note (optional) |
 | `card_accent`, `card_logo_url`, `card_logo_scale`, `card_logo_position` | | Corporate styling |
+| `card_font`, `card_text_color`, `card_text_stroke` | text/text/bool | "Aa" cover text look (Classic + Casual). Null = white script, no outline. `lib/coverText.ts` |
+| `card_sign_off` | text | Solo sign-off before the name ("Love from"…). Null = "From". `lib/signOff.ts` |
 
 > ⚠️ Naming trap: the `occasion` column actually stores the **"From" text** shown on the card
 > (e.g. "the Under 12s"). What the card is *for* lives in `card_occasion`.
@@ -393,7 +397,14 @@ Cards are living things, not frozen at payment — keep designing that way.
 Plus: let **recipients / attendees order a printed copy** (print-on-demand) themselves — a big event could
 mean many paid prints. Ties in with the "post a printed card" idea (same mm layout + bleed).
 
-**Small leftovers**: printed solo inside to match the screen (centred italic message, "From Tim", no box);
+**Done 19 Oct**: "Aa" cover fonts/colours/outline (components/cards/CoverTextPicker.tsx; scripts/cover_text_style.sql run);
+solo print inside like a paper card (left blank; To, hero message, message with no box, sign-off + name in
+script, message size fitted); sign-off chips (components/ui/SignOffInput.tsx); Casual wide tiles only for
+messages of 120+ chars; peach "Send it to" block; contributor prompts show a hint, never type into the message;
+print layout loads every font before measuring (was a cause of overlapping tiles).
+Open question: How it works says corporate cards need an account, but the builder doesn't enforce it yet.
+
+**Small leftovers**:
 style-picker descriptions still say "masonry"; home page "Handwrite it if you want" still uses pencil.png.
 
 ### Phase 2 — the gift shelf ("Add a little something")

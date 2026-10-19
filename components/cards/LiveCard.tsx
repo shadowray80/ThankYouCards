@@ -4,6 +4,8 @@ import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CasualView } from '@/components/cards/CasualView';
 import { CorporateView } from '@/components/cards/CorporateView';
 import { THEMES } from '@/lib/themes';
+import { coverTextFrom } from '@/lib/coverText';
+import { signOffFor } from '@/lib/signOff';
 
 export interface LiveCampaign {
   slug: string;
@@ -20,6 +22,10 @@ export interface LiveCampaign {
   card_logo_position: 'left' | 'center' | 'right' | null;
   card_accent: string | null;
   card_text_on_image: boolean | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
+  card_sign_off?: string | null;
   funded_amount: number;
 }
 
@@ -72,6 +78,8 @@ export function LiveCard({ campaign, contributions, preview }: {
       giftAmount={campaign.funded_amount > 0 ? campaign.funded_amount : undefined}
       landscapeCover
       showCoverText={campaign.card_text_on_image ?? true}
+      coverText={coverTextFrom(campaign)}
+      signOff={signOffFor(campaign)}
       alwaysShowCoverMessage={!isSolo}
     />
   );

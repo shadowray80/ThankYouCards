@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
 import { CoverLogo } from '@/components/cards/CoverLogo';
+import { coverTextCss, coverTextFrom } from '@/lib/coverText';
+import { signOffFor } from '@/lib/signOff';
 import {
   SHEET_W, SHEET_H, PANEL_W, MARGIN, CONTENT_W, CONTENT_H, COLUMN_GAP, TILE_GAP, FONT_SIZES,
   columnsPerPanel, columnWidth, headerAloneOnLeft, chooseLayout, type InsideSpread,
@@ -26,6 +28,11 @@ export interface PrintCampaign {
   card_logo_scale: number | null;
   card_text_on_image: boolean | null;
   card_logo_position?: string | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
+  card_sign_off?: string | null;
+  deadline?: string | null;
 }
 
 export interface PrintContribution {
@@ -116,14 +123,22 @@ function CoverText({ c, from, look, onPhoto }: { c: PrintCampaign; from: string;
   const shadow = onPhoto ? TEXT_SHADOW : undefined;
   const nameFont = look.isCorporate ? 'Georgia, var(--font-gelasio), serif' : SCRIPT;
   const tagFont = look.isCorporate ? 'Georgia, var(--font-gelasio), serif' : SCRIPT;
+  // The chosen cover font/colour/outline (Classic and Casual). On the photo it's the full look;
+  // under a landscape photo (on paper) only the font, in the card's colour.
+  const ct = coverTextFrom(c);
+  const chosen = (size: number): React.CSSProperties | null => {
+    if (look.isCorporate) return null;
+    const full = coverTextCss(ct, size);
+    return onPhoto ? full : { fontFamily: full.fontFamily, fontWeight: full.fontWeight, fontSize: full.fontSize, textTransform: full.textTransform, letterSpacing: full.letterSpacing };
+  };
   return (
     <>
       <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 800, letterSpacing: '.22em', opacity: .8, textShadow: shadow }}>TO</div>
-      <div style={{ fontFamily: nameFont, fontSize: look.isCorporate ? 56 : 72, lineHeight: 1.05, textShadow: shadow, overflowWrap: 'anywhere' }}>
+      <div style={{ fontFamily: nameFont, fontSize: look.isCorporate ? 56 : 72, lineHeight: 1.05, textShadow: shadow, overflowWrap: 'anywhere', ...chosen(72) }}>
         {capitalise(c.recipient_name)}
       </div>
       {c.card_message && (
-        <div style={{ fontFamily: tagFont, fontStyle: look.isCorporate ? 'italic' : undefined, fontSize: look.isCorporate ? 20 : 32, marginTop: 6, lineHeight: 1.25, textShadow: shadow, color: look.isCorporate ? look.accent : undefined }}>
+        <div style={{ fontFamily: tagFont, fontStyle: look.isCorporate ? 'italic' : undefined, fontSize: look.isCorporate ? 20 : 32, marginTop: 6, lineHeight: 1.25, textShadow: shadow, color: look.isCorporate ? look.accent : undefined, ...chosen(32) }}>
           {c.card_message}
         </div>
       )}
@@ -369,6 +384,34 @@ function MessageTile({ m, index, fontSize, width, ratio, look }: {
   );
 }
 
+// ── Solo card inside: like a paper card ────────────────────────────────────────
+// Left page blank; right page: "To Barry", the hero message, the message (no box), then the
+// sign-off and the name in script. The message size is the largest that fits the page.
+
+const SOLO_SIZES = [20, 18, 17, 16, 15, 14, 13, 12, 11];
+
+function SoloInside({ c, m, look, size, ratio }: { c: PrintCampaign; m: PrintContribution | undefined; look: Look; size: number; ratio: number | null }) {
+  let photoW = CONTENT_W * 0.86, photoH = ratio ? photoW / ratio : photoW * 0.75;
+  if (photoH > CONTENT_H * 0.5) { photoH = CONTENT_H * 0.5; photoW = ratio ? photoH * ratio : photoW; }
+  return (
+    <div style={{ width: CONTENT_W, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ fontFamily: SANS, fontSize: 12, fontWeight: 800, letterSpacing: '.22em', color: '#999' }}>TO {c.recipient_name.toUpperCase()}</div>
+      {c.card_message && <div style={{ fontFamily: SCRIPT, fontSize: 44, color: look.accent, lineHeight: 1.15, marginTop: 4, overflowWrap: 'anywhere' }}>{c.card_message}</div>}
+      {m?.photo_url ? (
+        <img src={m.photo_url} alt="" style={{ width: photoW, height: photoH, objectFit: 'contain', marginTop: 26, display: 'block' }} />
+      ) : m?.message ? (
+        <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: size, lineHeight: 1.7, color: '#2A2A2A', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', marginTop: 26, maxWidth: CONTENT_W * 0.9 }}>{m.message}</div>
+      ) : null}
+      {m?.contributor_name && (
+        <>
+          <div style={{ fontFamily: SERIF, fontStyle: 'italic', fontSize: 16, color: '#7A7585', marginTop: 28 }}>{signOffFor(c)}</div>
+          <div style={{ fontFamily: SCRIPT, fontSize: 42, color: '#2A2A2A', lineHeight: 1.15, overflowWrap: 'anywhere' }}>{m.contributor_name}</div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Tile(props: { m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look }) {
   return props.look.isCorporate ? <CorporateTile {...props} /> : <MessageTile {...props} />;
 }
@@ -393,6 +436,10 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
     : '';
 
   const closing = look.isCorporate && (!!campaign.card_message || !!fromName(campaign));
+  // A solo card (no deadline, one sender) gets the paper-card inside, not message tiles.
+  const isSolo = !campaign.deadline && contributions.length <= 1 && !look.isCorporate;
+  const soloMessage = contributions[0];
+  const [soloSize, setSoloSize] = useState(SOLO_SIZES[0]);
   const [ratios, setRatios] = useState<Record<string, number | null> | null>(null);
   const [layout, setLayout] = useState<{ fontSize: number; spreads: InsideSpread[] } | null>(null);
   const measureRef = useRef<HTMLDivElement>(null);
@@ -411,13 +458,21 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
   useEffect(() => {
     if (!ratios || !measureRef.current) return;
     let cancelled = false;
-    document.fonts.ready.then(() => requestAnimationFrame(() => {
+    // fonts.ready alone can resolve before the browser has even asked for a font the tiles use,
+    // and measuring in a stand-in font makes tiles grow afterwards and overlap. So load every
+    // font in the measuring copy first, then measure.
+    const fonts = new Set(Array.from(measureRef.current.querySelectorAll<HTMLElement>('*'), el => getComputedStyle(el).font).filter(Boolean));
+    Promise.all(Array.from(fonts, f => document.fonts.load(f).catch(() => []))).then(() => document.fonts.ready).then(() => requestAnimationFrame(() => {
       const root = measureRef.current;
       if (cancelled || !root) return;
       const heightsBySize: Record<number, number[]> = {};
       for (const size of FONT_SIZES) {
         heightsBySize[size] = Array.from(root.querySelectorAll<HTMLElement>(`[data-size="${size}"] > [data-tile]`))
           .map(el => el.offsetHeight + TILE_GAP);
+      }
+      if (isSolo) {
+        const fits = SOLO_SIZES.find(sz => (root.querySelector<HTMLElement>(`[data-solo-size="${sz}"]`)?.offsetHeight ?? 0) <= CONTENT_H);
+        setSoloSize(fits ?? SOLO_SIZES[SOLO_SIZES.length - 1]);
       }
       const headerH = (root.querySelector<HTMLElement>('[data-header]')?.offsetHeight ?? 0);
       const footerH = closing ? CLOSING_H : footer ? 28 : 0;
@@ -437,6 +492,11 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
         {ratios && (
           <div ref={measureRef} aria-hidden style={{ position: 'absolute', left: -20000, top: 0, visibility: 'hidden' }}>
             <div data-header style={{ width: CONTENT_W }}><InsideHeader c={campaign} look={look} /></div>
+            {isSolo && SOLO_SIZES.map(sz => (
+              <div key={`solo-${sz}`} data-solo-size={sz}>
+                <SoloInside c={campaign} m={soloMessage} look={look} size={sz} ratio={soloMessage?.photo_url ? ratios[soloMessage.photo_url] ?? null : null} />
+              </div>
+            ))}
             {FONT_SIZES.map(size => (
               <div key={size} data-size={size} style={{ width: colW }}>
                 {messages.map((m, i) => (
@@ -468,7 +528,14 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
     );
   };
 
-  const insideSheets = layout.spreads.map((spread, si) => {
+  const insideSheets = isSolo ? [
+    <Sheet key="in-solo" rotate={mode === 'double' && flip}>
+      <Panel />
+      <Panel style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <SoloInside c={campaign} m={soloMessage} look={look} size={soloSize} ratio={soloMessage?.photo_url ? ratios[soloMessage.photo_url] ?? null : null} />
+      </Panel>
+    </Sheet>,
+  ] : layout.spreads.map((spread, si) => {
     const isLast = si === layout.spreads.length - 1;
     return (
       <Sheet key={`in-${si}`} rotate={mode === 'double' && flip && si === 0}>

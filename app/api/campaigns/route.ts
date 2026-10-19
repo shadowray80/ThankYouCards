@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { sendOrganiserLink } from '@/lib/email';
 import { sessionIsValid } from '@/lib/organiserSession';
+import { coverTextFrom, coverTextFields } from '@/lib/coverText';
+import { cleanSignOff } from '@/lib/signOff';
 
 function slugify(text: string): string {
   return text
@@ -60,6 +62,9 @@ export async function POST(request: NextRequest) {
       card_accent: card_accent ?? null,
       card_text_on_image: card_text_on_image ?? true,
       feature_ok: feature_ok === true,
+      // "Aa" cover look — only stored when changed from the default (unknown values fall back).
+      ...coverTextFields(coverTextFrom(body)),
+      ...(cleanSignOff(body.card_sign_off) ? { card_sign_off: cleanSignOff(body.card_sign_off) } : {}),
       slug,
       organiser_token,
     })

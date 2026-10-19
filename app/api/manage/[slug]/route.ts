@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/isAdminEmail';
+import { coverTextFrom } from '@/lib/coverText';
+import { cleanSignOff } from '@/lib/signOff';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -46,7 +48,7 @@ export async function PATCH(
   const { token, action } = body;
 
   if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
-  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline', 'update_cover_text', 'update_feature'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
+  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline', 'update_cover_text', 'update_feature', 'update_cover_style'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
@@ -85,6 +87,17 @@ export async function PATCH(
     return Response.json({ ok: true });
   }
 
+  // "Aa": the cover text's font, colour and outline — saved as soon as it's picked.
+  if (action === 'update_cover_style') {
+    const style = coverTextFrom(body);
+    const { error: updateError } = await supabaseAdmin
+      .from('campaigns')
+      .update({ card_font: style.font, card_text_color: style.color, card_text_stroke: style.stroke })
+      .eq('id', campaign.id);
+    if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+    return Response.json({ ok: true });
+  }
+
   // "Show name & text on photo" — saved as soon as it's switched.
   if (action === 'update_cover_text') {
     const { error: updateError } = await supabaseAdmin
@@ -103,6 +116,7 @@ export async function PATCH(
         card_message: card_message ?? null, card_note: card_note ?? null, occasion: occasion ?? null, card_image_url: card_image_url ?? null, card_text_on_image: card_text_on_image ?? true,
         // Only the solo editor sends the name; group cards keep theirs.
         ...(typeof recipient_name === 'string' && recipient_name.trim() ? { recipient_name: recipient_name.trim() } : {}),
+        ...('card_sign_off' in body ? { card_sign_off: cleanSignOff(body.card_sign_off) } : {}),
       })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });

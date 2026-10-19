@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('campaigns')
-    .select('id, slug, recipient_name, occasion, card_message, card_image_url, card_style, card_palette, card_logo_url, card_text_on_image, deadline, created_at, feature_dismissed, feature_exported_at, feature_showcase_id')
+    .select('id, slug, recipient_name, occasion, card_message, card_image_url, card_style, card_palette, card_logo_url, card_text_on_image, card_font, card_text_color, card_text_stroke, deadline, created_at, feature_dismissed, feature_exported_at, feature_showcase_id')
     .eq('feature_ok', true)
     .eq('status', 'sent')
     .is('deadline', null)

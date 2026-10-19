@@ -9,11 +9,15 @@ import { PreviewToggle } from '@/components/ui/PreviewToggle';
 import { CardScrollView } from '@/components/cards/CardScrollView';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { ImageOnlyButton, PhotoButton } from '@/components/cards/CoverToolbarButtons';
+import { CoverTextButton, CoverTextPicker } from '@/components/cards/CoverTextPicker';
+import { coverTextCss, coverTextFields, DEFAULT_COVER_TEXT, type CoverTextStyle } from '@/lib/coverText';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
+import { SignOffInput } from '@/components/ui/SignOffInput';
+import { DEFAULT_SIGN_OFF } from '@/lib/signOff';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -28,6 +32,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
   const [to, setTo] = useState('');
   const [from, setFrom] = useState('');
+  const [signOff, setSignOff] = useState(''); // empty = "From"
   const [cardMsg, setCardMsg] = useState('');
   // Message-area-only name — used only when the on-photo name is left blank, so someone
   // can fill in the recipient's name without ever putting text on the photo.
@@ -45,6 +50,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const [showPreview, setShowPreview] = useState(false);
   // Image only: hides all text on the cover (editor, preview and the sent card).
   const [imageOnly, setImageOnly] = useState(false);
+  // "Aa": the cover text's font, colour and outline.
+  const [coverText, setCoverText] = useState<CoverTextStyle>(DEFAULT_COVER_TEXT);
+  const [coverTextOpen, setCoverTextOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const [organiserToken, setOrganiserToken] = useState<string | null>(null);
@@ -77,6 +85,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           card_image_url: imageUrl,
           card_text_on_image: !imageOnly && (to.trim() !== '' || cardMsg.trim() !== ''),
           feature_ok: featureOk,
+          ...coverTextFields(coverText),
+          card_sign_off: signOff.trim(),
           ...(session ? { organiser_email: session.email, session_token: session.session_token } : {}),
         }),
       });
@@ -222,6 +232,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             messages={[]}
             landscapeCover
             showCoverText={!imageOnly}
+            coverText={coverText}
+            signOff={signOff.trim() || DEFAULT_SIGN_OFF}
             giftAmount={giftAmount}
           />
           {session && organiserToken && (
@@ -259,6 +271,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               messages={[]}
               landscapeCover
               showCoverText={!imageOnly}
+              coverText={coverText}
+              signOff={signOff.trim() || DEFAULT_SIGN_OFF}
               giftAmount={giftAmount}
             />
             </div>
@@ -293,9 +307,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 {!to && (
                   <div style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, letterSpacing: '.01em', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
+                    letterSpacing: '.01em', ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
+                    lineHeight: 1.1, whiteSpace: 'nowrap',
                   }}>
                     Legend&apos;s Name
                   </div>
@@ -311,13 +324,11 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   onCompositionEnd={toEditable.onCompositionEnd}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.1, letterSpacing: '.01em', color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
-                    caretColor: '#fff',
+                    letterSpacing: '.01em', textTransform: 'capitalize',
+                    ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
+                    lineHeight: 1.1,
+                    caretColor: coverText.color,
                     minWidth: 40,
-                    textTransform: 'capitalize',
                   }}
                 />
               </div>
@@ -335,9 +346,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                 {!cardMsg && (
                   <div style={{
                     position: 'absolute', inset: 0, pointerEvents: 'none', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.2, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
+                    ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
+                    lineHeight: 1.2,
                   }}>
                     Cover Message
                   </div>
@@ -352,13 +362,11 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                   onCompositionEnd={cardMsgEditable.onCompositionEnd}
                   style={{
                     outline: 'none', cursor: 'text', textAlign: 'center',
-                    fontFamily: 'var(--font-dancing), cursive',
-                    fontSize: 'clamp(2.4rem, 9vw, 3.2rem)',
-                    lineHeight: 1.2, color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,.8), 0 3px 12px rgba(0,0,0,.65), 0 5px 30px rgba(0,0,0,.5)',
-                    caretColor: '#fff',
-                    wordBreak: 'break-word',
                     textTransform: 'capitalize',
+                    ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
+                    lineHeight: 1.2,
+                    caretColor: coverText.color,
+                    wordBreak: 'break-word',
                   }}
                 />
               </div>
@@ -386,12 +394,16 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             browseHeader
             headerLead={<ImageOnlyButton imageOnly={imageOnly} onToggle={() => setImageOnly(v => !v)} />}
             headerAction={
-              <PhotoButton
-                hasPhoto={!!customImgUrl} uploading={uploadingImg}
-                onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
-              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                {!imageOnly && <CoverTextButton open={coverTextOpen} onToggle={() => setCoverTextOpen(v => !v)} />}
+                <PhotoButton
+                  hasPhoto={!!customImgUrl} uploading={uploadingImg}
+                  onAdd={() => uploadRef.current?.click()} onRemove={() => setCustomImgUrl(null)}
+                />
+              </div>
             }
             selectedUrl={selectedUrl} onSelect={url => { setSelectedUrl(url); setCustomImgUrl(null); }} />
+          {coverTextOpen && !imageOnly && <CoverTextPicker value={coverText} onChange={setCoverText} />}
         </div>
 
         <div style={{ margin: '0 18px', borderBottomLeftRadius: 20, borderBottomRightRadius: 20, overflow: 'hidden', boxShadow: '0 16px 56px rgba(60,50,100,.18)' }}>
@@ -454,23 +466,17 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
               />
             )}
 
-            {/* From — signed inline */}
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: 8, marginBottom: 12 }}>
-              <span style={{ fontSize: '.78rem', color: '#B0A8BC', fontWeight: 600, marginRight: 4, fontFamily: "'Nunito',sans-serif" }}>-</span>
+            {/* Sign-off, like a paper card: "Love from" (tap for suggestions), then the name in script */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 10, marginBottom: 12 }}>
+              <SignOffInput value={signOff} onChange={setSignOff} style={{ width: '100%' }} />
               <input
                 value={from}
                 onChange={e => setFrom(e.target.value)}
                 placeholder="Your name"
                 style={{
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  fontSize: '16px',
-                  color: from ? '#7A7585' : '#B0A8BC',
-                  fontWeight: 600,
-                  fontFamily: "'Nunito',sans-serif",
-                  flex: 1,
-                  caretColor: '#3A8FA0',
+                  width: '100%', border: 'none', outline: 'none', background: 'transparent', textAlign: 'center',
+                  fontFamily: 'var(--font-dancing), cursive', fontSize: '1.9rem', lineHeight: 1.2,
+                  color: from ? '#2A2A2A' : '#B0A8BC', caretColor: '#3A8FA0',
                 }}
               />
             </div>

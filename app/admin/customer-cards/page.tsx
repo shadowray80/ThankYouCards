@@ -18,6 +18,9 @@ interface CustomerCard {
   card_palette: string | null;
   card_logo_url: string | null;
   card_text_on_image: boolean | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
   deadline: string | null;
   created_at: string;
   feature_dismissed: boolean;

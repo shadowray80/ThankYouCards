@@ -14,7 +14,7 @@ const MENU_CSS = `
 .tyc-more-item + .tyc-more-item { border-top: 1px solid #F0ECF5 !important; }
 `;
 
-// The site-wide "More" menu (in the top bar on every page): Organiser view, card code, contact.
+// The site-wide "More" menu (in the top bar on every page): Organiser view, card code, how it works, contact.
 export function MoreMenu() {
   const [open, setOpen] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -83,6 +83,9 @@ export function MoreMenu() {
                 <button onClick={() => setShowCode(true)} className="tyc-more-item" style={itemStyle}>
                   <LineIcon name="written" size={26} />Got a card code?
                 </button>
+                <a href="/how-it-works" className="tyc-more-item" style={itemStyle}>
+                  <LineIcon name="Smiley" size={26} />How it works
+                </a>
                 <a href="/contact" className="tyc-more-item" style={itemStyle}>
                   <LineIcon name="Mail" size={26} />Contact us
                 </a>

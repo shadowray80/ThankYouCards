@@ -206,7 +206,9 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
           ))}
         </div>
 
-        <div style={{ height: 40 }} />
+        <div style={{ textAlign: 'center', margin: '6px 0 34px' }}>
+          <a href="/how-it-works" style={{ fontSize: '.9rem', fontWeight: 800, color: '#3A8FA0', textDecoration: 'none' }}>How it works</a>
+        </div>
 
         {/* ── Testimonials ── */}
         <div style={{ marginBottom: 20 }}>

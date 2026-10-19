@@ -16,6 +16,9 @@ import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { Nav } from '@/components/ui/Nav';
 import { SoloDashboard } from '@/components/dashboard/SoloDashboard';
+import { CoverTextPicker } from '@/components/cards/CoverTextPicker';
+import { coverTextFrom, type CoverTextStyle } from '@/lib/coverText';
+import { EXAMPLE_SLUG, exampleCampaign, exampleContributions } from '@/lib/exampleCard';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
@@ -42,6 +45,9 @@ interface Campaign {
   card_text_on_image: boolean | null;
   card_occasion: string | null;
   feature_ok?: boolean | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
   created_at?: string;
 }
 
@@ -126,9 +132,12 @@ function ManageContent() {
   const token        = searchParams.get('token') ?? '';
   const paidParam    = searchParams.get('paid') === '1';
   const sessionId    = searchParams.get('session_id') ?? '';
+  // /manage/example: the made-up card on /how-it-works. Read-only, never touches the database.
+  const isExample    = slug === EXAMPLE_SLUG;
 
   const [campaign, setCampaign]           = useState<Campaign | null>(null);
-  const myCards                           = useMyCards();
+  const loggedInCards                     = useMyCards();
+  const myCards                           = isExample ? null : loggedInCards;
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState('');
@@ -165,7 +174,7 @@ function ManageContent() {
   const editImageUploadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (slug && token) {
+    if (slug && token && !isExample) {
       const sessions = JSON.parse(localStorage.getItem('tyc_manage') ?? '{}');
       sessions[slug] = token;
       localStorage.setItem('tyc_manage', JSON.stringify(sessions));
@@ -192,6 +201,12 @@ function ManageContent() {
   }, [contributions, campaign, previewOpen]);
 
   const loadData = (isRefresh = false) => {
+    if (isExample) {
+      setCampaign(exampleCampaign() as Campaign);
+      setContributions(exampleContributions());
+      setLoading(false); setRefreshing(false);
+      return;
+    }
     if (!slug || !token) { setError('Invalid link'); setLoading(false); return; }
     if (isRefresh) setRefreshing(true); else setLoading(true);
     fetch(`/api/manage/${slug}?token=${token}`)
@@ -278,6 +293,16 @@ function ManageContent() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, action: 'update_cover_text', card_text_on_image: show }),
+    });
+  };
+
+  // "Aa": shown on the preview at once, saved straight away.
+  const saveCoverStyle = async (style: CoverTextStyle) => {
+    setCampaign(prev => prev ? { ...prev, card_font: style.font, card_text_color: style.color, card_text_stroke: style.stroke } : prev);
+    await fetch(`/api/manage/${slug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action: 'update_cover_style', card_font: style.font, card_text_color: style.color, card_text_stroke: style.stroke }),
     });
   };
 
@@ -489,6 +514,7 @@ function ManageContent() {
         token={token}
         selector={<CardSelector cards={myCards} currentSlug={slug} title={`${soloName}'s card`} subtitle={cardSubtitle(null)} />}
         onCampaignChange={next => setCampaign(prev => prev ? { ...prev, ...next } : prev)}
+        onCoverStyleChange={saveCoverStyle}
         onContributionChange={next => setContributions(prev => prev.map(c => c.id === next.id ? { ...c, ...next } : c))}
       />
     );
@@ -505,7 +531,7 @@ function ManageContent() {
   const isClipped = clipAt !== null && !showAllMessages;
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: '#FFFDF8', fontFamily: "'Nunito',sans-serif", ...(isExample ? { pointerEvents: 'none', userSelect: 'none' } : {}) }}>
 
       <Nav onHome={() => router.push('/')} badge={null} />
 
@@ -598,6 +624,7 @@ function ManageContent() {
                 messages={previewContributions.map(c => ({ name: c.contributor_name, msg: c.message ?? '' }))}
                 landscapeCover
                 showCoverText={campaign.card_text_on_image ?? true}
+                coverText={coverTextFrom(campaign)}
                 alwaysShowCoverMessage
               />
             )}
@@ -627,7 +654,8 @@ function ManageContent() {
 
         {/* "Ready when you are": the business end. Before paying: faded send/print/save + the $15
             button. After paying (same block, same place): send it to the recipient, then keepsakes. */}
-        <div style={{ background: '#EAF4FB', border: '1px solid #D3E6F2', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
+        {/* Peach, not blue: the recipient block must never be mistaken for the contributor one */}
+        <div style={{ background: '#FDF0E8', border: '1px solid #F0D0B8', boxShadow: '0 1px 3px rgba(60,50,100,.05)', borderRadius: 16, padding: '16px', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800, fontSize: '1rem', color: '#2A2A2A' }}>
               <LineIcon name={isSent ? 'Fireworks' : 'Party Popper'} size={26} />
@@ -666,7 +694,7 @@ function ManageContent() {
                 imageUrl={campaign.card_image_url}
                 defaultSenderEmail={campaign.organiser_email}
               />
-              <div style={{ borderTop: '1px solid #D3E6F2', margin: '14px 0 12px' }} />
+              <div style={{ borderTop: '1px solid #F0D0B8', margin: '14px 0 12px' }} />
               <KeepsakeButtons slug={slug} openHref={`/view/${slug}?preview=1`} />
             </>
           ) : (
@@ -963,6 +991,14 @@ ${origin}/card/${slug}
               <div style={{ width: 38, height: 22, borderRadius: 14, position: 'relative', flexShrink: 0, background: editShowCoverText ? '#4CAF82' : '#D1C8DC', transition: 'background .2s' }}>
                 <div style={{ position: 'absolute', top: 3, left: editShowCoverText ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.2)', transition: 'left .2s' }} />
               </div>
+            </div>
+          )}
+
+          {campaign.card_style !== 'corporate' && editShowCoverText && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontWeight: 800, fontSize: '.82rem', color: '#2A2A2A' }}>Font &amp; colour</div>
+              <div style={{ fontSize: '.72rem', color: '#B0A8BC', fontWeight: 600, marginTop: 1 }}>For the name and message on the photo. Saves as you pick.</div>
+              <CoverTextPicker value={coverTextFrom(campaign)} onChange={saveCoverStyle} />
             </div>
           )}
 

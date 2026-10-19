@@ -1,6 +1,7 @@
 'use client';
 
 import { CASUAL_PALETTES, CORPORATE_PALETTES, buildCustomPalette } from '@/lib/palettes';
+import { coverTextFrom, fontFor, isDarkColour, strokeColourFor, type CoverTextStyle } from '@/lib/coverText';
 
 // Draws a featured (solo, opted-in) customer card as an Instagram carousel post, 1080 × 1350:
 //   slide 1 — the cover: photo filling the frame, name + front message in the card's
@@ -17,6 +18,9 @@ export interface InstagramCard {
   card_style: string | null;
   card_palette: string | null;
   card_text_on_image: boolean | null;
+  card_font?: string | null;
+  card_text_color?: string | null;
+  card_text_stroke?: boolean | null;
 }
 
 function paletteColours(card: InstagramCard): [string, string] {
@@ -75,12 +79,32 @@ function shadowedText(ctx: CanvasRenderingContext2D, text: string, x: number, y:
   ctx.fillText(text, x, y);
 }
 
-function fitFontSize(ctx: CanvasRenderingContext2D, text: string, family: string, start: number, min: number, maxWidth: number): number {
+// Cover text in the card's chosen look ("Aa"): outline drawn behind the letters, or the soft
+// shadow (a light glow behind dark text).
+function coverText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, style: CoverTextStyle, size: number) {
+  ctx.fillStyle = style.color;
+  if (style.stroke) {
+    ctx.lineWidth = size * 0.12;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = strokeColourFor(style.color);
+    ctx.strokeText(text, x, y);
+    ctx.fillText(text, x, y);
+  } else if (isDarkColour(style.color)) {
+    ctx.shadowColor = 'rgba(255,255,255,.85)'; ctx.shadowBlur = 30;
+    ctx.fillText(text, x, y);
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.fillText(text, x, y);
+  } else {
+    shadowedText(ctx, text, x, y);
+  }
+}
+
+function fitFontSize(ctx: CanvasRenderingContext2D, text: string, family: string, start: number, min: number, maxWidth: number, weight = 400): number {
   let size = start;
-  ctx.font = `${size}px ${family}`;
+  ctx.font = `${weight} ${size}px ${family}`;
   while (size > min && ctx.measureText(text).width > maxWidth) {
     size -= 4;
-    ctx.font = `${size}px ${family}`;
+    ctx.font = `${weight} ${size}px ${family}`;
   }
   return size;
 }
@@ -91,10 +115,15 @@ export async function renderInstagramImage(card: InstagramCard): Promise<Blob> {
   canvas.height = IG_HEIGHT;
   const ctx = canvas.getContext('2d')!;
 
-  const script = fontFamily('--font-dancing', 'cursive');
+  const style = coverTextFrom(card);
+  const font = fontFor(style.font);
+  const fallback = font.family.split(',').slice(1).join(',').trim() || 'cursive';
+  const script = fontFamily(font.cssVar, fallback);
+  const weight = font.weight;
   const sans = fontFamily('--font-nunito', 'sans-serif');
+  const caps = (t: string) => font.upper ? t.toUpperCase() : t;
   await Promise.all([
-    document.fonts.load(`150px ${script}`),
+    document.fonts.load(`${font.weight} 150px ${fontFamily(font.cssVar, fallback)}`),
     document.fonts.load(`800 30px ${sans}`),
   ]).catch(() => {});
 
@@ -134,19 +163,18 @@ export async function renderInstagramImage(card: InstagramCard): Promise<Blob> {
     // Lay out from the bottom up: message lines, then the name, then "TO".
     let y = IG_HEIGHT - 150;
     if (card.card_message?.trim()) {
-      ctx.font = `64px ${script}`;
-      const lines = wrapLines(ctx, card.card_message.trim(), maxWidth, 3);
-      ctx.fillStyle = 'rgba(255,255,255,.95)';
+      const msgSize = Math.round(64 * font.scale);
+      ctx.font = `${weight} ${msgSize}px ${script}`;
+      const lines = wrapLines(ctx, caps(card.card_message.trim()), maxWidth, 3);
       for (let i = lines.length - 1; i >= 0; i--) {
-        shadowedText(ctx, lines[i], pad, y);
-        y -= 80;
+        coverText(ctx, lines[i], pad, y, style, msgSize);
+        y -= msgSize * 1.25;
       }
       y -= 20;
     }
 
-    const nameSize = fitFontSize(ctx, name, script, 170, 90, maxWidth);
-    ctx.fillStyle = '#fff';
-    shadowedText(ctx, name, pad, y);
+    const nameSize = fitFontSize(ctx, caps(name), script, Math.round(170 * font.scale), 70, maxWidth, weight);
+    coverText(ctx, caps(name), pad, y, style, nameSize);
     y -= nameSize * 0.95;
 
     ctx.font = `800 30px ${sans}`;

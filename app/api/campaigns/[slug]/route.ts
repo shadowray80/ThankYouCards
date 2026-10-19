@@ -9,7 +9,7 @@ export async function GET(
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
-    .select('id, slug, recipient_name, occasion, card_theme, card_message, card_note, card_image_url, funded_amount, target_amount, status, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image, deadline')
+    .select('id, slug, recipient_name, occasion, card_theme, card_message, card_note, card_image_url, funded_amount, target_amount, status, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image, card_font, card_text_color, card_text_stroke, card_sign_off, deadline')
     .eq('slug', slug)
     .single();
 
