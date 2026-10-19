@@ -405,7 +405,7 @@ print layout loads every font before measuring (was a cause of overlapping tiles
 Open question: How it works says corporate cards need an account, but the builder doesn't enforce it yet.
 
 **Small leftovers**:
-style-picker descriptions still say "masonry"; home page "Handwrite it if you want" still uses pencil.png.
+home page "Handwrite it if you want" still uses pencil.png.
 
 ### Phase 2 — the gift shelf ("Add a little something")
 **End product:** a small shelf of 6–12 hand-picked gifts, mostly for **solo** card senders, shown on the

@@ -269,8 +269,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
               // hidden from the picker for now — not deleted, just not offered. Un-comment
               // to bring it back.
               // { id: 'classic'    as const, label: 'Classic',    icon: 'Mail', desc: 'Elegant scroll with cover photo' },
-              { id: 'casual'     as const, label: 'Classic',    icon: 'Party Popper', desc: 'Vibrant masonry with colourful cards' },
-              { id: 'corporate'  as const, label: 'Corporate',  icon: 'Corporate', desc: 'Polished navy & gold, clean typography' },
+              { id: 'casual'     as const, label: 'Classic',    icon: 'Party Popper', desc: 'Bright and colourful, every message in its own tile' },
+              { id: 'corporate'  as const, label: 'Corporate',  icon: 'Corporate', desc: 'Navy and gold, clean and professional' },
             ] as { id: 'classic' | 'casual' | 'corporate'; label: string; icon: string; desc: string }[]).map(s => (
               <div key={s.id} onClick={() => handleCardStyleChange(s.id)} style={{ flex: 1, borderRadius: 14, padding: '14px 12px', cursor: 'pointer', textAlign: 'center', border: cardStyle === s.id ? '2px solid #E8724A' : '2px solid #E8E2F0', background: cardStyle === s.id ? '#FDF0E8' : '#fff', transition: 'all .2s' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}><LineIcon name={s.icon} size={34} /></div>

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Nav } from '@/components/ui/Nav';
 import { EXAMPLE_SLUG } from '@/lib/exampleCard';
+import { PrintCarousel } from '@/components/ui/PrintCarousel';
 
 // "How it works" (More menu + home page): the two kinds of card in a few steps, a live read-only
 // organiser page for a made-up card, honest answers, and a short About.
@@ -135,6 +136,15 @@ export function HowItWorks() {
             </p>
           </div>
           <ExamplePhone />
+        </section>
+
+        {/* Print at home */}
+        <section style={{ marginTop: 52 }}>
+          <Heading>Print it at home</Heading>
+          <p style={{ fontSize: '1rem', lineHeight: 1.7, color: INK, fontWeight: 600, margin: '0 0 20px', maxWidth: 640 }}>
+            Every card, solo or group, also prints as a proper folded A5 card on your own printer: the cover on the front, the messages inside. Stand it on the mantelpiece, or pop it in the post.
+          </p>
+          <PrintCarousel sideBySide />
         </section>
 
         {/* Honest answers */}

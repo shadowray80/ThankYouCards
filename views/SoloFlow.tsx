@@ -236,6 +236,9 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             signOff={signOff.trim() || DEFAULT_SIGN_OFF}
             giftAmount={giftAmount}
           />
+          <a href={`/print/${slug}`} style={{ display: 'block', textAlign: 'center', fontSize: '.82rem', fontWeight: 700, color: '#7A7585', textDecoration: 'none', margin: '14px 0 0' }}>
+            You can also <span style={{ color: '#3A8FA0', fontWeight: 800 }}>print it at home</span>
+          </a>
           {session && organiserToken && (
             <a href={`/manage/${slug}?token=${organiserToken}`}
               style={{ display: 'block', textAlign: 'center', fontSize: '.82rem', fontWeight: 700, color: '#3A8FA0', textDecoration: 'none', margin: '14px 0' }}>

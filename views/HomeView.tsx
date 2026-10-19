@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Btn } from '@/components/ui/Button';
+import { PrintCarousel } from '@/components/ui/PrintCarousel';
 import { LoginMenu } from '@/components/ui/LoginMenu';
 import { MoreMenu } from '@/components/ui/MoreMenu';
 import { CardScrollView } from '@/components/cards/CardScrollView';
@@ -259,6 +260,15 @@ export function HomeView({ onSolo, onGroup }: HomeViewProps) {
             </div>
           </div>
         ))}
+
+        {/* Print it at home */}
+        <div style={{ margin: '28px 0 30px', textAlign: 'center' }}>
+          <PrintCarousel />
+          <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#2A2A2A', margin: '14px 0 6px' }}>Print it at home</div>
+          <div style={{ fontSize: '.88rem', color: '#7A7585', lineHeight: 1.6, fontWeight: 600, maxWidth: 380, margin: '0 auto' }}>
+            Every card also prints as a proper folded card on your own printer. Stand it on the mantelpiece, or pop it in the post.
+          </div>
+        </div>
 
         {/* Group callout */}
         <div style={{ background: 'linear-gradient(135deg,#E87240,#F09070)', borderRadius: 18, padding: '22px 20px', marginBottom: 28, color: '#fff' }}>
