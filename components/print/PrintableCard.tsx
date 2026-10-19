@@ -7,7 +7,7 @@ import { CoverLogo } from '@/components/cards/CoverLogo';
 import { coverTextCss, coverTextFrom } from '@/lib/coverText';
 import { signOffFor } from '@/lib/signOff';
 import {
-  SHEET_W, SHEET_H, PANEL_W, MARGIN, CONTENT_W, CONTENT_H, COLUMN_GAP, TILE_GAP, FONT_SIZES,
+  MM, SHEET_W, SHEET_H, PANEL_W, MARGIN, CONTENT_W, CONTENT_H, COLUMN_GAP, TILE_GAP, FONT_SIZES,
   columnsPerPanel, columnWidth, headerAloneOnLeft, chooseLayout, type InsideSpread,
 } from '@/lib/printLayout';
 
@@ -109,12 +109,27 @@ function Panel({ children, style }: { children?: React.ReactNode; style?: React.
   return <div style={{ width: PANEL_W, height: SHEET_H, padding: MARGIN, boxSizing: 'border-box', ...style }}>{children}</div>;
 }
 
+// The back of every printed card: a QR code (public/qr-print.svg, TYC colours with the logo in
+// the middle, opens thankyoucards.au/?from=print), the home page's line, and the wordmark.
+function BackCta({ qrMm }: { qrMm: number }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+      <img src="/qr-print.svg" alt="" style={{ width: qrMm * MM, height: qrMm * MM, display: 'block' }} />
+      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 17, color: '#2A2A2A', lineHeight: 1.25, marginTop: 14 }}>
+        Say thank you to the<br />
+        <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 27, color: '#3A8FA0' }}>legends</span> in your life
+      </div>
+      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 15, color: '#3A8FA0', marginTop: 8 }}>
+        thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: 12 }}>.au</span>
+      </div>
+    </div>
+  );
+}
+
 function BackPanel() {
   return (
     <Panel style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: MARGIN + 18 }}>
-      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 17, color: '#3A8FA0' }}>
-        thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: 13 }}>.au</span>
-      </div>
+      <BackCta qrMm={30} />
     </Panel>
   );
 }
@@ -248,10 +263,9 @@ function CorporateFront({ c, look, ratio }: { c: PrintCampaign; look: Look; rati
 function CorporateBack({ c }: { c: PrintCampaign }) {
   return (
     <Panel style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: MARGIN + 18 }}>
-      {c.card_logo_url && <div style={{ marginBottom: 22 }}><CorporateLogo c={c} maxH={46} maxW={150} align="center" /></div>}
-      <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 17, color: '#3A8FA0' }}>
-        thank<span style={{ color: '#E8724A' }}>you</span>cards<span style={{ color: '#7A7585', fontWeight: 600, fontSize: 13 }}>.au</span>
-      </div>
+      {c.card_logo_url && <div style={{ marginBottom: 26 }}><CorporateLogo c={c} maxH={46} maxW={150} align="center" /></div>}
+      {/* The company's brand first; ours smaller underneath */}
+      <BackCta qrMm={c.card_logo_url ? 24 : 30} />
     </Panel>
   );
 }

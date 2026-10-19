@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Nunito, Lora, Dancing_Script, Gelasio, Anton, Permanent_Marker, Bangers, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AdminToolbar } from "@/components/ui/AdminToolbar";
+import { Analytics } from "@vercel/analytics/next";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -88,6 +89,7 @@ export default function RootLayout({
       </head>
       <body>
         <AdminToolbar />
+        <Analytics />
         {children}
       </body>
     </html>

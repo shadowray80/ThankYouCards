@@ -35,7 +35,9 @@ export default function App() {
       setContribSlug(cardSlug);
       setView('contrib');
     }
-    window.history.replaceState({}, '', '/');
+    // Tidy the address bar after reading the params. Only when there were some: /hi (the QR code on
+    // printed cards) must keep its own address so analytics counts those visits separately.
+    if (window.location.search) window.history.replaceState({}, '', window.location.pathname);
   }, [showToast]);
 
   const go = (v: string) => {
