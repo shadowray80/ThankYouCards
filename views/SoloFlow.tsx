@@ -13,6 +13,7 @@ import { GiftSelector } from '@/components/forms/GiftSelector';
 import { resizeImage } from '@/lib/resizeImage';
 import { useLiveEditableText } from '@/lib/useLiveEditableText';
 import { TintedIcon } from '@/components/ui/TintedIcon';
+import { useOrganiserSession } from '@/lib/useOrganiserSession';
 
 interface SoloFlowProps {
   onBack: () => void;
@@ -57,6 +58,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const cardMsgEditable = useLiveEditableText(cardMsg, setCardMsg, { capitalizeWords: true });
 
   const [featureOk, setFeatureOk] = useState(false);
+  // Logged in: the card is saved to the account, so it shows up in My cards.
+  const { session } = useOrganiserSession();
 
   async function handleSubmit() {
     setSaving(true);
@@ -74,6 +77,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
           card_image_url: imageUrl,
           card_text_on_image: !imageOnly && (to.trim() !== '' || cardMsg.trim() !== ''),
           feature_ok: featureOk,
+          ...(session ? { organiser_email: session.email, session_token: session.session_token } : {}),
         }),
       });
       const campaignData = await campaignRes.json();
@@ -220,6 +224,12 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
             showCoverText={!imageOnly}
             giftAmount={giftAmount}
           />
+          {session && organiserToken && (
+            <a href={`/manage/${slug}?token=${organiserToken}`}
+              style={{ display: 'block', textAlign: 'center', fontSize: '.82rem', fontWeight: 700, color: '#3A8FA0', textDecoration: 'none', margin: '14px 0' }}>
+              Saved to your cards. Open it to edit, print or save.
+            </a>
+          )}
           <Btn variant="outline" full onClick={onBack}>Make another card</Btn>
         </div>
       </div>

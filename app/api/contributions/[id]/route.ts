@@ -28,7 +28,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { token, message } = await request.json();
+  const { token, message, contributor_name } = await request.json();
 
   if (!(await verifyOwnership(id, token))) {
     return Response.json({ error: 'Not authorised' }, { status: 401 });
@@ -36,7 +36,10 @@ export async function PATCH(
 
   const { error } = await supabaseAdmin
     .from('contributions')
-    .update({ message: message ?? null })
+    // The name is only sent when it changes (the solo card editor's "From").
+    .update(typeof contributor_name === 'string' && contributor_name.trim()
+      ? { message: message ?? null, contributor_name: contributor_name.trim() }
+      : { message: message ?? null })
     .eq('id', id);
 
   if (error) return Response.json({ error: error.message }, { status: 500 });

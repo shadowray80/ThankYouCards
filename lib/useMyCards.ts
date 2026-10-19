@@ -13,7 +13,7 @@ export interface MyCard {
   created_at: string;
 }
 
-// The logged-in organiser's group cards, newest first. `cards` is null while loading
+// The logged-in organiser's cards (group, and solo ones made while logged in), newest first. `cards` is null while loading
 // (and stays null when logged out).
 export function useMyCards(): MyCard[] | null {
   const { session, setSession } = useOrganiserSession();

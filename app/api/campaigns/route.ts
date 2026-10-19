@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { sendOrganiserLink } from '@/lib/email';
+import { sessionIsValid } from '@/lib/organiserSession';
 
 function slugify(text: string): string {
   return text
@@ -19,11 +20,18 @@ function randomToken(): string {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { recipient_name, occasion, card_occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_note, card_image_url, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image, feature_ok } = body;
+  const { recipient_name, occasion, card_occasion, target_amount, deadline, organiser_email, card_theme, card_message, card_note, card_image_url, card_style, card_palette, card_logo_url, card_logo_scale, card_logo_position, card_accent, card_text_on_image, feature_ok, session_token } = body;
 
   if (!recipient_name) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
   }
+
+  // A solo card (no deadline) only gets an email when made while logged in: that's what puts it
+  // in the account's "My cards". The login proves the email is theirs.
+  const isSolo = !deadline;
+  const ownerEmail = isSolo
+    ? (organiser_email && await sessionIsValid(organiser_email, session_token ?? '') ? organiser_email : null)
+    : organiser_email ?? null;
 
   const base = slugify(recipient_name) || 'card';
   const slug = `${base}-${randomSuffix()}`;
@@ -39,7 +47,7 @@ export async function POST(request: NextRequest) {
       funded_amount: 0,
       deadline: deadline ?? null,
       status: 'open',
-      organiser_email: organiser_email ?? null,
+      organiser_email: ownerEmail,
       card_theme: card_theme ?? null,
       card_message: card_message ?? null,
       card_note: card_note ?? null,
@@ -64,7 +72,7 @@ export async function POST(request: NextRequest) {
   }
 
   const origin = request.headers.get('origin') ?? 'https://thankyoucards.au';
-  if (organiser_email) {
+  if (organiser_email && !isSolo) {
     sendOrganiserLink({
       to: organiser_email,
       recipientName: recipient_name,

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/isAdminEmail';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -45,11 +46,11 @@ export async function PATCH(
   const { token, action } = body;
 
   if (!token) return Response.json({ error: 'Missing token' }, { status: 401 });
-  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline', 'update_cover_text'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
+  if (!['mark_sent', 'update_palette', 'update_logo', 'update_card', 'update_deadline', 'update_cover_text', 'update_feature'].includes(action)) return Response.json({ error: 'Unknown action' }, { status: 400 });
 
   const { data: campaign, error } = await supabaseAdmin
     .from('campaigns')
-    .select('id, status, deadline')
+    .select('id, status, deadline, organiser_email')
     .eq('slug', slug)
     .eq('organiser_token', token)
     .single();
@@ -71,6 +72,19 @@ export async function PATCH(
     return Response.json({ ok: true, deadline });
   }
 
+  // "Happy for us to feature this card": solo cards only (on a group card the messages belong to
+  // the people who wrote them). Saying no takes it off the homepage too, unless it's an admin's card.
+  if (action === 'update_feature') {
+    if (campaign.deadline) return Response.json({ error: 'Only solo cards can be featured' }, { status: 400 });
+    const featureOk = body.feature_ok === true;
+    const { error: updateError } = await supabaseAdmin.from('campaigns').update({ feature_ok: featureOk }).eq('id', campaign.id);
+    if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
+    if (!featureOk && !(campaign.organiser_email && isAdminEmail(campaign.organiser_email))) {
+      await supabaseAdmin.from('showcase_cards').delete().eq('campaign_id', campaign.id);
+    }
+    return Response.json({ ok: true });
+  }
+
   // "Show name & text on photo" — saved as soon as it's switched.
   if (action === 'update_cover_text') {
     const { error: updateError } = await supabaseAdmin
@@ -82,10 +96,14 @@ export async function PATCH(
   }
 
   if (action === 'update_card') {
-    const { card_message, card_note, occasion, card_image_url, card_text_on_image } = body;
+    const { card_message, card_note, occasion, card_image_url, card_text_on_image, recipient_name } = body;
     const { error: updateError } = await supabaseAdmin
       .from('campaigns')
-      .update({ card_message: card_message ?? null, card_note: card_note ?? null, occasion: occasion ?? null, card_image_url: card_image_url ?? null, card_text_on_image: card_text_on_image ?? true })
+      .update({
+        card_message: card_message ?? null, card_note: card_note ?? null, occasion: occasion ?? null, card_image_url: card_image_url ?? null, card_text_on_image: card_text_on_image ?? true,
+        // Only the solo editor sends the name; group cards keep theirs.
+        ...(typeof recipient_name === 'string' && recipient_name.trim() ? { recipient_name: recipient_name.trim() } : {}),
+      })
       .eq('id', campaign.id);
     if (updateError) return Response.json({ error: updateError.message }, { status: 500 });
     return Response.json({ ok: true });

@@ -1,7 +1,7 @@
 # thankyoucards.au — Project Context
 
 > Hand this file to any new Claude conversation (Claude Code or the Claude app). It covers everything needed to pick up the work.
-> Last updated: 14 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
+> Last updated: 19 October 2026. Claude Code keeps this file current; re-upload it to the Claude app Project after changes.
 
 ---
 
@@ -81,7 +81,7 @@ app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided ("Y
                              Corporate prints in its own look (CorporateFront/Back/Tile/Closing in PrintableCard):
                              photo fading into the card colour, logo on front + back, the screen's tile styles,
                              coloured closing panel. Messages are spread evenly over both inside pages.
-app/manage/[slug]/page.tsx   Organiser dashboard (GROUP CARDS ONLY). Site top bar + card switcher dropdown
+app/manage/[slug]/page.tsx   Organiser dashboard (group cards; solo cards get SoloDashboard). Site top bar + card switcher dropdown
                              (logged-in organiser's cards, Current/Previous) via lib/useMyCards + /api/my-cards
 app/organiser/page.tsx       "Organiser view" (More menu): logged out → log-in form; logged in → newest card
 ```
@@ -257,7 +257,7 @@ The "on its way" waiting screen shows when `status !== 'sent'` and `?preview=1` 
 
 ## Manage page (`app/manage/[slug]/page.tsx`)
 
-**Group cards only.** Access requires the `organiser_token` in the URL (`?token=...`).
+**Group cards** (solo cards made while logged in get the simpler SoloDashboard). Access requires the `organiser_token` in the URL (`?token=...`).
 
 Layout (top to bottom, redesigned 14 Oct — a dashboard people return to, before and after paying):
 1. Teal header — card selector (dropdown when logged in), Signed / Days left (tap to change the deadline)
@@ -280,6 +280,7 @@ PATCH actions available:
 - `update_palette` — saves card_palette
 - `update_logo` — saves card_logo_url
 - `mark_sent` — flips status to 'sent'
+- `update_feature` — solo only: feature_ok on/off
 
 ---
 
@@ -380,8 +381,11 @@ refresh/bell/lock) until Tim draws his own. Reminder stays copy/share (we can't 
   (faded until then). Print & Post later = paid add-on for both.
 - Enforce on the server: /api/render/* refuse unpaid group cards (not just hidden buttons).
 
-**Solo cards in "My cards"**: solo cards made while logged in remember the account; Organiser view / My cards
-lists them as Sent (opens the card with Print/Save, no organiser page). Ties into birthday reminders later.
+**Solo cards in "My cards" — DONE 19 Oct**: solo cards made while logged in save the account email (server checks the
+login; logged-out solo cards still have no email). They're in the card switcher under "Solo cards" and open
+/manage/[slug] as `components/dashboard/SoloDashboard.tsx`: preview, send (link/Share/Email the card), Print/Save,
+Edit card (To, cover message, message, From, photo/designs, text-on-photo), the feature tick (PATCH
+`update_feature`; unticking removes it from the homepage unless it's an admin's card), Make another card.
 
 **Later — event cards**: golf day, Christmas party, birthday… a QR code at the event, a live view (e.g. on a TV),
 messages/in-jokes/photos added during it, and a keepsake for everyone who was there (photo-heavy print layout).

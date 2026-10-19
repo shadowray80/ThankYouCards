@@ -15,6 +15,7 @@ import { Accordion, UiIcon, timeAgo } from '@/components/dashboard/DashboardPart
 import { KeepsakeButtons } from '@/components/ui/KeepsakeButtons';
 import { CardPicker } from '@/components/cards/CardPicker';
 import { Nav } from '@/components/ui/Nav';
+import { SoloDashboard } from '@/components/dashboard/SoloDashboard';
 import { useMyCards, manageUrl, type MyCard } from '@/lib/useMyCards';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
@@ -40,6 +41,7 @@ interface Campaign {
   card_accent: string | null;
   card_text_on_image: boolean | null;
   card_occasion: string | null;
+  feature_ok?: boolean | null;
   created_at?: string;
 }
 
@@ -54,7 +56,7 @@ interface Contribution {
 }
 
 // The card selector at the top of the dashboard: "Lance's card / Appreciation · 12 October 2026".
-// Logged-in organisers with other cards get a dropdown (Current, then Previous); the native select
+// Logged-in organisers with other cards get a dropdown (Current, Solo cards, then Previous); the native select
 // sits invisibly over the box, so the phone's own picker opens.
 function CardSelector({ cards, currentSlug, title, subtitle }: {
   cards: MyCard[] | null;
@@ -63,14 +65,15 @@ function CardSelector({ cards, currentSlug, title, subtitle }: {
   subtitle: string;
 }) {
   const label = (c: MyCard) =>
-    `${c.recipient_name}${c.card_occasion ? ` · ${c.card_occasion}` : ''} · ${new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
+    `${c.recipient_name}${c.card_occasion ? ` · ${c.card_occasion}` : ''}${c.deadline ? '' : ' · Solo'} · ${new Date(c.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
   const choices = cards ?? [];
   const canSwitch = choices.some(c => c.slug !== currentSlug);
   // Paying doesn't finish a card (messages keep coming in), so a card stays Current until its
   // deadline has passed.
   const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, local time
   const isPrevious = (c: MyCard) => !!c.deadline && c.deadline < today;
-  const current = choices.filter(c => !isPrevious(c));
+  const current = choices.filter(c => c.deadline && !isPrevious(c));
+  const solo = choices.filter(c => !c.deadline);
   const previous = choices.filter(isPrevious);
   const isListed = choices.some(c => c.slug === currentSlug);
 
@@ -96,6 +99,11 @@ function CardSelector({ cards, currentSlug, title, subtitle }: {
             {current.length > 0 && (
               <optgroup label="Current">
                 {current.map(c => <option key={c.slug} value={c.slug}>{label(c)}</option>)}
+              </optgroup>
+            )}
+            {solo.length > 0 && (
+              <optgroup label="Solo cards">
+                {solo.map(c => <option key={c.slug} value={c.slug}>{label(c)}</option>)}
               </optgroup>
             )}
             {previous.length > 0 && (
@@ -467,6 +475,25 @@ function ManageContent() {
     </div>
   );
 
+  const cardSubtitle = (occasion: string | null) =>
+    [occasion, campaign.created_at ? new Date(campaign.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ');
+
+  // Solo cards (no deadline) get their own, simpler page: no contributors, deadline or payment.
+  if (!campaign.deadline) {
+    const soloName = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
+    return (
+      <SoloDashboard
+        campaign={{ ...campaign, feature_ok: campaign.feature_ok ?? false }}
+        contribution={contributions[0] ?? null}
+        slug={slug}
+        token={token}
+        selector={<CardSelector cards={myCards} currentSlug={slug} title={`${soloName}'s card`} subtitle={cardSubtitle(null)} />}
+        onCampaignChange={next => setCampaign(prev => prev ? { ...prev, ...next } : prev)}
+        onContributionChange={next => setContributions(prev => prev.map(c => c.id === next.id ? { ...c, ...next } : c))}
+      />
+    );
+  }
+
   const isSent        = campaign.status === 'sent' || paidParam;
   const theme         = THEMES.find(t => t.id === campaign.card_theme) ?? THEMES[0];
   const recipientName = campaign.recipient_name.charAt(0).toUpperCase() + campaign.recipient_name.slice(1);
@@ -498,7 +525,7 @@ function ManageContent() {
           <CardSelector
             cards={myCards} currentSlug={slug}
             title={`${recipientName}'s card`}
-            subtitle={[campaign.card_occasion, campaign.created_at ? new Date(campaign.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ')}
+            subtitle={cardSubtitle(campaign.card_occasion)}
           />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
             {[

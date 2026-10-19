@@ -8,7 +8,7 @@ import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { useMyCards, manageUrl } from '@/lib/useMyCards';
 
 // "Organiser view" from the More menu. Logged out → log-in prompt. Logged in → straight to the
-// organiser page of their most recent group card (where a dropdown switches between all of them).
+// organiser page of their most recent card (where a dropdown switches between all of them).
 export default function OrganiserPage() {
   const router = useRouter();
   const { session } = useOrganiserSession();
@@ -31,7 +31,7 @@ export default function OrganiserPage() {
           <div style={panel}>
             <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2A2A2A', marginBottom: 4 }}>Organiser view</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 }}>
-              Log in to see and manage your group cards.
+              Log in to see and manage your cards.
             </div>
             <LoginForm />
           </div>
@@ -39,9 +39,9 @@ export default function OrganiserPage() {
           <div style={{ ...panel, textAlign: 'center', color: '#B0A8BC', fontWeight: 700 }}>Opening your cards…</div>
         ) : (
           <div style={panel}>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2A2A2A', marginBottom: 4 }}>No group cards yet</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2A2A2A', marginBottom: 4 }}>No cards yet</div>
             <div style={{ fontSize: '.82rem', color: '#7A7585', fontWeight: 600, lineHeight: 1.5, marginBottom: 16 }}>
-              Group cards made with <strong style={{ color: '#2A2A2A' }}>{session.email}</strong> will appear here.
+              Cards made while logged in as <strong style={{ color: '#2A2A2A' }}>{session.email}</strong> will appear here.
             </div>
             <button
               onClick={() => router.push('/?v=group')}
