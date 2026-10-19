@@ -41,11 +41,10 @@ export function MoreMenu() {
       }
     }
 
-    // Contributor card link — full URL or just slug
-    let slug = raw.toLowerCase();
-    const cardMatch = slug.match(/\/card\/([^/?#]+)/);
-    if (cardMatch) slug = cardMatch[1];
-    if (!slug) return;
+    // Any card link (contributor, recipient or print), even inside a shared message, or just the slug
+    const linkMatch = raw.match(/\/(?:card|view|print)\/([a-z0-9-]+)/i);
+    const slug = (linkMatch ? linkMatch[1] : raw).toLowerCase();
+    if (!/^[a-z0-9-]+$/.test(slug)) return;
     window.location.href = `/card/${slug}`;
   }
 

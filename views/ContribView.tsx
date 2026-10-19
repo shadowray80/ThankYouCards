@@ -50,19 +50,19 @@ interface ContribViewProps {
   campaignSlug?: string;
 }
 
-// Little starter cues for the message box — not "prompts", just a friendly nudge for
-// people who freeze up at a blank page. Tapping one drops a lead-in sentence into the
-// textarea so they can finish the thought rather than start from nothing.
-const MESSAGE_CUES: { label: string; starter: (name: string) => string }[] = [
-  { label: 'Fun times', starter: name => `One of my favourite memories with ${name} is ` },
-  { label: 'A special talent', starter: name => `${name} is honestly so good at ` },
-  { label: 'An in-joke', starter: () => `I still crack up thinking about the time ` },
-  { label: 'Appreciation', starter: name => `I really appreciate ${name} for ` },
-  { label: 'The difference they made', starter: name => `${name} made such a difference by ` },
-  { label: 'A specific thing', starter: () => `One thing I'll never forget is ` },
-  { label: 'Something that stuck with you', starter: name => `Something ${name} once said or did that stuck with me was ` },
-  { label: 'An attribute, like generosity', starter: name => `${name} is one of the most generous people I know — ` },
-  { label: 'The outcome', starter: name => `Because of ${name}, ` },
+// Little starter cues for the message box — a friendly nudge for people who freeze up at a
+// blank page. Tapping one opens a small hint window under them (tap another to switch, tap again
+// to close). Nothing is ever put in the message itself: the words are theirs.
+const MESSAGE_CUES: { label: string; hint: (name: string) => string }[] = [
+  { label: 'Fun times', hint: name => `What's a favourite memory with ${name}? A trip, a game, a night you still talk about.` },
+  { label: 'A special talent', hint: name => `What is ${name} brilliant at? Something you've watched them do and thought "how?"` },
+  { label: 'An in-joke', hint: name => `Is there a story only you and ${name} would get? A line or a moment that still makes you laugh.` },
+  { label: 'Appreciation', hint: name => `What do you appreciate most about ${name}? Something they do that maybe no one has thanked them for.` },
+  { label: 'The difference they made', hint: name => `How has ${name} made things better, for you, the team or everyone around them?` },
+  { label: 'A specific thing', hint: name => `Think of one moment with ${name} you'll never forget. What happened?` },
+  { label: 'Something that stuck with you', hint: name => `Did ${name} ever say or do something that stayed with you? What was it, and why did it matter?` },
+  { label: 'An attribute, like generosity', hint: name => `Which word sums ${name} up? Generous, patient, funny, loyal… and when did you see it?` },
+  { label: 'The outcome', hint: name => `What's different because of ${name}? Something you can do now, or somewhere you got to.` },
 ];
 
 export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug }: ContribViewProps) {
@@ -73,6 +73,7 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
   const [campaign, setCampaign]           = useState<Campaign | null>(initialSlug ? null : DEMO_CAMPAIGN);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [loading, setLoading]             = useState(false);
+  const [activeCue, setActiveCue]         = useState<string | null>(null);
   const [loadError, setLoadError]         = useState('');
 
   const [msg, setMsg]               = useState('');
@@ -110,19 +111,6 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
       .catch(() => setLoadError('Could not load campaign'))
       .finally(() => setLoading(false));
   }, [activeSlug]);
-
-  function insertCue(starter: string) {
-    setMsg(prev => {
-      const needsSpace = prev.length > 0 && !/\s$/.test(prev);
-      return prev + (needsSpace ? ' ' : '') + starter;
-    });
-    requestAnimationFrame(() => {
-      const el = messageTextareaRef.current;
-      if (!el) return;
-      el.focus();
-      el.setSelectionRange(el.value.length, el.value.length);
-    });
-  }
 
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -352,23 +340,40 @@ export function ContribView({ onBack, onToast, onNav, campaignSlug: initialSlug 
           <div style={{ textAlign: 'right', fontSize: '.73rem', color: '#7A7585', marginTop: 4 }}>{msg.length}/400</div>
 
           {/* Friendly starter cues — not labelled "prompts", just a nudge for anyone
-              staring at a blank box. Tapping one drops a lead-in sentence to finish. */}
+              staring at a blank box. Tapping one shows a hint; it never goes into the message. */}
           <div style={{ marginTop: 12, background: '#FAF7FF', border: '1.5px solid #E8E2F0', borderRadius: 12, padding: '12px 14px' }}>
             <div style={{ fontSize: '.78rem', fontWeight: 800, color: '#7A7585', marginBottom: 8 }}>
               Thank {recipientName} for…
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {MESSAGE_CUES.map(cue => (
-                <button
-                  key={cue.label}
-                  type="button"
-                  onClick={() => insertCue(cue.starter(recipientName))}
-                  style={{ background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 20, padding: '6px 12px', fontSize: '.76rem', fontWeight: 700, color: '#3A8FA0', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
-                >
-                  {cue.label}
-                </button>
-              ))}
+              {MESSAGE_CUES.map(cue => {
+                const active = activeCue === cue.label;
+                return (
+                  <button
+                    key={cue.label}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setActiveCue(active ? null : cue.label)}
+                    style={{ background: active ? '#3A8FA0' : '#fff', border: `1.5px solid ${active ? '#3A8FA0' : '#E8E2F0'}`, borderRadius: 20, padding: '6px 12px', fontSize: '.76rem', fontWeight: 700, color: active ? '#fff' : '#3A8FA0', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
+                  >
+                    {cue.label}
+                  </button>
+                );
+              })}
             </div>
+            {(() => {
+              const cue = MESSAGE_CUES.find(c => c.label === activeCue);
+              if (!cue) return null;
+              return (
+                <div role="status" style={{ position: 'relative', marginTop: 10, background: '#fff', border: '1.5px solid #C8E8F0', borderRadius: 10, padding: '10px 34px 10px 12px', fontSize: '.82rem', fontWeight: 600, color: '#2A2A2A', lineHeight: 1.5 }}>
+                  {cue.hint(recipientName)}
+                  <button type="button" onClick={() => setActiveCue(null)} aria-label="Close hint"
+                    style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: '#B0A8BC', fontWeight: 800, fontSize: '.85rem', lineHeight: 1 }}>
+                    ✕
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Photo upload */}
