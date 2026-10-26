@@ -403,6 +403,11 @@ script, message size fitted); sign-off chips (components/ui/SignOffInput.tsx); C
 messages of 120+ chars; peach "Send it to" block; contributor prompts show a hint, never type into the message;
 print layout loads every font before measuring (was a cause of overlapping tiles).
 Open question: How it works says corporate cards need an account, but the builder doesn't enforce it yet.
+Also 19 Oct: "Print it at home" carousel (components/ui/PrintCarousel.tsx, public/print-at-home*.webp) on the home
+page + How it works. Back of every printed card: QR code (public/qr-print.svg — round teal dots, coral corners,
+logo in the middle, error level H) + "Say thank you to the legends in your life". The QR opens /hi (app/hi = the
+home page at its own address) so Vercel Analytics (enabled; <Analytics/> in app/layout.tsx) counts printed-card
+visits as the /hi page. Regenerating the QR: segno + a small script; keep the URL short and re-test it scans.
 
 **Small leftovers**:
 home page "Handwrite it if you want" still uses pencil.png.
