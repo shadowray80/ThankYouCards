@@ -124,6 +124,15 @@ function CardSelector({ cards, currentSlug, title, subtitle }: {
   );
 }
 
+// The invite message's "…a card for Coach Dave to say thank you" part, from what the card is for.
+const INVITE_REASON: Record<string, string> = {
+  'Thank You': 'to say thank you', 'Appreciation': 'to say thank you', 'Coach': 'to say thank you', 'Teacher': 'to say thank you',
+  'Birthday': 'for their birthday', 'Farewell': 'to say farewell', 'Happy Travels': 'to wish them happy travels',
+  'Congratulations': 'to say congratulations', 'Get Well Soon': 'to wish them well', 'New Baby': 'for the new baby',
+  'Retirement': 'for their retirement', 'Wedding': 'for their wedding', 'Welcome': 'to welcome them',
+  'Sympathy': 'to let them know we’re thinking of them',
+};
+
 function ManageContent() {
   const params       = useParams();
   const searchParams = useSearchParams();
@@ -146,6 +155,8 @@ function ManageContent() {
   const [copiedManage, setCopiedManage]   = useState(false);
   const [copiedUpdate, setCopiedUpdate]   = useState(false);
   const [updateMsgEdit, setUpdateMsgEdit] = useState<string | null>(null);
+  const [inviteEdit, setInviteEdit]       = useState<string | null>(null);
+  const [copiedInvite, setCopiedInvite]   = useState(false);
   const [paying, setPaying]               = useState(false);
   const [refreshing, setRefreshing]       = useState(false);
   const [savingPalette, setSavingPalette] = useState(false);
@@ -742,12 +753,43 @@ function ManageContent() {
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
-          <button
-            onClick={() => shareText(`Add your message to ${recipientName}'s card`, copyShareLink, `${origin}/card/${slug}`)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#2E7E90', border: 'none', borderRadius: 10, padding: '11px', color: '#fff', fontWeight: 800, fontSize: '.88rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}
-          >
-            <UiIcon name="share" size={17} />Share link
-          </button>
+          {/* Invite message — a link on its own feels cold, so here's a friendly one to send with it.
+              Editable; never saved (rebuilt each visit). Copy/Share send the message with the link in it. */}
+          {(() => {
+            const reason = Object.entries(INVITE_REASON).find(([k]) => k.toLowerCase() === campaign.card_occasion?.trim().toLowerCase())?.[1];
+            const defaultInvite = `Hi! I'm making a card for ${recipientName}${reason ? ` ${reason}` : ''}, and it would be great if you could add a message. You can add a photo too if you like!
+
+${origin}/card/${slug}`;
+            const invite = inviteEdit ?? defaultInvite;
+            const copyInvite = () => { navigator.clipboard.writeText(invite); setCopiedInvite(true); setTimeout(() => setCopiedInvite(false), 2000); };
+            return (
+              <div style={{ marginTop: 6 }}>
+                <div style={{ fontSize: '.76rem', color: '#7A7585', fontWeight: 700, marginBottom: 6 }}>Or send it with a message</div>
+                <textarea
+                  value={invite}
+                  onChange={e => setInviteEdit(e.target.value)}
+                  rows={5}
+                  style={{ width: '100%', border: '1.5px solid #C8E8F0', borderRadius: 10, padding: '10px 12px', fontSize: '.8rem', color: '#2A2A2A', fontFamily: "'Nunito',sans-serif", lineHeight: 1.55, resize: 'vertical', background: '#fff', boxSizing: 'border-box', marginBottom: 8 }}
+                />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={copyInvite}
+                    style={{ flex: 1, background: '#fff', border: '2px solid #3A8FA0', borderRadius: 10, padding: '9px 0', color: '#3A8FA0', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    {copiedInvite ? 'Copied' : 'Copy message'}
+                  </button>
+                  <button onClick={() => shareText(invite, copyInvite)}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#2E7E90', border: 'none', borderRadius: 10, padding: '10px 0', color: '#fff', fontWeight: 800, fontSize: '.85rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                    <UiIcon name="share" size={16} />Share
+                  </button>
+                  {inviteEdit !== null && (
+                    <button onClick={() => setInviteEdit(null)}
+                      style={{ background: 'none', border: '1.5px solid #C8E8F0', borderRadius: 10, padding: '10px 12px', color: '#7A7585', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </Accordion>
 
         {/* Contributors — who's signed, with edit / remove, and adding one on someone's behalf */}
