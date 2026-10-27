@@ -13,7 +13,7 @@ import { CoverTextButton, CoverTextPicker } from '@/components/cards/CoverTextPi
 import { coverTextCss, coverTextFields, DEFAULT_COVER_TEXT, type CoverTextStyle } from '@/lib/coverText';
 import { GiftSelector } from '@/components/forms/GiftSelector';
 import { resizeImage } from '@/lib/resizeImage';
-import { useLiveEditableText } from '@/lib/useLiveEditableText';
+import { CoverField } from '@/components/ui/CoverField';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 import { useOrganiserSession } from '@/lib/useOrganiserSession';
 import { SignOffInput } from '@/components/ui/SignOffInput';
@@ -62,8 +62,6 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
   const msgPhotoRef = useRef<HTMLInputElement>(null);
   const msgTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const toEditable = useLiveEditableText(to, setTo, { capitalizeWords: true });
-  const cardMsgEditable = useLiveEditableText(cardMsg, setCardMsg, { capitalizeWords: true });
 
   const [featureOk, setFeatureOk] = useState(false);
   // Logged in: the card is saved to the account, so it shows up in My cards.
@@ -303,7 +301,7 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
 
             <PreviewToggle active={showPreview} onClick={() => setShowPreview(v => !v)} />
 
-            {/* Recipient name — contentEditable so text-shadow isn't clipped */}
+            {/* Recipient name, typed on the cover */}
             <div style={{ position: 'absolute', top: 22, left: 0, right: 0, textAlign: 'center', zIndex: 3, padding: '0 16px', display: imageOnly ? 'none' : undefined }}>
               <div style={{ fontSize: '.58rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 2 }}>To</div>
               <div style={{ position: 'relative' }}>
@@ -316,23 +314,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     Legend&apos;s Name
                   </div>
                 )}
-                <div
-                  ref={toEditable.ref}
-                  contentEditable
-                  suppressContentEditableWarning
-                  spellCheck={false}
-                  autoCapitalize="words"
-                  onInput={toEditable.onInput}
-                  onCompositionStart={toEditable.onCompositionStart}
-                  onCompositionEnd={toEditable.onCompositionEnd}
-                  style={{
-                    outline: 'none', cursor: 'text', textAlign: 'center',
-                    letterSpacing: '.01em', textTransform: 'capitalize',
-                    ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
-                    lineHeight: 1.1,
-                    caretColor: coverText.color,
-                    minWidth: 40,
-                  }}
+                <CoverField value={to} onChange={setTo} capitalizeWords ariaLabel="Who it's for"
+                  style={{ textAlign: 'center', letterSpacing: '.01em', ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'), lineHeight: 1.1 }}
                 />
               </div>
             </div>
@@ -355,22 +338,8 @@ export function SoloFlow({ onBack, onToast, onNav }: SoloFlowProps) {
                     Cover Message
                   </div>
                 )}
-                <div
-                  ref={cardMsgEditable.ref}
-                  contentEditable
-                  suppressContentEditableWarning
-                  spellCheck={false}
-                  onInput={cardMsgEditable.onInput}
-                  onCompositionStart={cardMsgEditable.onCompositionStart}
-                  onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                  style={{
-                    outline: 'none', cursor: 'text', textAlign: 'center',
-                    textTransform: 'capitalize',
-                    ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'),
-                    lineHeight: 1.2,
-                    caretColor: coverText.color,
-                    wordBreak: 'break-word',
-                  }}
+                <CoverField value={cardMsg} onChange={setCardMsg} capitalizeWords ariaLabel="Cover message"
+                  style={{ textAlign: 'center', ...coverTextCss(coverText, 'clamp(2.4rem, 9vw, 3.2rem)'), lineHeight: 1.2, wordBreak: 'break-word' }}
                 />
               </div>
             </div>

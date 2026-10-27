@@ -18,9 +18,11 @@ export interface CoverFont {
 
 export const COVER_FONTS: CoverFont[] = [
   { id: 'script',  label: 'Script',  family: 'var(--font-dancing), cursive',             cssVar: '--font-dancing',  weight: 400, scale: 1 },
+  { id: 'friendly', label: 'Friendly', family: 'var(--font-pacifico), cursive',          cssVar: '--font-pacifico', weight: 400, scale: 0.8 },
   { id: 'meme',    label: 'Meme',    family: 'var(--font-anton), Impact, sans-serif',    cssVar: '--font-anton',    weight: 400, scale: 0.78, upper: true, letterSpacing: '.01em' },
   { id: 'marker',  label: 'Marker',  family: 'var(--font-marker), cursive',              cssVar: '--font-marker',   weight: 400, scale: 0.78 },
   { id: 'comic',   label: 'Comic',   family: 'var(--font-bangers), cursive',             cssVar: '--font-bangers',  weight: 400, scale: 0.86, letterSpacing: '.03em' },
+  { id: 'retro',   label: 'Retro',   family: 'var(--font-caprasimo), Georgia, serif',    cssVar: '--font-caprasimo', weight: 400, scale: 0.78 },
   { id: 'elegant', label: 'Elegant', family: 'var(--font-playfair), Georgia, serif',     cssVar: '--font-playfair', weight: 700, scale: 0.8 },
   { id: 'bold',    label: 'Bold',    family: 'var(--font-nunito), sans-serif',           cssVar: '--font-nunito',   weight: 900, scale: 0.76 },
 ];

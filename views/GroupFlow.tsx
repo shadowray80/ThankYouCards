@@ -18,7 +18,7 @@ import { CoverTextButton, CoverTextPicker } from '@/components/cards/CoverTextPi
 import { coverTextCss, coverTextFields, DEFAULT_COVER_TEXT, type CoverTextStyle } from '@/lib/coverText';
 import { OCCASIONS } from '@/lib/occasions';
 import { resizeImage } from '@/lib/resizeImage';
-import { useLiveEditableText } from '@/lib/useLiveEditableText';
+import { CoverField } from '@/components/ui/CoverField';
 import { TintedIcon } from '@/components/ui/TintedIcon';
 
 interface GroupFlowProps {
@@ -93,9 +93,6 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
   const uploadRef    = useRef<HTMLInputElement>(null);
   const logoUploadRef = useRef<HTMLInputElement>(null);
 
-  const recipEditable    = useLiveEditableText(recip, setRecip, { capitalizeWords: true });
-  const cardMsgEditable  = useLiveEditableText(cardMsg, setCardMsg);
-  const occasionEditable = useLiveEditableText(occasion, setOccasion);
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
@@ -419,18 +416,16 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 {/* Recipient */}
                 <div style={{ position: 'relative', marginBottom: 10 }}>
                   {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: 'rgba(255,255,255,.65)' }}>The legend</div>}
-                  <div ref={recipEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
-                    onInput={recipEditable.onInput} onCompositionStart={recipEditable.onCompositionStart} onCompositionEnd={recipEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff', caretColor: '#fff', minWidth: 40, textTransform: 'capitalize' }}
+                  <CoverField value={recip} onChange={setRecip} capitalizeWords ariaLabel="Who it's for"
+                    style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(1.6rem, 7vw, 2.2rem)', lineHeight: 1.05, color: '#fff' }}
                   />
                 </div>
 
                 {/* Message */}
                 <div style={{ position: 'relative', marginBottom: 8 }}>
                   {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', color: 'rgba(255,255,255,.65)', lineHeight: 1.4 }}>Add a tagline…</div>}
-                  <div ref={cardMsgEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
-                    onInput={cardMsgEditable.onInput} onCompositionStart={cardMsgEditable.onCompositionStart} onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, caretColor: '#fff', wordBreak: 'break-word' }}
+                  <CoverField value={cardMsg} onChange={setCardMsg} ariaLabel="Cover message"
+                    style={{ fontFamily: 'Georgia, var(--font-gelasio), serif', fontSize: 'clamp(.82rem, 3vw, 1rem)', fontStyle: 'italic', lineHeight: 1.4, color: accentColor ?? corpPalette.accent, wordBreak: 'break-word' }}
                   />
                 </div>
 
@@ -438,9 +433,8 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 <div style={{ fontSize: '.52rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,.4)', marginBottom: 2 }}>From</div>
                 <div style={{ position: 'relative' }}>
                   {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', color: 'rgba(255,255,255,.65)', fontWeight: 700 }}>the team</div>}
-                  <div ref={occasionEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
-                    onInput={occasionEditable.onInput} onCompositionStart={occasionEditable.onCompositionStart} onCompositionEnd={occasionEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
+                  <CoverField value={occasion} onChange={setOccasion} ariaLabel="Who it’s from"
+                    style={{ fontFamily: "'Nunito', sans-serif", fontSize: '.88rem', fontWeight: 700, color: 'rgba(255,255,255,.7)', wordBreak: 'break-word' }}
                   />
                 </div>
                 {/* Logo — pushed to bottom; placeholder shows when none uploaded */}
@@ -510,25 +504,22 @@ export function GroupFlow({ onBack, onToDash, onToast, onNav }: GroupFlowProps) 
                 <div style={{ fontSize: '.65rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', marginBottom: 4, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>To</div>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
                   {!recip && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1, whiteSpace: 'nowrap' }}>Legend&apos;s Name</div>}
-                  <div ref={recipEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false} autoCapitalize="words"
-                    onInput={recipEditable.onInput} onCompositionStart={recipEditable.onCompositionStart} onCompositionEnd={recipEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', textTransform: 'capitalize', ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1, caretColor: coverText.color, minWidth: 40 }}
+                  <CoverField value={recip} onChange={setRecip} capitalizeWords ariaLabel="Who it's for"
+                    style={{ ...coverTextCss(coverText, 'clamp(3rem, 13vw, 4.5rem)'), lineHeight: 1 }}
                   />
                 </div>
                 <div style={{ position: 'relative', marginBottom: 6 }}>
                   {!cardMsg && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3 }}>Cover Message</div>}
-                  <div ref={cardMsgEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
-                    onInput={cardMsgEditable.onInput} onCompositionStart={cardMsgEditable.onCompositionStart} onCompositionEnd={cardMsgEditable.onCompositionEnd}
-                    style={{ outline: 'none', cursor: 'text', ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3, caretColor: coverText.color, wordBreak: 'break-word' }}
+                  <CoverField value={cardMsg} onChange={setCardMsg} ariaLabel="Cover message"
+                    style={{ ...coverTextCss(coverText, 'clamp(1.4rem, 6vw, 2rem)'), lineHeight: 1.3, wordBreak: 'break-word' }}
                   />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                   <span style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.72)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', flexShrink: 0 }}>From</span>
                   <div style={{ position: 'relative', flex: 1, minWidth: 30 }}>
                     {!occasion && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', lineHeight: 1.3, color: '#fff', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)' }}>the team</div>}
-                    <div ref={occasionEditable.ref} contentEditable suppressContentEditableWarning spellCheck={false}
-                      onInput={occasionEditable.onInput} onCompositionStart={occasionEditable.onCompositionStart} onCompositionEnd={occasionEditable.onCompositionEnd}
-                      style={{ outline: 'none', cursor: 'text', fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', caretColor: '#fff', wordBreak: 'break-word', minWidth: 40 }}
+                    <CoverField value={occasion} onChange={setOccasion} ariaLabel="Who it’s from"
+                      style={{ fontFamily: "'Nunito', sans-serif", fontSize: '.82rem', fontWeight: 700, lineHeight: 1.3, color: 'rgba(255,255,255,.92)', textShadow: '0 1px 2px rgba(0,0,0,.85), 0 2px 8px rgba(0,0,0,.7), 0 3px 16px rgba(0,0,0,.5)', wordBreak: 'break-word' }}
                     />
                   </div>
                 </div>

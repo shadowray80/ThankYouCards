@@ -24,7 +24,7 @@ export function CoverTextButton({ open, onToggle }: { open: boolean; onToggle: (
 export function CoverTextPicker({ value, onChange }: { value: CoverTextStyle; onChange: (next: CoverTextStyle) => void }) {
   return (
     <div style={{ background: '#fff', border: '1.5px solid #E8E2F0', borderRadius: 14, padding: '12px', margin: '8px 0', fontFamily: "'Nunito',sans-serif" }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
         {COVER_FONTS.map(f => {
           const active = value.font === f.id;
           return (

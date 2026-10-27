@@ -42,3 +42,8 @@ input::-ms-reveal,
 input::-ms-clear {
   display: none;
 }
+
+/* Cover text fields (components/ui/CoverField.tsx): capitals as you type, on computers only. */
+@media (hover: hover) and (pointer: fine) {
+  .tyc-cover-field-cap { text-transform: capitalize; }
+}

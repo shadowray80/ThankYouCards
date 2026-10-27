@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Lora, Dancing_Script, Gelasio, Anton, Permanent_Marker, Bangers, Playfair_Display } from "next/font/google";
+import { Nunito, Lora, Dancing_Script, Gelasio, Anton, Permanent_Marker, Bangers, Playfair_Display, Caprasimo, Pacifico } from "next/font/google";
 import "./globals.css";
 import { AdminToolbar } from "@/components/ui/AdminToolbar";
 import { Analytics } from "@vercel/analytics/next";
@@ -44,6 +44,8 @@ const gelasio = Gelasio({
 const anton = Anton({ subsets: ["latin"], variable: "--font-anton", weight: "400", display: "swap", preload: false });
 const marker = Permanent_Marker({ subsets: ["latin"], variable: "--font-marker", weight: "400", display: "swap", preload: false });
 const bangers = Bangers({ subsets: ["latin"], variable: "--font-bangers", weight: "400", display: "swap", preload: false });
+const pacifico = Pacifico({ subsets: ["latin"], variable: "--font-pacifico", weight: "400", display: "swap", preload: false });
+const caprasimo = Caprasimo({ subsets: ["latin"], variable: "--font-caprasimo", weight: "400", display: "swap", preload: false });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ["700"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
@@ -78,7 +80,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${nunito.variable} ${lora.variable} ${dancing.variable} ${gelasio.variable} ${anton.variable} ${marker.variable} ${bangers.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${nunito.variable} ${lora.variable} ${dancing.variable} ${gelasio.variable} ${anton.variable} ${marker.variable} ${bangers.variable} ${playfair.variable} ${caprasimo.variable} ${pacifico.variable}`}>
       <head>
         <link rel="icon" href="/TYC.png" />
         <link rel="apple-touch-icon" href="/TYC.png" />
