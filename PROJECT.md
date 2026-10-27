@@ -76,7 +76,9 @@ app/print/[slug]/page.tsx    Printable A5 card on A4 landscape: double-sided ("Y
                              printed upside down; the PDF also carries /Duplex so Chrome/Adobe pre-set the dialog)  or
                              single-sided (cover sheet + inside sheet). components/print/PrintableCard.tsx +
                              lib/printLayout.ts (mm-exact layout; messages measured and packed into columns,
-                             never split; text at the on-screen size (16px), extra inside sheets as needed). Landscape cover →
+                             never split; text at the on-screen size (16px), extra inside sheets as needed;
+                             double-sided = booklet: sheets nest and pages read in order, messages spread evenly over
+                             every inside page; a photo shrinks if its tile would be taller than a page). Landscape cover →
                              whole photo framed with names below; portrait → photo fills the front.
                              Corporate prints in its own look (CorporateFront/Back/Tile/Closing in PrintableCard):
                              photo fading into the card colour, logo on front + back, the screen's tile styles,

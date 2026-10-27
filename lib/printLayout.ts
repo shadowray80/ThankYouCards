@@ -46,6 +46,7 @@ export function packMessages(
   headerHeight: number,
   footerHeight: number,
   headerAlone = false,
+  scale = 1,
 ): InsideSpread[] {
   const spreads: InsideSpread[] = [];
   let i = 0;
@@ -55,11 +56,14 @@ export function packMessages(
     const caps = columnCapacities(first, cols, headerHeight, footerHeight, headerAlone);
     for (let c = 0; c < cols * 2; c++) {
       if (caps[c] === 0) { columns.push([]); continue; }
-      const capacity = caps[c];
+      const capacity = caps[c] * scale;
       const column: number[] = [];
       let used = 0;
-      while (i < heights.length && (used + heights[i] <= capacity || column.length === 0)) {
-        // An over-tall tile still goes in an empty column rather than looping forever.
+      // A tile is never taller than a full page (its photo shrinks, see PrintableCard) but can be
+      // taller than a column under the header: it waits for the next column. The bottom gap doesn't count.
+      const roomy = caps[c] >= CONTENT_H - footerHeight;
+      while (i < heights.length && (used + heights[i] <= capacity || used + heights[i] - TILE_GAP <= caps[c] || (column.length === 0 && roomy))) {
+        // An over-tall tile still goes in an empty full-height column rather than looping forever.
         used += heights[i];
         column.push(i++);
       }
@@ -109,25 +113,86 @@ function balanceLastSpread(spreads: InsideSpread[], heights: number[], headerHei
   if (fits) last.columns = columns;
 }
 
-// Works out the fewest inside sheets the messages need (at the smallest text size), then
-// uses the biggest text size that still fits in that many sheets.
+// Works out the fewest inside spreads the messages need (at the smallest text size), then
+// uses the biggest text size that still fits in that many.
+// `booklet` (double-sided): the sheets nest like a little book, so the inside always has an odd
+// number of spreads (1 sheet = 1 spread, 2 sheets = 3, 3 sheets = 5). The messages are spread
+// evenly over every inside page (using one more spread when they'd need an even number), so no
+// page is left empty and none is crammed.
 export function chooseLayout(
   heightsBySize: Record<number, number[]>,
   cols: number,
   headerHeight: number,
   footerHeight: number,
   headerAlone = false,
+  booklet = false,
 ): { fontSize: number; spreads: InsideSpread[] } {
   const smallest = FONT_SIZES[FONT_SIZES.length - 1];
   const sheetsNeeded = packMessages(heightsBySize[smallest], cols, headerHeight, footerHeight, headerAlone).length;
-  for (const size of FONT_SIZES) {
-    const spreads = packMessages(heightsBySize[size], cols, headerHeight, footerHeight, headerAlone);
-    if (spreads.length <= sheetsNeeded) {
-      balanceLastSpread(spreads, heightsBySize[size], headerHeight, footerHeight, cols, headerAlone);
-      return { fontSize: size, spreads };
+  const size = FONT_SIZES.find(sz => packMessages(heightsBySize[sz], cols, headerHeight, footerHeight, headerAlone).length <= sheetsNeeded) ?? smallest;
+  const heights = heightsBySize[size];
+  const spreads = packMessages(heights, cols, headerHeight, footerHeight, headerAlone);
+  if (booklet && spreads.length > 1) {
+    const even = spreadEvenly(heights, spreads.length % 2 === 0 ? spreads.length + 1 : spreads.length, cols, headerHeight, footerHeight, headerAlone);
+    if (even) return { fontSize: size, spreads: even };
+  }
+  balanceLastSpread(spreads, heights, headerHeight, footerHeight, cols, headerAlone);
+  return { fontSize: size, spreads };
+}
+
+// Splits one page's messages (in order) into its columns, as evenly as possible. Null if they
+// don't fit. Returns the columns and how full the fullest one is (1 = full).
+function splitPage(items: number[], heights: number[], caps: number[]): { columns: number[][]; fill: number } | null {
+  const sum = (list: number[]) => list.reduce((t, i) => t + heights[i], 0);
+  if (items.length === 0) return { columns: caps.map(() => []), fill: 0 };
+  const fillOf = (list: number[], cap: number) => list.length === 0 ? 0 : cap <= 0 ? Infinity : Math.max(0, sum(list) - TILE_GAP) / cap;
+  if (caps.length === 1) {
+    const fill = fillOf(items, caps[0]);
+    return fill <= 1 ? { columns: [items], fill } : null;
+  }
+  let best: { columns: number[][]; fill: number } | null = null;
+  for (let k = 0; k <= items.length; k++) {
+    const a = items.slice(0, k), b = items.slice(k);
+    const fill = Math.max(fillOf(a, caps[0]), fillOf(b, caps[1]));
+    // Ties go to the later split, so a lone message sits in the left column.
+    if (fill <= 1 && (!best || fill <= best.fill)) best = { columns: [a, b], fill };
+  }
+  return best;
+}
+
+// Spreads the messages, in order, over exactly `spreadCount` spreads as evenly as it can: the
+// fewest crammed pages (each page scores its fullness squared, an empty one scores worst). Null if
+// they can't fit.
+function spreadEvenly(heights: number[], spreadCount: number, cols: number, headerHeight: number, footerHeight: number, headerAlone: boolean): InsideSpread[] | null {
+  const pageCaps = (pg: number) => columnCapacities(pg < 2, cols, headerHeight, footerHeight, headerAlone)
+    .slice((pg % 2) * cols, (pg % 2) * cols + cols);
+  const pages = spreadCount * 2, n = heights.length;
+  // worst[p][i]: the best score for the first i messages on the first p pages.
+  const worst: number[][] = Array.from({ length: pages + 1 }, () => Array(n + 1).fill(Infinity));
+  const from: number[][] = Array.from({ length: pages + 1 }, () => Array(n + 1).fill(-1));
+  worst[0][0] = 0;
+  for (let p = 1; p <= pages; p++) {
+    const caps = pageCaps(p - 1);
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= i; j++) {
+        if (worst[p - 1][j] === Infinity) continue;
+        const split = splitPage(Array.from({ length: i - j }, (_, x) => j + x), heights, caps);
+        if (!split) continue;
+        // An empty page counts as worse than a full one, so every page gets something.
+        const score = worst[p - 1][j] + (i === j && caps.some(c => c > 0) && n >= pages ? 2 : split.fill ** 2);
+        if (score < worst[p][i]) { worst[p][i] = score; from[p][i] = j; }
+      }
     }
   }
-  const spreads = packMessages(heightsBySize[smallest], cols, headerHeight, footerHeight, headerAlone);
-  balanceLastSpread(spreads, heightsBySize[smallest], headerHeight, footerHeight, cols, headerAlone);
-  return { fontSize: smallest, spreads };
+  if (worst[pages][n] === Infinity) return null;
+  const pageColumns: number[][][] = [];
+  for (let p = pages, i = n; p > 0; p--) {
+    const j = from[p][i];
+    pageColumns[p - 1] = splitPage(Array.from({ length: i - j }, (_, x) => j + x), heights, pageCaps(p - 1))!.columns;
+    i = j;
+  }
+  return Array.from({ length: spreadCount }, (_, si) => ({
+    columns: [...pageColumns[si * 2], ...pageColumns[si * 2 + 1]],
+    hasHeader: si === 0,
+  }));
 }

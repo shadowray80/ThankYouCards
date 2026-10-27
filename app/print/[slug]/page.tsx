@@ -163,7 +163,7 @@ function PrintContent() {
 
         <div style={{ fontSize: '.82rem', color: '#5A5566', fontWeight: 600, lineHeight: 1.6, marginBottom: 12 }}>
           {mode === 'double'
-            ? 'Print double-sided on A4. Fold the sheet in half with the cover on the outside. Any extra message sheets fold and tuck inside.'
+            ? 'Print double-sided on A4. Fold in half with the cover on the outside. A card with lots of messages prints on more than one sheet: keep them in order, first sheet on the outside, and fold them together like a little book.'
             : 'Print single-sided on A4. Fold each sheet in half: the cover sheet picture-side out, the message sheets messages-side in. Slip the message sheets inside the cover.'}
         </div>
 

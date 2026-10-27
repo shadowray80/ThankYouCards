@@ -281,8 +281,8 @@ function CorporateClosing({ c, look }: { c: PrintCampaign; look: Look }) {
 }
 
 // Message tiles in the same four looks as the screen card, plus its featured quote.
-function CorporateTile({ m, index, total, fontSize, width, ratio, look }: {
-  m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look;
+function CorporateTile({ m, index, total, fontSize, width, ratio, look, photoMax = PHOTO_MAX_H }: {
+  m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look; photoMax?: number;
 }) {
   const ink = '#1A1A2E';
   const nameSize = Math.max(11, Math.round(fontSize * 0.78));
@@ -291,7 +291,7 @@ function CorporateTile({ m, index, total, fontSize, width, ratio, look }: {
 
   if (m.photo_url) {
     let photoW = width - 14, photoH = ratio ? photoW / ratio : photoW * 0.75;
-    if (photoH > PHOTO_MAX_H) { photoH = PHOTO_MAX_H; photoW = ratio ? photoH * ratio : photoW; }
+    if (photoH > photoMax) { photoH = photoMax; photoW = ratio ? photoH * ratio : photoW; }
     return (
       <div style={{ ...whiteBox, padding: '6px 6px 10px', boxShadow: '0 3px 12px rgba(0,0,0,.08)' }}>
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
@@ -368,13 +368,13 @@ function InsideHeader({ c, look }: { c: PrintCampaign; look: Look }) {
   );
 }
 
-function MessageTile({ m, index, fontSize, width, ratio, look }: {
-  m: PrintContribution; index: number; fontSize: number; width: number; ratio: number | null; look: Look;
+function MessageTile({ m, index, fontSize, width, ratio, look, photoMax = PHOTO_MAX_H }: {
+  m: PrintContribution; index: number; fontSize: number; width: number; ratio: number | null; look: Look; photoMax?: number;
 }) {
   const hasPhoto = !!m.photo_url;
   // Photos keep their shape (a handwritten note must never be cropped), within a max height.
   let photoW = width - 14, photoH = ratio ? photoW / ratio : photoW * 0.75;
-  if (photoH > PHOTO_MAX_H) { photoH = PHOTO_MAX_H; photoW = ratio ? photoH * ratio : photoW; }
+  if (photoH > photoMax) { photoH = photoMax; photoW = ratio ? photoH * ratio : photoW; }
   return (
     <div style={{
       width, boxSizing: 'border-box', marginBottom: TILE_GAP, borderRadius: 10,
@@ -426,7 +426,7 @@ function SoloInside({ c, m, look, size, ratio }: { c: PrintCampaign; m: PrintCon
   );
 }
 
-function Tile(props: { m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look }) {
+function Tile(props: { m: PrintContribution; index: number; total: number; fontSize: number; width: number; ratio: number | null; look: Look; photoMax?: number }) {
   return props.look.isCorporate ? <CorporateTile {...props} /> : <MessageTile {...props} />;
 }
 
@@ -456,6 +456,8 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
   const [soloSize, setSoloSize] = useState(SOLO_SIZES[0]);
   const [ratios, setRatios] = useState<Record<string, number | null> | null>(null);
   const [layout, setLayout] = useState<{ fontSize: number; spreads: InsideSpread[] } | null>(null);
+  // Photo height limits for tiles that would otherwise be taller than a page (message index → px).
+  const [photoMax, setPhotoMax] = useState<Record<number, number>>({});
   const measureRef = useRef<HTMLDivElement>(null);
 
   // 1. Learn every image's shape (cover + message photos) so tiles can be measured exactly.
@@ -480,17 +482,27 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
       const root = measureRef.current;
       if (cancelled || !root) return;
       const heightsBySize: Record<number, number[]> = {};
+      // A long message with a tall photo can be taller than a whole page: shrink its photo to fit.
+      // (The photo's height changes the tile's height one for one.)
+      const pageRoom = CONTENT_H - (closing ? CLOSING_H : footer ? 28 : 0);
+      const limits: Record<number, number> = {};
       for (const size of FONT_SIZES) {
         heightsBySize[size] = Array.from(root.querySelectorAll<HTMLElement>(`[data-size="${size}"] > [data-tile]`))
-          .map(el => el.offsetHeight + TILE_GAP);
+          .map((el, i) => {
+            const over = el.offsetHeight - pageRoom;
+            const photo = el.querySelector('img')?.offsetHeight ?? 0;
+            if (over > 0 && photo - over >= 60) { limits[i] = photo - over; return pageRoom + TILE_GAP; }
+            return el.offsetHeight + TILE_GAP;
+          });
       }
+      setPhotoMax(limits);
       if (isSolo) {
         const fits = SOLO_SIZES.find(sz => (root.querySelector<HTMLElement>(`[data-solo-size="${sz}"]`)?.offsetHeight ?? 0) <= CONTENT_H);
         setSoloSize(fits ?? SOLO_SIZES[SOLO_SIZES.length - 1]);
       }
       const headerH = (root.querySelector<HTMLElement>('[data-header]')?.offsetHeight ?? 0);
       const footerH = closing ? CLOSING_H : footer ? 28 : 0;
-      setLayout(chooseLayout(heightsBySize, cols, headerH, footerH, headerAlone));
+      setLayout(chooseLayout(heightsBySize, cols, headerH, footerH, headerAlone, mode === 'double'));
     }));
     return () => { cancelled = true; };
   }, [ratios]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -534,7 +546,7 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
         {columns.map((col, ci) => (
           <div key={ci} style={{ width: colW }}>
             {col.map(i => (
-              <Tile key={i} m={messages[i]} index={i} total={messages.length} fontSize={layout.fontSize} width={colW} ratio={messages[i].photo_url ? ratios[messages[i].photo_url!] ?? null : null} look={look} />
+              <Tile key={i} m={messages[i]} index={i} total={messages.length} fontSize={layout.fontSize} width={colW} ratio={messages[i].photo_url ? ratios[messages[i].photo_url!] ?? null : null} look={look} photoMax={photoMax[i]} />
             ))}
           </div>
         ))}
@@ -542,49 +554,65 @@ export function PrintableCard({ campaign, contributions, mode, flip, onReady }: 
     );
   };
 
-  const insideSheets = isSolo ? [
-    <Sheet key="in-solo" rotate={mode === 'double' && flip}>
-      <Panel />
-      <Panel style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <SoloInside c={campaign} m={soloMessage} look={look} size={soloSize} ratio={soloMessage?.photo_url ? ratios[soloMessage.photo_url] ?? null : null} />
-      </Panel>
-    </Sheet>,
-  ] : layout.spreads.map((spread, si) => {
+  // One A5 page of messages: spread `si`, left (0) or right (1) side.
+  const insidePage = (si: number, side: 0 | 1) => {
+    const spread = layout.spreads[si];
+    if (!spread) return <Panel key={`p-${si}-${side}`} />;
     const isLast = si === layout.spreads.length - 1;
-    return (
-      <Sheet key={`in-${si}`} rotate={mode === 'double' && flip && si === 0}>
-        <Panel style={{ display: 'flex', flexDirection: 'column' }}>
-          {spread.hasHeader && headerAlone ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}><InsideHeader c={campaign} look={look} /></div>
-          ) : (
-            <>
-              {spread.hasHeader && <InsideHeader c={campaign} look={look} />}
-              {renderColumns(spread, 0)}
-            </>
-          )}
-        </Panel>
-        <Panel style={{ display: 'flex', flexDirection: 'column' }}>
-          {renderColumns(spread, 1)}
-          {isLast && closing && <CorporateClosing c={campaign} look={look} />}
-          {isLast && !closing && footer && <div style={{ height: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 700, color: '#999' }}>{footer}</div>}
+    return side === 0 ? (
+      <Panel key={`p-${si}-0`} style={{ display: 'flex', flexDirection: 'column' }}>
+        {spread.hasHeader && headerAlone ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}><InsideHeader c={campaign} look={look} /></div>
+        ) : (
+          <>
+            {spread.hasHeader && <InsideHeader c={campaign} look={look} />}
+            {renderColumns(spread, 0)}
+          </>
+        )}
+      </Panel>
+    ) : (
+      <Panel key={`p-${si}-1`} style={{ display: 'flex', flexDirection: 'column' }}>
+        {renderColumns(spread, 1)}
+        {isLast && closing && <CorporateClosing c={campaign} look={look} />}
+        {isLast && !closing && footer && <div style={{ height: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: SANS, fontSize: 11, fontWeight: 700, color: '#999' }}>{footer}</div>}
+      </Panel>
+    );
+  };
+
+  const back = look.isCorporate ? <CorporateBack key="back" c={campaign} /> : <BackPanel key="back" />;
+  const front = look.isCorporate
+    ? <CorporateFront key="front" c={campaign} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />
+    : <FrontPanel key="front" c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />;
+
+  if (isSolo) {
+    return <>
+      <Sheet key="out">{back}{front}</Sheet>
+      <Sheet key="in-solo" rotate={mode === 'double' && flip}>
+        <Panel />
+        <Panel style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <SoloInside c={campaign} m={soloMessage} look={look} size={soloSize} ratio={soloMessage?.photo_url ? ratios[soloMessage.photo_url] ?? null : null} />
         </Panel>
       </Sheet>
-    );
-  });
+    </>;
+  }
 
-  // Double-sided: each extra inside sheet gets a blank back, so it's its own folded insert.
-  const pages: React.ReactNode[] = [
-    <Sheet key="out">
-      {look.isCorporate ? <CorporateBack c={campaign} /> : <BackPanel />}
-      {look.isCorporate
-        ? <CorporateFront c={campaign} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />
-        : <FrontPanel c={campaign} from={from} look={look} ratio={campaign.card_image_url ? ratios[campaign.card_image_url] ?? null : null} />}
-    </Sheet>,
-    insideSheets[0],
-  ];
-  insideSheets.slice(1).forEach((sheet, i) => {
-    pages.push(sheet);
-    if (mode === 'double') pages.push(<Sheet key={`blank-${i}`} />);
-  });
+  // Single-sided: the cover sheet, then each spread on its own sheet (folded messages-in, slipped inside).
+  if (mode === 'single') {
+    return <>
+      <Sheet key="out">{back}{front}</Sheet>
+      {layout.spreads.map((_, si) => <Sheet key={`in-${si}`}>{insidePage(si, 0)}{insidePage(si, 1)}</Sheet>)}
+    </>;
+  }
+
+  // Double-sided: the sheets nest like a booklet, so every page reads in order. Pages are numbered
+  // 1 (cover) to 4n (back); inside spread j is pages 2j and 2j+1. Sheet k (0 = outermost) carries
+  // pages 4n-2k | 2k+1 on its outside and 2k+2 | 4n-2k-1 on its inside.
+  const n = Math.ceil((layout.spreads.length + 1) / 2);
+  const page = (p: number) => p === 1 ? front : p === 4 * n ? back : insidePage(Math.floor(p / 2) - 1, (p % 2) as 0 | 1);
+  const pages: React.ReactNode[] = [];
+  for (let k = 0; k < n; k++) {
+    pages.push(<Sheet key={`out-${k}`}>{page(4 * n - 2 * k)}{page(2 * k + 1)}</Sheet>);
+    pages.push(<Sheet key={`in-${k}`} rotate={flip}>{page(2 * k + 2)}{page(4 * n - 2 * k - 1)}</Sheet>);
+  }
   return <>{pages}</>;
 }
